@@ -577,6 +577,102 @@ button, input { font: inherit; color: inherit; }
   100% { transform: translate(-50%, -50%) scale(1); }
 }
 
+/* memorama */
+
+.mini--memorama { gap: 8px; }
+
+.tablero {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 7px;
+  flex: 1;
+  min-height: 0;
+  align-content: center;
+}
+
+.memo {
+  background: none;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  perspective: 800px;
+  aspect-ratio: 3 / 4;
+  min-height: 0;
+}
+
+.memo__interior {
+  position: relative;
+  display: block;
+  width: 100%;
+  height: 100%;
+  transition: transform 0.4s cubic-bezier(0.4, 1.6, 0.6, 1);
+  transform-style: preserve-3d;
+}
+
+.memo--abierta .memo__interior { transform: rotateY(180deg); }
+
+.memo__reverso,
+.memo__frente {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 3px;
+  border: var(--borde) solid var(--tinta);
+  border-radius: 14px;
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+  padding: 4px;
+  overflow: hidden;
+}
+
+.memo__reverso {
+  background: var(--acento);
+  color: #fff;
+  font-size: clamp(22px, 6vw, 30px);
+  box-shadow: 0 4px 0 var(--tinta);
+}
+
+.memo__frente {
+  background: #fff;
+  transform: rotateY(180deg);
+}
+
+.memo__icono { font-size: clamp(24px, 7vw, 34px); line-height: 1; }
+
+.memo__texto {
+  font-size: clamp(9px, 2.6vw, 12px);
+  font-weight: bold;
+  text-align: center;
+  line-height: 1.15;
+  hyphens: auto;
+}
+
+.memo--resuelta .memo__frente {
+  background: #f2fbf3;
+  border-color: var(--bien);
+  opacity: 0.75;
+}
+
+.memo--resuelta { cursor: default; }
+
+.memorama__dato {
+  margin: 0;
+  min-height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  font-size: 13px;
+  line-height: 1.35;
+  background: #fff;
+  border: 2px dashed var(--linea);
+  border-radius: 12px;
+  padding: 7px 12px;
+}
+
 /* ============================== final ================================ */
 
 .final {
@@ -672,6 +768,8 @@ button, input { font: inherit; color: inherit; }
   .opciones { flex-direction: row; flex-wrap: wrap; }
   .opciones button { flex: 1 1 44%; }
   .opciones--centro { flex-direction: column; }
+  .tablero { grid-template-columns: repeat(6, 1fr); gap: 6px; }
+  .memorama__dato { min-height: 0; font-size: 12px; }
 }
 
 /* ============================== tablet =============================== */
@@ -683,6 +781,8 @@ button, input { font: inherit; color: inherit; }
   .ficha__icono { font-size: 36px; }
   .bote { min-height: 96px; font-size: 14px; }
   .bote__icono { font-size: 34px; }
+  .tablero { grid-template-columns: repeat(4, 1fr); gap: 10px; max-width: 620px; margin-inline: auto; width: 100%; }
+  .memorama__dato { font-size: 14px; }
 }
 
 /* ============================ escritorio ============================= */

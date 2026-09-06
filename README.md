@@ -14,8 +14,8 @@ Stack: React 18 + Vite. La conversación pasa por una función serverless en
 
 ## Cómo se juega
 
-Cada partida son **cuatro misiones seguidas** con el mismo personaje:
-tres retos de preguntas y un minijuego de acción.
+Cada partida son **cinco misiones seguidas** con el mismo personaje, alternando
+preguntas y minijuegos: reto → memorama → reto → minijuego de acción → reto.
 
 **Vidas.** Empiezas con tres corazones. Fallar o quedarte sin tiempo cuesta uno.
 Al llegar a cero repites la misión con las vidas llenas: nadie pierde su avance.
@@ -27,6 +27,9 @@ suman a tus puntos, así que responder rápido paga.
 respuesta mala la rompe.
 
 **Minijuegos.**
+- *Memorama* (los dos personajes): doce cartas, seis parejas, contra reloj. Cada
+  pareja encontrada suelta un dato debajo del tablero. Un par equivocado cuesta
+  tres segundos, y el tiempo que sobra se convierte en puntos.
 - *Simulacro relámpago* (Sismo Tecnito): la pantalla tiembla y tienes que tocar
   agáchate → cúbrete → agárrate en ese orden, esquivando botones trampa como
   "usar el elevador". Tres rondas, cada una más rápida.
@@ -51,7 +54,13 @@ El grado se elige al principio y cambia el juego de verdad, no solo el texto:
 | Opciones | 3 | 4 (un distractor más) |
 | Preguntas de bonificación | no | sí, valen doble |
 | Tiempo por residuo | 5 s | 3.5 s |
+| Memorama | parejas iguales, 100 s | situación ↔ respuesta, 75 s |
 | Voz del personaje | frases cortas, comparaciones escolares, emojis | sin infantilizar, cifras concretas, humor seco |
+
+En el memorama la diferencia es la más marcada: primaria empareja cartas
+idénticas, mientras que secundaria empareja una situación con su respuesta
+correcta ("huele a gas" ↔ "no enciendas nada"), así que hay que razonar el par,
+no solo recordar dónde estaba.
 
 Las preguntas de bonificación son de nivel más alto: por qué alcanza a avisar la
 alerta sísmica, qué son las réplicas, por qué el eucalipto reseca un río, dónde
@@ -167,6 +176,11 @@ Un reto:
 
 Agrégalo al arreglo del personaje y aparece solo en la barra de progreso.
 
+Para más cartas del memorama, agrega entradas a `MEMORAMA[personaje].simples`
+(primaria: icono, texto y dato) o a `MEMORAMA[personaje].conceptuales`
+(secundaria: `a`, `b` y dato). El tablero toma seis pares al azar de la lista, así
+que entre más escribas, más varía cada partida.
+
 Para más residuos del minijuego, agrega entradas a `RESIDUOS` con su `bote`.
 Para más trampas del simulacro, a `TRAMPAS_SIMULACRO`. En `GRADOS` se ajustan
 segundos, vidas y el tono con que la IA le habla a cada edad.
@@ -182,7 +196,7 @@ src/App.jsx                    estado de la partida: vidas, racha, misiones
 src/components/Portada.jsx     elegir grado y personaje
 src/components/Juego.jsx       HUD y ruteo de misión
 src/components/Reto.jsx        pregunta con cronómetro + chat
-src/components/minijuegos/     Simulacro.jsx, Basura.jsx
+src/components/minijuegos/     Memorama.jsx, Simulacro.jsx, Basura.jsx
 src/components/Final.jsx       rango, récord y medallas
 src/data/personajes.js         TODO el contenido editable
 src/lib/                       sonido, confeti, progreso guardado
