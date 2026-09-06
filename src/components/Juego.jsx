@@ -1,6 +1,7 @@
 import Reto from "./Reto.jsx";
 import Simulacro from "./minijuegos/Simulacro.jsx";
 import Basura from "./minijuegos/Basura.jsx";
+import Memorama from "./minijuegos/Memorama.jsx";
 import { GRADOS } from "../data/personajes.js";
 
 export default function Juego({
@@ -63,20 +64,14 @@ export default function Juego({
 
       {mision.tipo === "minijuego" ? (
         <div className="mini-envoltura">
-          {mision.juego === "simulacro" ? (
-            <Simulacro
-              personaje={p}
-              grado={grado}
-              vidas={vidas}
-              onTerminar={onFinMision}
-            />
-          ) : (
-            <Basura
-              personaje={p}
-              grado={grado}
-              vidas={vidas}
-              onTerminar={onFinMision}
-            />
+          {mision.juego === "simulacro" && (
+            <Simulacro personaje={p} grado={grado} vidas={vidas} onTerminar={onFinMision} />
+          )}
+          {mision.juego === "basura" && (
+            <Basura personaje={p} grado={grado} vidas={vidas} onTerminar={onFinMision} />
+          )}
+          {mision.juego === "memorama" && (
+            <Memorama personaje={p} grado={grado} vidas={vidas} onTerminar={onFinMision} />
           )}
         </div>
       ) : (

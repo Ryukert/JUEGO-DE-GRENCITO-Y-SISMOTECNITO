@@ -69,11 +69,11 @@ const MISIONES_SISMO = [
   {
     id: "s2",
     tipo: "minijuego",
-    juego: "simulacro",
-    titulo: "Simulacro relámpago",
-    lugar: "Salón de clases",
+    juego: "memorama",
+    titulo: "Memorama de emergencia",
+    lugar: "Bodega de protección civil",
     descripcion:
-      "Está temblando. Toca las tres acciones correctas en orden antes de que se acabe el tiempo. Cuidado con las trampas.",
+      "Encuentra las seis parejas antes de que se acabe el tiempo. Cada acierto trae un dato que sirve.",
   },
   {
     id: "s3",
@@ -104,6 +104,15 @@ const MISIONES_SISMO = [
   },
   {
     id: "s4",
+    tipo: "minijuego",
+    juego: "simulacro",
+    titulo: "Simulacro relámpago",
+    lugar: "Salón de clases",
+    descripcion:
+      "Está temblando. Toca las tres acciones correctas en orden antes de que se acabe el tiempo. Cuidado con las trampas.",
+  },
+  {
+    id: "s5",
     tipo: "reto",
     titulo: "Después del temblor",
     lugar: "Patio de la escuela",
@@ -162,11 +171,11 @@ const MISIONES_GREEN = [
   {
     id: "g2",
     tipo: "minijuego",
-    juego: "basura",
-    titulo: "Separa o pierde",
-    lugar: "Estación de reciclaje",
+    juego: "memorama",
+    titulo: "Memorama del terreno",
+    lugar: "Huerto de la escuela",
     descripcion:
-      "Van a llegar diez residuos, uno por uno. Mándalos al bote correcto antes de que se acabe su tiempo.",
+      "Encuentra las seis parejas antes de que se acabe el tiempo. Cada acierto trae un dato que sirve.",
   },
   {
     id: "g3",
@@ -197,6 +206,15 @@ const MISIONES_GREEN = [
   },
   {
     id: "g4",
+    tipo: "minijuego",
+    juego: "basura",
+    titulo: "Separa o pierde",
+    lugar: "Estación de reciclaje",
+    descripcion:
+      "Van a llegar diez residuos, uno por uno. Mándalos al bote correcto antes de que se acabe su tiempo.",
+  },
+  {
+    id: "g5",
     tipo: "reto",
     titulo: "El agua que se va",
     lugar: "Tu casa",
@@ -273,8 +291,52 @@ export const PERSONAJES = {
   },
 };
 
-/* ---------------- residuos del minijuego de separación ---------------- */
+/* ============================== memorama =============================
+   simples      → primaria: las dos cartas del par son iguales
+   conceptuales → secundaria: una carta es la situación y la otra la
+                  respuesta correcta, así que hay que razonar el par
+   ==================================================================== */
 
+export const MEMORAMA = {
+  sismo: {
+    simples: [
+      { icono: "🔦", texto: "Linterna", dato: "Nunca velas: si hay fuga de gas, una chispa basta." },
+      { icono: "🎒", texto: "Mochila de emergencia", dato: "Ligera y siempre en el mismo lugar, cerca de la puerta." },
+      { icono: "📻", texto: "Radio de pilas", dato: "Cuando no hay luz ni señal, el radio sigue informando." },
+      { icono: "🩹", texto: "Botiquín", dato: "Gasas, vendas y las medicinas que alguien de la casa necesite." },
+      { icono: "🚨", texto: "Alerta sísmica", dato: "Si suena, aléjate de ventanas y busca un lugar seguro." },
+      { icono: "📣", texto: "Silbato", dato: "Pesa casi nada y se oye más lejos que un grito." },
+    ],
+    conceptuales: [
+      { a: { icono: "🚨", texto: "Suena la alerta" }, b: { icono: "🧎", texto: "Agáchate y cúbrete" }, dato: "La alerta da segundos, no minutos. Úsalos para protegerte, no para correr." },
+      { a: { icono: "👃", texto: "Huele a gas" }, b: { icono: "🚫", texto: "No enciendas nada" }, dato: "Ni el foco ni la linterna del celular. Avisa a un adulto y salgan." },
+      { a: { icono: "🛗", texto: "Elevador" }, b: { icono: "❌", texto: "Jamás durante un sismo" }, dato: "Se puede quedar atorado sin luz. Siempre escaleras, y después del temblor." },
+      { a: { icono: "📱", texto: "Líneas saturadas" }, b: { icono: "💬", texto: "Manda un mensaje" }, dato: "El texto pasa aunque las llamadas no. Ocupa mucho menos red." },
+      { a: { icono: "🪧", texto: "Punto de reunión" }, b: { icono: "👨‍👩‍👧", texto: "Ahí te encuentran" }, dato: "Acuérdenlo en familia antes de que pase algo, no durante." },
+      { a: { icono: "🏚️", texto: "Edificio dañado" }, b: { icono: "⏳", texto: "Cuidado con la réplica" }, dato: "Las réplicas siguen días. Un muro cuarteado puede caer con la segunda." },
+    ],
+  },
+  green: {
+    simples: [
+      { icono: "🍂", texto: "Composta", dato: "Las cáscaras se vuelven tierra en dos o tres meses." },
+      { icono: "♻️", texto: "Reciclable", dato: "Enjuaga y aplasta los envases: ocupan menos y valen más." },
+      { icono: "🪣", texto: "Cubeta", dato: "Lavar el carro con cubeta gasta 40 litros; con manguera, 400." },
+      { icono: "🌳", texto: "Árbol nativo", dato: "Sus raíces agarran el suelo de la región y evitan deslaves." },
+      { icono: "🔋", texto: "Pila usada", dato: "Va a un acopio especial. Enterrada contamina el agua del subsuelo." },
+      { icono: "💧", texto: "Llave cerrada", dato: "Una gotera tira más de 100 litros al mes sin que nadie la use." },
+    ],
+    conceptuales: [
+      { a: { icono: "🥭", texto: "Cáscara de mango" }, b: { icono: "🍂", texto: "Composta" }, dato: "Lo orgánico alimenta la tierra en lugar de apestar en el relleno." },
+      { a: { icono: "🔋", texto: "Pila del control" }, b: { icono: "☣️", texto: "Acopio especial" }, dato: "El mercurio sube por el agua, llega a los peces y termina en tu plato." },
+      { a: { icono: "🥤", texto: "Botella de PET" }, b: { icono: "♻️", texto: "Reciclable" }, dato: "Una botella tarda cientos de años en degradarse. Reciclada vuelve en semanas." },
+      { a: { icono: "🚿", texto: "Fuga que gotea" }, b: { icono: "💧", texto: "100 litros al mes" }, dato: "El ploc-ploc de la noche es una cubeta llena cada dos días." },
+      { a: { icono: "🌳", texto: "Árbol junto al río" }, b: { icono: "⛰️", texto: "Sostiene el cerro" }, dato: "Sin raíces el agua se lleva la tierra. Por eso los cerros pelones se derrumban." },
+      { a: { icono: "🚗", texto: "Lavar el carro" }, b: { icono: "🪣", texto: "Dos cubetas bastan" }, dato: "La manguera abierta tira más agua de la que bebe una persona en un mes." },
+    ],
+  },
+};
+
+/* ---------------- residuos del minijuego de separación ---------------- */
 export const BOTES = [
   { id: "organico", nombre: "Orgánico", icono: "🍂", color: "#7a5a2e" },
   { id: "reciclable", nombre: "Reciclable", icono: "♻️", color: "#0f6fc4" },
