@@ -1,158 +1,148 @@
-import { useState, useRef, useEffect, useCallback } from "react";
-import { PERSONAJES, construirSistema } from "./data/personajes.js";
+import { useState, useEffect, useRef, useCallback } from "react";
+import { PERSONAJES, GRADOS } from "./data/personajes.js";
 import Portada from "./components/Portada.jsx";
 import Juego from "./components/Juego.jsx";
 import Final from "./components/Final.jsx";
+import { sonido, sonidoActivo, alternarSonido } from "./lib/sonido.js";
+import { leerProgreso, guardarGrado, registrarPartida } from "./lib/progreso.js";
 
-const TURNOS_MAX = 3;
+const TEMA_NEUTRO = {
+  fondo: "#dbe9f8",
+  fondo2: "#e8f3d6",
+  tinta: "#10304f",
+  acento: "#0f6fc4",
+  acento2: "#f4691f",
+  linea: "#8fb6dd",
+};
 
 export default function App() {
+  const [progreso, setProgreso] = useState(() => leerProgreso());
   const [pantalla, setPantalla] = useState("inicio");
   const [quien, setQuien] = useState(null);
-  const [mensajes, setMensajes] = useState([]);
-  const [opciones, setOpciones] = useState([]);
-  const [puntos, setPuntos] = useState(0);
+  const [grado, setGrado] = useState(progreso.grado || "primaria");
   const [nivel, setNivel] = useState(0);
-  const [turnos, setTurnos] = useState(0);
-  const [cargando, setCargando] = useState(false);
-  const [temblor, setTemblor] = useState(false);
+  const [puntos, setPuntos] = useState(0);
+  const [vidas, setVidas] = useState(3);
+  const [racha, setRacha] = useState(0);
   const [insignias, setInsignias] = useState([]);
-  const [sinConexion, setSinConexion] = useState(false);
-  const temporizador = useRef(null);
+  const [temblor, setTemblor] = useState(false);
+  const [sonidoOn, setSonidoOn] = useState(sonidoActivo());
+  const [record, setRecord] = useState({ nuevoRecord: false, recordAnterior: 0 });
+  const reloj = useRef(null);
 
   const p = quien ? PERSONAJES[quien] : null;
   const mision = p ? p.misiones[Math.min(nivel, p.misiones.length - 1)] : null;
 
-  // Pinta el tema del personaje en el documento entero
   useEffect(() => {
-    const t = p ? p.tema : { fondo: "#dbe9f8", fondo2: "#e8f3d6", tinta: "#10304f", acento: "#0f6fc4", acento2: "#f4691f", linea: "#8fb6dd" };
+    const t = p ? p.tema : TEMA_NEUTRO;
     const raiz = document.documentElement;
     Object.entries(t).forEach(([k, v]) => raiz.style.setProperty(`--${k}`, v));
     const meta = document.querySelector('meta[name="theme-color"]');
     if (meta) meta.setAttribute("content", t.acento);
   }, [p]);
 
-  useEffect(() => () => clearTimeout(temporizador.current), []);
+  useEffect(() => () => clearTimeout(reloj.current), []);
 
   const sacudir = useCallback(() => {
     setTemblor(true);
-    clearTimeout(temporizador.current);
-    temporizador.current = setTimeout(() => setTemblor(false), 1300);
+    clearTimeout(reloj.current);
+    reloj.current = setTimeout(() => setTemblor(false), 1200);
   }, []);
 
-  function empezar(id) {
-    const pj = PERSONAJES[id];
+  function iniciar(id, gradoElegido) {
+    const g = gradoElegido || grado;
     setQuien(id);
-    setPuntos(0);
+    setGrado(g);
+    guardarGrado(g);
+    setProgreso(leerProgreso());
     setNivel(0);
-    setTurnos(0);
+    setPuntos(0);
+    setRacha(0);
+    setVidas(GRADOS[g].vidas);
     setInsignias([]);
-    setMensajes([
-      {
-        de: "bot",
-        texto: `¡Hola! Soy ${pj.nombre}, ${pj.apodo}. Traigo tres misiones y necesito un compañero de equipo. ¿Le entramos a la primera?`,
-      },
-      { de: "bot", texto: pj.misiones[0].escenario },
-    ]);
-    setOpciones(pj.misiones[0].opciones.map((o) => o.texto));
     setPantalla("juego");
-    if (id === "sismo") sacudir();
+    if (id === "sismo") {
+      sonido.temblor();
+      sacudir();
+    }
   }
 
-  function avanzar(nivelActual) {
-    const siguiente = nivelActual + 1;
+  function sumarPuntos(n) {
+    setPuntos((v) => v + n);
+    setRacha((r) => r + 1);
+  }
+
+  function fallar() {
+    setRacha(0);
+    const quedan = vidas - 1;
+    setVidas(Math.max(0, quedan));
+    if (quedan <= 0) {
+      sonido.alarma();
+      setTimeout(() => setPantalla("caido"), 1400);
+    }
+  }
+
+  function terminarMision(resultado = {}) {
+    if (typeof resultado.puntos === "number") setPuntos((v) => v + resultado.puntos);
+    if (typeof resultado.vidasRestantes === "number") setVidas(resultado.vidasRestantes);
+
+    if (resultado.exito === false) {
+      setPantalla("caido");
+      return;
+    }
+
+    setInsignias((b) => [...b, mision.titulo]);
+
+    const siguiente = nivel + 1;
     if (siguiente >= p.misiones.length) {
+      const totalFinal = puntos + (resultado.puntos || 0);
+      const r = registrarPartida({
+        personaje: p.id,
+        puntos: totalFinal,
+        insignias: [...insignias, mision.titulo],
+      });
+      setRecord(r);
+      setProgreso(leerProgreso());
       setPantalla("fin");
       return;
     }
-    const m = p.misiones[siguiente];
+
     setNivel(siguiente);
-    setTurnos(0);
-    setMensajes((prev) => [
-      ...prev,
-      { de: "sistema", texto: `Misión cumplida. Siguiente: ${m.titulo}` },
-      { de: "bot", texto: m.escenario },
-    ]);
-    setOpciones(m.opciones.map((o) => o.texto));
-    if (quien === "sismo") sacudir();
+    if (p.misiones[siguiente].tipo === "minijuego" || quien === "sismo") sacudir();
   }
 
-  function respaldo(entrada) {
-    const correcta = mision.opciones.find((o) => o.ok);
-    const acerto =
-      entrada.toLowerCase().includes(correcta.texto.toLowerCase().slice(0, 14)) ||
-      correcta.texto.toLowerCase().includes(entrada.toLowerCase().slice(0, 14));
-    return {
-      reaccion: acerto ? "¡Esa es!" : "Casi, casi",
-      correcto: acerto,
-      mensaje: `${mision.explicacion} ${acerto ? "Lo tenías clarísimo." : "Ahora ya lo sabes para la próxima."}`,
-      opciones: [],
-      puntos: acerto ? 15 : 5,
-      dato: mision.dato,
-      misionCompleta: true,
-    };
+  function reintentar() {
+    setVidas(GRADOS[grado].vidas);
+    setRacha(0);
+    setPantalla("juego");
+    sonido.clic();
   }
 
-  async function responder(entrada) {
-    const texto = entrada.trim();
-    if (!texto || cargando) return;
-
-    const historial = [...mensajes, { de: "yo", texto }];
-    setMensajes(historial);
-    setOpciones([]);
-    setCargando(true);
-
-    let datos;
-    try {
-      const r = await fetch("/api/chat", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          system: construirSistema(p, mision),
-          messages: historial.map((m) => ({
-            role: m.de === "yo" ? "user" : "assistant",
-            content: m.texto,
-          })),
-        }),
-      });
-      if (!r.ok) throw new Error("respuesta no ok");
-      const { texto: crudo } = await r.json();
-      datos = JSON.parse(String(crudo).replace(/```json|```/g, "").trim());
-      setSinConexion(false);
-    } catch (e) {
-      datos = respaldo(texto);
-      setSinConexion(true);
-    }
-
-    const ganados = Math.max(0, Math.min(20, Number(datos.puntos) || 0));
-    setPuntos((v) => v + ganados);
-    setMensajes((m) => [
-      ...m,
-      {
-        de: "bot",
-        texto: datos.mensaje,
-        reaccion: datos.reaccion,
-        dato: datos.dato,
-        ganados,
-      },
-    ]);
-
-    const nuevoTurno = turnos + 1;
-    setTurnos(nuevoTurno);
-    setCargando(false);
-
-    if (datos.misionCompleta || nuevoTurno >= TURNOS_MAX) {
-      setInsignias((b) => [...b, mision.titulo]);
-      const nivelActual = nivel;
-      clearTimeout(temporizador.current);
-      temporizador.current = setTimeout(() => avanzar(nivelActual), 950);
-    } else {
-      setOpciones(Array.isArray(datos.opciones) ? datos.opciones.slice(0, 3) : []);
-    }
+  function alInicio() {
+    setPantalla("inicio");
+    setQuien(null);
+    setProgreso(leerProgreso());
   }
 
   if (pantalla === "inicio") {
-    return <Portada onElegir={empezar} />;
+    return <Portada progreso={progreso} onElegir={iniciar} />;
+  }
+
+  if (pantalla === "caido") {
+    return (
+      <div className="pantalla final final--caido">
+        <img className="final__figura" src={p.cuerpo} alt="" />
+        <h2>Se acabaron las vidas</h2>
+        <p className="final__record">
+          Llevas {puntos} {p.moneda}. Nadie aprende a la primera: repite esta
+          misión con las tres vidas otra vez.
+        </p>
+        <div className="opciones opciones--centro">
+          <button className="boton-grande" onClick={reintentar}>Reintentar la misión</button>
+          <button onClick={alInicio}>Volver al inicio</button>
+        </div>
+      </div>
+    );
   }
 
   if (pantalla === "fin") {
@@ -161,25 +151,31 @@ export default function App() {
         personaje={p}
         puntos={puntos}
         insignias={insignias}
-        onRepetir={() => empezar(quien === "sismo" ? "green" : "sismo")}
-        onInicio={() => setPantalla("inicio")}
+        record={record}
+        onRepetir={() => iniciar(quien, grado)}
+        onOtro={() => iniciar(quien === "sismo" ? "green" : "sismo", grado)}
+        onInicio={alInicio}
       />
     );
   }
 
   return (
     <Juego
+      key={`${quien}-${nivel}`}
       personaje={p}
+      grado={grado}
       mision={mision}
       nivel={nivel}
-      mensajes={mensajes}
-      opciones={opciones}
       puntos={puntos}
-      cargando={cargando}
+      vidas={vidas}
+      racha={racha}
       temblor={temblor}
-      sinConexion={sinConexion}
-      onResponder={responder}
-      onSalir={() => setPantalla("inicio")}
+      sonidoOn={sonidoOn}
+      onSonido={() => setSonidoOn(alternarSonido())}
+      onPuntos={sumarPuntos}
+      onFallo={fallar}
+      onFinMision={terminarMision}
+      onSalir={alInicio}
     />
   );
 }

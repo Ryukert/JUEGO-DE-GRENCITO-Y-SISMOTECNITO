@@ -1,15 +1,61 @@
 # Escuadrón Tecnito y Greencito
 
-Juego-chatbot educativo para niñas y niños de 8 a 12 años. Dos personajes guían
-misiones por turnos y responden preguntas libres usando Claude.
+Juego educativo por turnos con dos mascotas que hablan con Claude. Pensado para
+que un grupo de primaria o secundaria lo juegue en el salón, en el celular o en
+la computadora.
 
-- **Sismo Tecnito** — protección civil ante sismos: qué hacer durante el temblor,
-  mochila de emergencia y qué sigue después.
-- **Greencito** — cuidado ambiental: separación de residuos, reforestación y uso
-  responsable del agua.
+- **Sismo Tecnito** — protección civil ante sismos.
+- **Greencito** — cuidado del medio ambiente.
 
 Stack: React 18 + Vite. La conversación pasa por una función serverless en
 `/api/chat` para que la API key nunca salga del servidor.
+
+---
+
+## Cómo se juega
+
+Cada partida son **cuatro misiones seguidas** con el mismo personaje:
+tres retos de preguntas y un minijuego de acción.
+
+**Vidas.** Empiezas con tres corazones. Fallar o quedarte sin tiempo cuesta uno.
+Al llegar a cero repites la misión con las vidas llenas: nadie pierde su avance.
+
+**Cronómetro.** Cada pregunta corre contra reloj. Los segundos que sobran se
+suman a tus puntos, así que responder rápido paga.
+
+**Racha.** Dos aciertos seguidos multiplican por 2. Cuatro seguidos, por 3. Una
+respuesta mala la rompe.
+
+**Minijuegos.**
+- *Simulacro relámpago* (Sismo Tecnito): la pantalla tiembla y tienes que tocar
+  agáchate → cúbrete → agárrate en ese orden, esquivando botones trampa como
+  "usar el elevador". Tres rondas, cada una más rápida.
+- *Separa o pierde* (Greencito): caen diez residuos y hay que mandarlos al bote
+  orgánico, reciclable o peligroso antes de que se acabe su tiempo.
+
+**El chat sigue vivo.** En cualquier momento se le puede preguntar lo que sea al
+personaje, y contesta en su voz y al nivel del grado elegido.
+
+**Recompensas.** Al final hay rango (Aprendiz → Vigilante → Guardián → Capitán →
+Leyenda), medallas por misión y récord personal guardado en el navegador.
+
+---
+
+## Primaria y secundaria
+
+El grado se elige al principio y cambia el juego de verdad, no solo el texto:
+
+| | Primaria | Secundaria |
+|---|---|---|
+| Tiempo por pregunta | 22 s | 14 s |
+| Opciones | 3 | 4 (un distractor más) |
+| Preguntas de bonificación | no | sí, valen doble |
+| Tiempo por residuo | 5 s | 3.5 s |
+| Voz del personaje | frases cortas, comparaciones escolares, emojis | sin infantilizar, cifras concretas, humor seco |
+
+Las preguntas de bonificación son de nivel más alto: por qué alcanza a avisar la
+alerta sísmica, qué son las réplicas, por qué el eucalipto reseca un río, dónde
+se fuga más agua en una casa.
 
 ---
 
@@ -21,12 +67,11 @@ cp .env.example .env.local     # pon tu ANTHROPIC_API_KEY dentro
 npm run dev
 ```
 
-Abre http://localhost:5173. El servidor de desarrollo monta `/api/chat` por su
-cuenta, así que no necesitas nada más.
+Abre http://localhost:5173. El servidor de desarrollo monta `/api/chat` solo.
 
-Si no configuras la llave, el juego **igual funciona**: cada personaje tiene
-respuestas de repuesto escritas a mano y muestra un aviso discreto. Útil para
-demos sin internet.
+Sin API key el juego **funciona completo**: las misiones, los minijuegos, los
+puntos y las explicaciones están escritos en el proyecto. Lo único que se pierde
+son los comentarios improvisados del personaje. Sirve para demos sin internet.
 
 ---
 
@@ -48,17 +93,13 @@ git push -u origin main
 ## Desplegarlo en Vercel
 
 1. Entra a [vercel.com/new](https://vercel.com/new) e importa el repositorio.
-2. Vercel detecta Vite solo. Deja Build Command `npm run build` y Output `dist`.
-3. Antes de dar Deploy, abre **Environment Variables** y agrega:
+2. Vercel detecta Vite solo. Build `npm run build`, output `dist`.
+3. Antes de dar Deploy, en **Environment Variables** agrega `ANTHROPIC_API_KEY`
+   con tu llave de console.anthropic.com, marcada para Production, Preview y
+   Development.
+4. Deploy.
 
-   | Nombre | Valor |
-   |---|---|
-   | `ANTHROPIC_API_KEY` | tu llave de console.anthropic.com |
-
-   Márcala para Production, Preview y Development.
-4. Deploy. Listo.
-
-Desde la terminal es lo mismo:
+Desde la terminal:
 
 ```bash
 npm i -g vercel
@@ -66,36 +107,45 @@ vercel env add ANTHROPIC_API_KEY
 vercel --prod
 ```
 
-Si cambias la variable después del primer despliegue, tienes que volver a
-desplegar (**Redeploy**) para que la tome.
+Si cambias la variable después del primer despliegue, haz **Redeploy** para que
+la tome.
 
 ---
 
 ## Diseño adaptativo
 
-Móvil primero, probado en tres escenarios:
+- **Teléfono vertical:** `100dvh` con el chat al centro y los controles fijos
+  abajo, respeto por el notch con `safe-area-inset`, botones de 46 px mínimo y
+  campo de texto de 16 px para que iOS no haga zoom.
+- **Teléfono acostado:** la portada pasa a dos columnas, el tablero del
+  simulacro se acomoda en cuatro y las respuestas se reparten en dos columnas.
+- **Tablet:** fichas y botes más grandes, tarjetas en dos columnas.
+- **Escritorio:** desde 900 px el juego se centra como una consola de 760 px con
+  marco, en vez de estirarse.
 
-- **Teléfono vertical:** el chat ocupa toda la altura con `100dvh`, las opciones y
-  el campo de texto quedan fijos abajo, y hay respeto por el notch con
-  `safe-area-inset`. El input usa 16px para que iOS no haga zoom al escribir.
-- **Teléfono acostado:** la portada pasa a dos columnas y las tarjetas se vuelven
-  horizontales para no perder altura.
-- **Tablet y escritorio:** desde 900px el juego se centra como una consola de
-  760px con marco y sombra, en lugar de estirarse a lo ancho.
+`prefers-reduced-motion` apaga el temblor, el confeti y las animaciones. El
+sonido se puede silenciar desde el altavoz del HUD y la preferencia se guarda.
 
-Todos los botones tienen 46px de alto mínimo para el dedo, hay foco visible con
-teclado, y `prefers-reduced-motion` apaga la animación del temblor.
+---
+
+## Sonido y efectos
+
+No hay archivos de audio: todo se genera con Web Audio (`src/lib/sonido.js`).
+El confeti es un canvas ligero que se crea y se destruye solo
+(`src/lib/confeti.js`). El proyecto pesa lo mismo con o sin efectos.
 
 ---
 
 ## Cómo agregar contenido
 
-Todo el material educativo está en `src/data/personajes.js`. Cada misión es un
-objeto:
+Todo el material está en `src/data/personajes.js`.
+
+Un reto:
 
 ```js
 {
-  id: "s4",
+  id: "s5",
+  tipo: "reto",
   titulo: "Título corto",
   lugar: "Dónde ocurre",
   escenario: "La situación que el personaje le plantea al jugador.",
@@ -104,31 +154,43 @@ objeto:
     { texto: "Respuesta mala", ok: false },
     { texto: "Otra mala", ok: false },
   ],
-  explicacion: "Por qué la buena es la buena (también es el texto de repuesto).",
-  dato: "Dato curioso que aparece al final.",
+  opcionExtra: { texto: "Cuarta opción, solo secundaria", ok: false },
+  explicacion: "Por qué la buena es la buena. Se muestra siempre.",
+  dato: "Dato curioso.",
+  retoSecundaria: {
+    pregunta: "Nivel experto: ...",
+    opciones: [ /* igual que arriba */ ],
+    explicacion: "...",
+  },
 }
 ```
 
-Agrégala al arreglo del personaje y aparece sola en la barra de progreso. En ese
-mismo archivo está `persona`, que define cómo habla cada personaje, y los colores
-del tema.
+Agrégalo al arreglo del personaje y aparece solo en la barra de progreso.
+
+Para más residuos del minijuego, agrega entradas a `RESIDUOS` con su `bote`.
+Para más trampas del simulacro, a `TRAMPAS_SIMULACRO`. En `GRADOS` se ajustan
+segundos, vidas y el tono con que la IA le habla a cada edad.
 
 ---
 
 ## Estructura
 
 ```
-api/chat.js              función serverless: habla con Anthropic
-public/                  imágenes de los personajes (fondo removido, WebP)
-src/App.jsx              estado del juego y turnos
-src/components/          Portada, Juego, Final
-src/data/personajes.js   misiones, personalidades y temas
-src/styles.css           estilos responsivos
+api/chat.js                    función serverless: habla con Anthropic
+public/                        imágenes de los personajes (WebP sin fondo)
+src/App.jsx                    estado de la partida: vidas, racha, misiones
+src/components/Portada.jsx     elegir grado y personaje
+src/components/Juego.jsx       HUD y ruteo de misión
+src/components/Reto.jsx        pregunta con cronómetro + chat
+src/components/minijuegos/     Simulacro.jsx, Basura.jsx
+src/components/Final.jsx       rango, récord y medallas
+src/data/personajes.js         TODO el contenido editable
+src/lib/                       sonido, confeti, progreso guardado
+src/styles.css                 estilos responsivos
 ```
 
 ## Costos
 
-Cada respuesta consume tokens de tu cuenta de Anthropic. El límite está en 700
-tokens de salida y solo se mandan los últimos 10 mensajes, así que una partida
-completa cuesta fracciones de centavo. Aun así, si lo abres al público, conviene
-poner un límite de gasto en la consola de Anthropic.
+Cada comentario del personaje consume tokens de tu cuenta de Anthropic, con
+tope de 700 de salida. El juego es jugable sin la API, así que si abres el sitio
+al público conviene poner un límite de gasto en la consola de Anthropic.

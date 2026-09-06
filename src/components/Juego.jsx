@@ -1,44 +1,47 @@
-import { useState, useRef, useEffect } from "react";
+import Reto from "./Reto.jsx";
+import Simulacro from "./minijuegos/Simulacro.jsx";
+import Basura from "./minijuegos/Basura.jsx";
+import { GRADOS } from "../data/personajes.js";
 
 export default function Juego({
   personaje: p,
+  grado,
   mision,
   nivel,
-  mensajes,
-  opciones,
   puntos,
-  cargando,
+  vidas,
+  racha,
   temblor,
-  sinConexion,
-  onResponder,
+  sonidoOn,
+  onSonido,
+  onPuntos,
+  onFallo,
+  onFinMision,
   onSalir,
 }) {
-  const [texto, setTexto] = useState("");
-  const finRef = useRef(null);
-
-  useEffect(() => {
-    finRef.current?.scrollIntoView({ behavior: "smooth", block: "end" });
-  }, [mensajes, cargando, opciones]);
-
-  function enviar(e) {
-    e?.preventDefault();
-    if (!texto.trim()) return;
-    onResponder(texto);
-    setTexto("");
-  }
+  const vidasMax = GRADOS[grado].vidas;
 
   return (
     <div className={`pantalla juego ${temblor ? "tiembla" : ""}`}>
       <header className="hud">
-        <button className="hud__salir" onClick={onSalir} aria-label="Volver al inicio">
-          ←
-        </button>
+        <button className="hud__icono" onClick={onSalir} aria-label="Volver al inicio">←</button>
         <img className="cara" src={p.cara} alt="" width="44" height="44" />
         <div className="hud__texto">
           <h1>{p.nombre}</h1>
-          <p>{mision.lugar}</p>
+          <p className="vidas" aria-label={`${vidas} vidas`}>
+            {"❤️".repeat(Math.max(0, vidas))}
+            {"🖤".repeat(Math.max(0, vidasMax - vidas))}
+            {racha >= 2 && <strong className="racha"> 🔥 racha x{racha}</strong>}
+          </p>
         </div>
-        <div className="marcador" aria-label={`${puntos} ${p.moneda}`}>
+        <button
+          className="hud__icono"
+          onClick={onSonido}
+          aria-label={sonidoOn ? "Apagar sonido" : "Encender sonido"}
+        >
+          {sonidoOn ? "🔊" : "🔇"}
+        </button>
+        <div className="marcador">
           <span aria-hidden="true">{p.monedaIcono}</span> {puntos}
         </div>
       </header>
@@ -46,77 +49,50 @@ export default function Juego({
       <div className="barra">
         <div className="barra__pasos" aria-hidden="true">
           {p.misiones.map((m, i) => (
-            <span key={m.id} className={`paso ${i <= nivel ? "paso--on" : ""}`} />
+            <span
+              key={m.id}
+              className={`paso ${i < nivel ? "paso--hecho" : ""} ${i === nivel ? "paso--on" : ""}`}
+            />
           ))}
         </div>
         <span className="barra__texto">
-          Misión {nivel + 1} de {p.misiones.length}: {mision.titulo}
+          {mision.tipo === "minijuego" ? "⚡ " : ""}
+          {nivel + 1}/{p.misiones.length} · {mision.titulo}
         </span>
       </div>
 
-      <div className="chat" role="log" aria-live="polite">
-        {mensajes.map((m, i) =>
-          m.de === "sistema" ? (
-            <p className="separador" key={i}>{m.texto}</p>
+      {mision.tipo === "minijuego" ? (
+        <div className="mini-envoltura">
+          {mision.juego === "simulacro" ? (
+            <Simulacro
+              personaje={p}
+              grado={grado}
+              vidas={vidas}
+              onTerminar={onFinMision}
+            />
           ) : (
-            <div className={`fila ${m.de === "yo" ? "fila--mia" : ""}`} key={i}>
-              {m.de === "bot" && (
-                <img className="cara" src={p.cara} alt="" width="44" height="44" />
-              )}
-              <div className={`globo ${m.de === "yo" ? "globo--mio" : ""}`}>
-                {m.reaccion && <span className="reaccion">{m.reaccion}</span>}
-                <p>{m.texto}</p>
-                {m.dato && <p className="dato">🔎 {m.dato}</p>}
-                {m.ganados > 0 && (
-                  <p className="ganados">+{m.ganados} {p.moneda}</p>
-                )}
-              </div>
-            </div>
-          )
-        )}
-
-        {cargando && (
-          <div className="fila">
-            <img className="cara" src={p.cara} alt="" width="44" height="44" />
-            <div className="globo">
-              <span className="puntitos"><i /><i /><i /></span>
-            </div>
-          </div>
-        )}
-        <div ref={finRef} />
-      </div>
-
-      <div className="pie">
-        {sinConexion && (
-          <p className="aviso">
-            Sin conexión con el servidor: {p.nombre} está usando sus respuestas
-            de repuesto.
-          </p>
-        )}
-
-        {opciones.length > 0 && !cargando && (
-          <div className="opciones">
-            {opciones.map((o, i) => (
-              <button key={i} onClick={() => onResponder(o)}>{o}</button>
-            ))}
-          </div>
-        )}
-
-        <form className="escribe" onSubmit={enviar}>
-          <input
-            value={texto}
-            onChange={(e) => setTexto(e.target.value)}
-            placeholder={`Pregúntale algo a ${p.nombre}...`}
-            aria-label={`Escribe tu mensaje para ${p.nombre}`}
-            disabled={cargando}
-            enterKeyHint="send"
-            autoComplete="off"
-          />
-          <button type="submit" className="enviar" disabled={cargando || !texto.trim()}>
-            Enviar
-          </button>
-        </form>
-      </div>
+            <Basura
+              personaje={p}
+              grado={grado}
+              vidas={vidas}
+              onTerminar={onFinMision}
+            />
+          )}
+        </div>
+      ) : (
+        <Reto
+          key={mision.id}
+          personaje={p}
+          grado={grado}
+          mision={mision}
+          vidas={vidas}
+          puntos={puntos}
+          racha={racha}
+          onPuntos={onPuntos}
+          onFallo={onFallo}
+          onFin={() => onFinMision({ exito: true })}
+        />
+      )}
     </div>
   );
 }
