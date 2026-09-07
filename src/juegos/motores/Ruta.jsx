@@ -61,6 +61,14 @@ export default function Ruta({ juego, personaje, dif, onTerminar, onSalir }) {
 
   const totalSegundos = segundos(dif, nivel?.segundos || 50, 15);
 
+  // Algunos mapas (polinizadores) exigen recoger todo antes de llegar a la
+  // meta. El resto solo pide llegar a la salida.
+  const iconos = { ...ICONOS, ...(juego.iconos || {}) };
+  const porRecoger = useMemo(() => {
+    if (!nivel || !juego.recolectarTodo) return 0;
+    return nivel.mapa.join("").split("E").length - 1;
+  }, [nivel, juego.recolectarTodo]);
+
   const [pos, setPos] = useState(inicio);
   const [vidas, setVidas] = useState(dif.vidas);
   const [puntos, setPuntos] = useState(0);
@@ -139,6 +147,11 @@ export default function Ruta({ juego, personaje, dif, onTerminar, onSalir }) {
       const llave = `${nx},${ny}`;
 
       if (celda === "S") {
+        if (juego.recolectarTodo && recogidos.length < porRecoger) {
+          sonido.tic();
+          mostrarAviso(`Todavía te faltan ${porRecoger - recogidos.length}`, "mal");
+          return;
+        }
         const bono = 60 + Math.round(tiempoRef.current * 4);
         puntosRef.current += bono;
         setPuntos(puntosRef.current);
@@ -155,7 +168,7 @@ export default function Ruta({ juego, personaje, dif, onTerminar, onSalir }) {
         setPuntos(puntosRef.current);
         setRecogidos((r) => [...r, llave]);
         sonido.moneda();
-        mostrarAviso(celda === "E" ? `🧯 Extintor +${gana}` : `🪧 Punto de reunión +${gana}`, "bien");
+        mostrarAviso(`${iconos[celda]} +${gana}`, "bien");
         return;
       }
 
@@ -179,7 +192,7 @@ export default function Ruta({ juego, personaje, dif, onTerminar, onSalir }) {
       }
     },
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [activo, retro, nivel, recogidos, visitados]
+    [activo, retro, nivel, recogidos, visitados, porRecoger]
   );
 
   /* teclado: se quita solo al desmontar */
@@ -213,6 +226,12 @@ export default function Ruta({ juego, personaje, dif, onTerminar, onSalir }) {
 
       <p className="busca__pista">
         <strong>{nivel.titulo}.</strong> {nivel.pista}
+        {juego.recolectarTodo && (
+          <b className="ruta__contador">
+            {" "}
+            {iconos.E} {recogidos.length}/{porRecoger}
+          </b>
+        )}
       </p>
 
       <div
@@ -236,7 +255,7 @@ export default function Ruta({ juego, personaje, dif, onTerminar, onSalir }) {
                 ) : usado ? (
                   ""
                 ) : (
-                  ICONOS[celda] || ""
+                  iconos[celda] || ""
                 )}
               </span>
             );

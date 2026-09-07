@@ -36,9 +36,15 @@ respuesta mala la rompe.
 - *Separa o pierde* (Greencito): caen diez residuos y hay que mandarlos al bote
   orgánico, reciclable o peligroso antes de que se acabe su tiempo.
 
-**Centro de entrenamiento.** Aparte de las misiones hay un catálogo de 25
-minijuegos sueltos, con dificultad propia (fácil / medio / difícil), récord por
+**Centro de entrenamiento.** Aparte de las misiones hay un catálogo de **46
+minijuegos** sueltos, con dificultad propia (fácil / medio / difícil), récord por
 juego y desbloqueo por XP. Se entra desde la portada o desde la pantalla final.
+
+**Jefes finales.** Seis retos de simulación cierran el juego: Simulador de
+emergencia y Comandante de emergencias por el lado de Tecnito, Salva el planeta,
+Ecosistema y Ciudad sostenible por el de Greencito, y el gran desafío
+**Tecnito vs Greencito**, que pide una ciudad segura y sostenible con un solo
+presupuesto.
 
 **El chat sigue vivo.** En cualquier momento se le puede preguntar lo que sea al
 personaje, y contesta en su voz y al nivel del grado elegido.
@@ -208,10 +214,15 @@ src/pages/Centro.jsx           catálogo de minijuegos por categoría
 src/juegos/registro.js         catálogo: qué juegos hay y con qué se juegan
 src/juegos/PantallaMinijuego.jsx  instrucciones → juego → recompensa
 src/juegos/ui/Marco.jsx        HUD, cronómetro, dificultad, resultado, feedback
-src/juegos/motores/            Quiz, Busca, Clasifica, Ruta, Cultiva, Clasicos
+src/juegos/motores/            Quiz, Busca, Clasifica, Ruta, Cultiva,
+                               Simulacion, Construye, Coloca, Codigo, Sopa,
+                               Puzzle, Ruleta, Atrapa, Clasicos
 
 src/data/personajes.js         contenido de las misiones
-src/data/juegos/               contenido de los minijuegos (preguntas, escenas...)
+src/data/juegos/               contenido de los minijuegos:
+                                 preguntas.js, escenas.js, clasificacion.js,
+                                 rutas.js, cultivo.js, construcciones.js,
+                                 colocaciones.js, simulaciones.js, retos.js
 
 src/hooks/useCronometro.js     cronómetro y timeouts que se limpian solos
 src/lib/dificultad.js          fácil / medio / difícil
@@ -228,8 +239,8 @@ pruebas/                       pruebas con vitest + jsdom
 
 ## Los minijuegos
 
-Hay cinco motores genéricos. Un minijuego nuevo casi nunca necesita código
-nuevo: necesita datos y una entrada en `src/juegos/registro.js`.
+Hay trece motores genéricos y 46 juegos. Un minijuego nuevo casi nunca necesita
+código nuevo: necesita datos y una entrada en `src/juegos/registro.js`.
 
 | Motor | Qué hace | Datos que lee |
 |---|---|---|
@@ -238,6 +249,18 @@ nuevo: necesita datos y una entrada en `src/juegos/registro.js`.
 | `Clasifica` | arrastrar o tocar hacia contenedores | `data/juegos/clasificacion.js` |
 | `Ruta` | moverse por un mapa hasta la salida | `data/juegos/rutas.js` |
 | `Cultiva` | decisiones con consecuencia visible | `data/juegos/cultivo.js` |
+| `Simulacion` | indicadores, recursos y turnos | `data/juegos/simulaciones.js` |
+| `Construye` | armar por etapas y probar al final | `data/juegos/construcciones.js` |
+| `Coloca` | colocar equipos en una cuadrícula | `data/juegos/colocaciones.js` |
+| `Codigo` | deducción tipo combinación secreta | `data/juegos/retos.js` |
+| `Sopa` | sopa de letras generada al vuelo | `data/juegos/retos.js` |
+| `Puzzle` | rompecabezas deslizante | `data/juegos/retos.js` |
+| `Ruleta` | gira y pregunta del banco que salga | `data/juegos/retos.js` |
+| `Atrapa` | quiz con las respuestas en movimiento | `data/juegos/preguntas.js` |
+
+`Ruta` sirve para dos cosas según los datos: llegar a la salida (ruta de
+evacuación) o visitar todo antes de volver (polinizadores, con
+`recolectarTodo`). `Quiz` y `Atrapa` pueden mezclar varios bancos con `bancos`.
 
 `Clasicos` no es un motor: es el adaptador que deja jugar Memorama, Simulacro y
 Separa o pierde desde el centro sin haberlos modificado.
@@ -302,10 +325,13 @@ reparten. La XP acumulada es lo que desbloquea juegos nuevos.
 npm test
 ```
 
-Monta los 25 minijuegos del catálogo, juega partidas completas, comprueba que
-la XP y los récords se guardan, que la migración de progreso v1 a v2 no pierde
-nada y que no queda ningún `setInterval` vivo al salir de un juego. Cualquier
-advertencia de React hace fallar la prueba.
+81 pruebas. Monta los 46 minijuegos del catálogo, juega hasta el final los seis
+jefes de simulación, comprueba que los indicadores nunca se salen de 0 a 100,
+que el presupuesto no se va a negativos, que todas las palabras listadas en la
+sopa de letras están de verdad en el tablero, que el rompecabezas siempre
+arranca revuelto y tiene solución, que la XP y los récords se guardan, que la
+migración de progreso v1 a v2 no pierde nada y que no queda ningún `setInterval`
+vivo al salir de un juego. Cualquier advertencia de React hace fallar la prueba.
 
 ## Costos
 

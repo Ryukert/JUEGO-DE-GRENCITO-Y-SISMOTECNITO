@@ -73,7 +73,66 @@ export const RUTAS = {
     },
   ],
 
-  /* Significado de cada casilla, para el mensaje educativo del motor. */
+  /* ------------------------- 🐝 Polinizadores -------------------------
+     Aquí la meta cambia: hay que visitar TODAS las flores (E) antes de
+     volver a la colmena (S). El motor lo activa con `recolectarTodo`. */
+  polinizadores: [
+    {
+      id: "jardin",
+      titulo: "El jardín de la escuela",
+      pista: "Visita todas las flores y regresa a la colmena. El insecticida y el asfalto caliente te frenan.",
+      segundos: 50,
+      mapa: [
+        "#########",
+        "#J.E...E#",
+        "#.###.#.#",
+        "#E..X...#",
+        "#.#.###.#",
+        "#...E..E#",
+        "#.###.#.#",
+        "#E....#S#",
+        "#########",
+      ],
+    },
+    {
+      id: "milpa",
+      titulo: "La milpa",
+      pista: "Más flores, menos tiempo. Esquiva las zonas fumigadas.",
+      segundos: 60,
+      mapa: [
+        "##########",
+        "#J.E..X.E#",
+        "#.##.##..#",
+        "#E..E...E#",
+        "#.#.##.#.#",
+        "#..E..X..#",
+        "#.###.##.#",
+        "#E...E..E#",
+        "#.####.#S#",
+        "##########",
+      ],
+    },
+    {
+      id: "cerro",
+      titulo: "El cerro florido",
+      pista: "Todas las flores del cerro antes de que se acabe el día.",
+      segundos: 75,
+      mapa: [
+        "###########",
+        "#J.E...X.E#",
+        "#.##.##.#.#",
+        "#E...E...E#",
+        "#.#.##.##.#",
+        "#..E..X..E#",
+        "#.##.##.#.#",
+        "#E...E...E#",
+        "#.#.##.##.#",
+        "#..E...E..#",
+        "#.#######S#",
+        "###########",
+      ],
+    },
+  ],
 };
 
 export const LECCIONES_RUTA = {
@@ -89,6 +148,7 @@ export const LECCIONES_RUTA = {
       dato: "Un pasillo de evacuación necesita 90 cm libres, siempre.",
     },
   ],
+  E: [],
   T: [
     {
       titulo: "Eso no es una salida",

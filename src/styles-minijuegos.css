@@ -583,3 +583,454 @@
   .escena__obj:hover { transform: translate(-50%, -50%); }
   .cultivo__planta { transition: none; }
 }
+
+/* ==================================================================
+   Motores avanzados: simulación, construcción, colocación, código,
+   sopa de letras, rompecabezas, ruleta y atrapa.
+   Mismo lenguaje visual: borde grueso, sombra sólida, botón que se hunde.
+================================================================== */
+
+/* ============================ simulación ============================ */
+
+.mini--simulacion { gap: 8px; }
+
+.sim__recurso {
+  background: #fff;
+  color: var(--tinta);
+  border: 2px solid var(--tinta);
+  border-radius: 999px;
+  padding: 3px 9px;
+  font-size: 12.5px;
+  font-weight: bold;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.tablero-sim {
+  display: grid;
+  gap: 5px;
+  margin: 8px clamp(12px, 3vw, 18px) 0;
+  background: rgba(255, 255, 255, 0.75);
+  border: 3px solid var(--tinta);
+  border-radius: 14px;
+  padding: 9px 11px;
+}
+
+.sim__ind {
+  display: grid;
+  grid-template-columns: minmax(80px, 34%) 1fr auto;
+  align-items: center;
+  gap: 8px;
+  font-size: 12px;
+}
+
+.sim__nombre { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+.sim__barra {
+  position: relative;
+  display: block;
+  height: 12px;
+  background: #e3e9ee;
+  border: 2px solid var(--tinta);
+  border-radius: 999px;
+  overflow: hidden;
+}
+
+.sim__relleno {
+  display: block;
+  height: 100%;
+  background: var(--mal);
+  transition: width 0.45s ease;
+}
+
+.sim__ind--ok .sim__relleno { background: var(--bien); }
+.sim__ind--tecnito .sim__nombre { color: #0f6fc4; }
+.sim__ind--greencito .sim__nombre { color: #47821f; }
+
+.sim__meta {
+  position: absolute;
+  top: -2px;
+  bottom: -2px;
+  width: 3px;
+  background: var(--tinta);
+  transform: translateX(-1px);
+}
+
+.sim__valor { font-weight: bold; min-width: 54px; text-align: right; font-variant-numeric: tabular-nums; }
+.sim__sube { color: var(--bien); margin-left: 3px; }
+.sim__baja { color: var(--mal); margin-left: 3px; }
+
+.sim__evento {
+  margin: 6px clamp(12px, 3vw, 18px) 0;
+  background: #fff8e1;
+  border: 2px dashed var(--acento2);
+  border-radius: 12px;
+  padding: 8px 11px;
+  font-size: 13px;
+  line-height: 1.4;
+}
+
+.sim__pregunta { text-align: left; font-size: 14px; line-height: 1.4; }
+.sim__texto { display: block; }
+.sim__costo { color: var(--mal); white-space: nowrap; }
+.sim__gratis { color: var(--bien); white-space: nowrap; }
+
+/* =========================== construcción =========================== */
+
+.constr__etapa {
+  font-size: 11.5px;
+  background: rgba(255, 255, 255, 0.25);
+  border-radius: 999px;
+  padding: 3px 9px;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.obra {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  width: min(100%, 420px);
+  margin: 8px auto 0;
+}
+
+.obra__pieza {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: #fff;
+  border: 3px solid var(--tinta);
+  border-radius: 12px;
+  padding: 8px 12px;
+  font-size: 13px;
+  animation: entra 0.25s ease-out;
+}
+
+.obra__pieza--firme { border-color: var(--bien); background: #f2fbf3; }
+.obra__pieza--floja { border-color: var(--mal); background: #fdf3f1; }
+.obra__icono { font-size: 24px; line-height: 1; }
+.obra__nombre { font-weight: bold; }
+
+.obra__suelo {
+  background: #a97141;
+  color: #fff;
+  border-radius: 0 0 12px 12px;
+  padding: 7px 12px;
+  font-size: 12px;
+  text-align: center;
+}
+
+.constr__prueba {
+  margin: 14px clamp(12px, 3vw, 18px);
+  text-align: center;
+  font-size: clamp(17px, 5vw, 22px);
+  font-weight: bold;
+}
+
+/* ============================ colocación ============================ */
+
+.coloca__cuenta {
+  background: #fff;
+  color: var(--tinta);
+  border: 2px solid var(--tinta);
+  border-radius: 999px;
+  padding: 3px 9px;
+  font-size: 12.5px;
+  font-weight: bold;
+  flex-shrink: 0;
+}
+
+.terreno {
+  display: grid;
+  grid-template-columns: repeat(var(--columnas, 5), 1fr);
+  gap: 4px;
+  width: min(100%, 460px);
+  margin: 6px auto;
+  border: 4px solid var(--tinta);
+  border-radius: 14px;
+  padding: 5px;
+  background: var(--tinta);
+}
+
+.terreno__celda {
+  position: relative;
+  aspect-ratio: 1;
+  display: grid;
+  place-items: center;
+  border: 2px solid rgba(16, 48, 79, 0.3);
+  border-radius: 8px;
+  font-size: clamp(17px, 5vw, 26px);
+  line-height: 1;
+  cursor: pointer;
+  padding: 0;
+  touch-action: manipulation;
+}
+
+.terreno__celda--puesto { border-color: var(--tinta); box-shadow: inset 0 0 0 3px #fff; }
+.terreno__rinde { position: absolute; bottom: 1px; right: 3px; font-size: 9px; opacity: 0.6; }
+
+.coloca__marcador {
+  margin: 4px clamp(12px, 3vw, 18px);
+  text-align: center;
+  font-size: 14px;
+}
+
+.coloca__marcador b { font-size: clamp(24px, 7vw, 34px); color: var(--acento); display: block; }
+.coloca__penal { display: block; margin-top: 4px; color: var(--mal); font-size: 12.5px; }
+.coloca__ayuda { text-align: center; margin: 4px auto 0; }
+
+/* =========================== código secreto =========================== */
+
+.codigo__intentos {
+  background: #fff;
+  color: var(--tinta);
+  border: 2px solid var(--tinta);
+  border-radius: 999px;
+  padding: 3px 9px;
+  font-size: 12.5px;
+  font-weight: bold;
+  flex-shrink: 0;
+}
+
+.codigo__historial {
+  list-style: none;
+  margin: 6px clamp(12px, 3vw, 18px);
+  padding: 0;
+  display: grid;
+  gap: 4px;
+  max-height: 34vh;
+  overflow-y: auto;
+}
+
+.codigo__historial li {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: #fff;
+  border: 2px solid var(--linea);
+  border-radius: 10px;
+  padding: 6px 10px;
+  font-size: 12.5px;
+}
+
+.codigo__fila { font-size: 20px; letter-spacing: 3px; }
+.codigo__pista { margin-left: auto; text-align: right; }
+.codigo__exacto { color: var(--bien); }
+.codigo__vacio { justify-content: center; color: #6b7c8a; font-style: italic; }
+
+.codigo__ranura {
+  display: flex;
+  justify-content: center;
+  gap: 8px;
+  margin: 8px 0;
+}
+
+.codigo__hueco {
+  width: 52px;
+  height: 52px;
+  display: grid;
+  place-items: center;
+  background: #fff;
+  border: 3px dashed var(--tinta);
+  border-radius: 12px;
+  font-size: 26px;
+}
+
+.codigo__teclas {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(58px, 1fr));
+  gap: 7px;
+  margin: 0 clamp(12px, 3vw, 18px);
+}
+
+.ficha--simbolo { min-height: 58px; font-size: 26px; padding: 6px; }
+.opciones--fila { flex-direction: row; align-items: stretch; }
+.opciones--fila button { flex: 1; justify-content: center; }
+
+/* =========================== sopa de letras =========================== */
+
+.sopa {
+  display: grid;
+  grid-template-columns: repeat(var(--lado, 10), 1fr);
+  gap: 2px;
+  width: min(100%, 440px);
+  margin: 6px auto;
+  border: 4px solid var(--tinta);
+  border-radius: 12px;
+  padding: 4px;
+  background: var(--tinta);
+}
+
+.sopa__celda {
+  aspect-ratio: 1;
+  display: grid;
+  place-items: center;
+  background: #fff;
+  border: none;
+  border-radius: 3px;
+  font-size: clamp(9px, 2.6vw, 14px);
+  font-weight: bold;
+  cursor: pointer;
+  padding: 0;
+  touch-action: manipulation;
+}
+
+.sopa__celda--ok { background: var(--bien); color: #fff; }
+.sopa__celda--inicio { background: var(--acento2); color: #fff; }
+.sopa__ayuda { margin: 0 clamp(12px, 3vw, 18px); font-size: 12.5px; text-align: center; }
+
+.sopa__lista {
+  list-style: none;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 6px;
+  margin: 6px clamp(12px, 3vw, 18px);
+  padding: 0;
+}
+
+.sopa__lista li {
+  background: #fff;
+  border: 2px solid var(--linea);
+  border-radius: 999px;
+  padding: 3px 10px;
+  font-size: 12px;
+  font-weight: bold;
+}
+
+.sopa__hallada { background: #d6f5de; border-color: var(--bien); text-decoration: line-through; opacity: 0.75; }
+
+/* ============================ rompecabezas ============================ */
+
+.puzzle__movs { font-size: 11px; opacity: 0.85; flex-shrink: 0; }
+
+.puzzle {
+  display: grid;
+  grid-template-columns: repeat(var(--lado, 3), 1fr);
+  gap: 3px;
+  width: min(100%, 380px);
+  aspect-ratio: 1;
+  margin: 8px auto;
+  border: 4px solid var(--tinta);
+  border-radius: 14px;
+  padding: 4px;
+  background: var(--tinta);
+}
+
+.puzzle__pieza {
+  border: 1px solid rgba(255, 255, 255, 0.5);
+  border-radius: 4px;
+  background-color: #fff;
+  background-repeat: no-repeat;
+  cursor: pointer;
+  padding: 0;
+  touch-action: manipulation;
+}
+
+.puzzle__pieza--hueco { background: rgba(255, 255, 255, 0.12); cursor: default; border-style: dashed; }
+.puzzle__pieza--ok { box-shadow: inset 0 0 0 2px var(--bien); }
+
+/* ================================ ruleta ================================ */
+
+.ruleta { position: relative; width: min(74vw, 280px); margin: 10px auto 4px; }
+
+.ruleta__aguja {
+  position: absolute;
+  top: -12px;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 26px;
+  color: var(--tinta);
+  z-index: 2;
+}
+
+.ruleta__disco {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 1;
+  border-radius: 50%;
+  border: 5px solid var(--tinta);
+  box-shadow: 0 6px 0 rgba(0, 0, 0, 0.18);
+  transition: transform 1.3s cubic-bezier(0.17, 0.85, 0.32, 1);
+}
+
+.ruleta__gajo {
+  position: absolute;
+  left: 50%;
+  top: 8%;
+  transform-origin: 50% 520%;
+  font-size: 22px;
+  margin-left: -11px;
+}
+
+.ruleta__categoria {
+  margin: 8px auto 0;
+  width: fit-content;
+  color: #fff;
+  font-weight: bold;
+  border: 3px solid var(--tinta);
+  border-radius: 999px;
+  padding: 5px 16px;
+  font-size: 14px;
+}
+
+.ruleta__estado { text-align: center; font-weight: bold; }
+
+/* ========================== atrapa la respuesta ========================== */
+
+.cancha {
+  position: relative;
+  flex: 1;
+  min-height: 210px;
+  margin: 8px clamp(12px, 3vw, 18px) max(10px, env(safe-area-inset-bottom));
+  border: 3px dashed var(--linea);
+  border-radius: 16px;
+  background: rgba(255, 255, 255, 0.45);
+  overflow: hidden;
+}
+
+.cancha__opcion {
+  position: absolute;
+  max-width: 62%;
+  text-align: left;
+  cursor: pointer;
+  background: #fff;
+  border: 3px solid var(--tinta);
+  border-radius: 14px;
+  padding: 9px 13px;
+  min-height: var(--toque);
+  font-size: 13.5px;
+  line-height: 1.25;
+  box-shadow: 0 4px 0 var(--tinta);
+  transition-property: left, top;
+  transition-timing-function: ease-in-out;
+}
+
+.cancha__opcion:active { transform: translateY(3px); box-shadow: 0 1px 0 var(--tinta); }
+
+.ruta__contador { color: var(--acento); white-space: nowrap; }
+
+/* ============================== responsivo ============================== */
+
+@media (min-width: 620px) {
+  .sim__ind { font-size: 13px; }
+  .terreno, .sopa, .puzzle { width: min(100%, 520px); }
+  .cancha__opcion { font-size: 15px; max-width: 46%; }
+}
+
+@media (max-height: 500px) and (orientation: landscape) {
+  .ruleta { width: 150px; }
+  .puzzle { width: min(58vh, 300px); }
+  .obra { max-width: 520px; }
+  .codigo__historial { max-height: 22vh; }
+  .cancha { min-height: 150px; }
+}
+
+/* Sin animación si el sistema lo pide: la ruleta salta al resultado. */
+@media (prefers-reduced-motion: reduce) {
+  .ruleta__disco, .sim__relleno, .cancha__opcion { transition: none !important; }
+}
+
+.opcion--sin-recurso { opacity: 0.45; cursor: not-allowed; box-shadow: 0 4px 0 #9aacbd; border-color: #9aacbd; }
+.opcion--sin-recurso:active { transform: none; box-shadow: 0 4px 0 #9aacbd; }
+.sim__nota { text-align: center; margin: 0 auto 8px; }
