@@ -3,7 +3,7 @@ import { rangoPara, RANGOS } from "../lib/progreso.js";
 import { confeti } from "../lib/confeti.js";
 import { sonido } from "../lib/sonido.js";
 
-export default function Final({ personaje: p, puntos, insignias, record, onRepetir, onOtro, onInicio }) {
+export default function Final({ personaje: p, puntos, insignias, record, onRepetir, onOtro, onCentro, onInicio }) {
   const rango = rangoPara(puntos);
   const siguiente = RANGOS.find((r) => r.min > puntos);
 
@@ -44,6 +44,7 @@ export default function Final({ personaje: p, puntos, insignias, record, onRepet
       <div className="opciones opciones--centro">
         <button className="boton-grande" onClick={onRepetir}>Otra vez, más rápido</button>
         <button onClick={onOtro}>Jugar con el otro personaje</button>
+        <button onClick={onCentro}>🎮 Centro de entrenamiento</button>
         <button onClick={onInicio}>Volver al inicio</button>
       </div>
     </div>

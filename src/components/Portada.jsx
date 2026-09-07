@@ -3,7 +3,7 @@ import { PERSONAJES, GRADOS } from "../data/personajes.js";
 import { rangoPara } from "../lib/progreso.js";
 import { sonido } from "../lib/sonido.js";
 
-export default function Portada({ progreso, onElegir }) {
+export default function Portada({ progreso, onElegir, onCentro }) {
   const [grado, setGrado] = useState(progreso.grado || null);
 
   function elegirGrado(id) {
@@ -38,9 +38,14 @@ export default function Portada({ progreso, onElegir }) {
           ))}
         </div>
 
+        <button className="boton-centro" onClick={onCentro}>
+          🎮 Centro de entrenamiento
+        </button>
+
         <p className="portada__pie">
           Puedes cambiar de grado cuando quieras. Secundaria tiene menos tiempo,
-          un distractor más y retos que valen doble.
+          un distractor más y retos que valen doble. En el Centro de
+          entrenamiento hay más de veinte minijuegos sueltos.
         </p>
       </div>
     );
@@ -80,6 +85,10 @@ export default function Portada({ progreso, onElegir }) {
           );
         })}
       </div>
+
+      <button className="boton-centro" onClick={onCentro}>
+        🎮 Centro de entrenamiento
+      </button>
 
       <p className="portada__pie">
         Misiones de preguntas contra reloj + un minijuego de acción por

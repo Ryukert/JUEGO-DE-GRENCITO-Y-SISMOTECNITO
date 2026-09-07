@@ -3,6 +3,9 @@ import { PERSONAJES, GRADOS } from "./data/personajes.js";
 import Portada from "./components/Portada.jsx";
 import Juego from "./components/Juego.jsx";
 import Final from "./components/Final.jsx";
+import Centro from "./pages/Centro.jsx";
+import PantallaMinijuego from "./juegos/PantallaMinijuego.jsx";
+import { POR_ID } from "./juegos/registro.js";
 import { sonido, sonidoActivo, alternarSonido } from "./lib/sonido.js";
 import { leerProgreso, guardarGrado, registrarPartida } from "./lib/progreso.js";
 
@@ -28,9 +31,15 @@ export default function App() {
   const [temblor, setTemblor] = useState(false);
   const [sonidoOn, setSonidoOn] = useState(sonidoActivo());
   const [record, setRecord] = useState({ nuevoRecord: false, recordAnterior: 0 });
+  const [minijuego, setMinijuego] = useState(null);
   const reloj = useRef(null);
 
-  const p = quien ? PERSONAJES[quien] : null;
+  const juegoLibre = minijuego ? POR_ID[minijuego] : null;
+  const p = quien
+    ? PERSONAJES[quien]
+    : juegoLibre
+      ? PERSONAJES[juegoLibre.personaje]
+      : null;
   const mision = p ? p.misiones[Math.min(nivel, p.misiones.length - 1)] : null;
 
   useEffect(() => {
@@ -52,6 +61,7 @@ export default function App() {
   function iniciar(id, gradoElegido) {
     const g = gradoElegido || grado;
     setQuien(id);
+    setMinijuego(null);
     setGrado(g);
     guardarGrado(g);
     setProgreso(leerProgreso());
@@ -121,11 +131,43 @@ export default function App() {
   function alInicio() {
     setPantalla("inicio");
     setQuien(null);
+    setMinijuego(null);
     setProgreso(leerProgreso());
   }
 
+  function alCentro() {
+    setQuien(null);
+    setMinijuego(null);
+    setProgreso(leerProgreso());
+    setPantalla("centro");
+    sonido.clic();
+  }
+
+  function abrirMinijuego(id) {
+    setMinijuego(id);
+    setPantalla("minijuego");
+  }
+
   if (pantalla === "inicio") {
-    return <Portada progreso={progreso} onElegir={iniciar} />;
+    return <Portada progreso={progreso} onElegir={iniciar} onCentro={alCentro} />;
+  }
+
+  if (pantalla === "centro") {
+    return <Centro progreso={progreso} onJugar={abrirMinijuego} onSalir={alInicio} />;
+  }
+
+  if (pantalla === "minijuego" && juegoLibre) {
+    return (
+      <PantallaMinijuego
+        key={juegoLibre.id}
+        juego={juegoLibre}
+        personaje={PERSONAJES[juegoLibre.personaje]}
+        grado={grado}
+        progreso={progreso}
+        onProgreso={setProgreso}
+        onSalir={alCentro}
+      />
+    );
   }
 
   if (pantalla === "caido") {
@@ -154,6 +196,7 @@ export default function App() {
         record={record}
         onRepetir={() => iniciar(quien, grado)}
         onOtro={() => iniciar(quien === "sismo" ? "green" : "sismo", grado)}
+        onCentro={alCentro}
         onInicio={alInicio}
       />
     );

@@ -7,6 +7,39 @@
 
 const MODELO = process.env.ANTHROPIC_MODEL || "claude-sonnet-4-6";
 const MAX_MENSAJES = 10;
+const MAX_LARGO_MENSAJE = 600;   // lo que escribe un niño en el chat
+const MAX_LARGO_SISTEMA = 4000;  // el prompt lo arma el propio juego
+
+/* ---------------------------- rate limiting ----------------------------
+   Ventana deslizante en memoria. En Vercel cada instancia tiene la suya,
+   así que no es un candado perfecto, pero sí frena el abuso obvio de un
+   salón entero o de un bot. Para un límite duro conviene Upstash/Redis.
+------------------------------------------------------------------------ */
+
+const VENTANA_MS = 60_000;
+const MAX_POR_VENTANA = 12;
+const visitas = new Map();
+
+function quienEs(req) {
+  const cabecera = req.headers["x-forwarded-for"] || req.headers["x-real-ip"] || "";
+  return String(cabecera).split(",")[0].trim() || req.socket?.remoteAddress || "anonimo";
+}
+
+function pasaElLimite(id) {
+  const ahora = Date.now();
+  const previas = (visitas.get(id) || []).filter((t) => ahora - t < VENTANA_MS);
+  previas.push(ahora);
+  visitas.set(id, previas);
+
+  // limpieza para que el mapa no crezca sin fin
+  if (visitas.size > 500) {
+    for (const [llave, tiempos] of visitas) {
+      if (!tiempos.some((t) => ahora - t < VENTANA_MS)) visitas.delete(llave);
+    }
+  }
+
+  return previas.length <= MAX_POR_VENTANA;
+}
 
 async function leerCuerpo(req) {
   if (req.body) {
@@ -32,18 +65,37 @@ export default async function handler(req, res) {
     );
   }
 
+  if (!pasaElLimite(quienEs(req))) {
+    res.statusCode = 429;
+    res.setHeader("Content-Type", "application/json");
+    res.setHeader("Retry-After", "60");
+    return res.end(
+      JSON.stringify({ error: "Demasiadas preguntas seguidas. Espera un momento." })
+    );
+  }
+
   try {
     const { system, messages } = await leerCuerpo(req);
 
     if (!Array.isArray(messages) || messages.length === 0) {
       res.statusCode = 400;
+      res.setHeader("Content-Type", "application/json");
       return res.end(JSON.stringify({ error: "Faltan mensajes" }));
     }
 
-    const limpios = messages.slice(-MAX_MENSAJES).map((m) => ({
-      role: m.role === "user" ? "user" : "assistant",
-      content: String(m.content || "").slice(0, 2000),
-    }));
+    const limpios = messages
+      .slice(-MAX_MENSAJES)
+      .map((m) => ({
+        role: m.role === "user" ? "user" : "assistant",
+        content: String(m?.content ?? "").trim().slice(0, MAX_LARGO_MENSAJE),
+      }))
+      .filter((m) => m.content.length > 0);
+
+    if (limpios.length === 0) {
+      res.statusCode = 400;
+      res.setHeader("Content-Type", "application/json");
+      return res.end(JSON.stringify({ error: "El mensaje llegó vacío" }));
+    }
 
     const r = await fetch("https://api.anthropic.com/v1/messages", {
       method: "POST",
@@ -56,7 +108,7 @@ export default async function handler(req, res) {
         model: MODELO,
         max_tokens: 700,
         temperature: 0.7,
-        system: String(system || "").slice(0, 6000),
+        system: String(system || "").slice(0, MAX_LARGO_SISTEMA),
         messages: limpios,
       }),
     });
