@@ -1,34 +1,40 @@
-import { useState, useMemo, useRef } from "react";
+import { useState, useMemo, useEffect, useRef } from "react";
 import { PREGUNTAS, comoOpciones } from "../../data/juegos/preguntas.js";
 import { segundos, cuantasRondas } from "../../lib/dificultad.js";
 import { construirResultado, puntosAcierto } from "../../lib/recompensas.js";
-import { useCronometro } from "../../hooks/useCronometro.js";
+import { useCronometro, useTemporizadores } from "../../hooks/useCronometro.js";
 import { sonido } from "../../lib/sonido.js";
 import { confeti } from "../../lib/confeti.js";
 import { MarcoJuego, Cronometro, Progreso, Retroalimentacion } from "../ui/Marco.jsx";
 
-const revolver = (lista) => [...lista].sort(() => Math.random() - 0.5);
+const revolver = (l) => [...l].sort(() => Math.random() - 0.5);
 
 /**
- * Motor de preguntas de decisión.
+ * Atrapa la respuesta.
  *
- * Lo usan una docena de minijuegos distintos (incendio, extintor, fuga de
- * gas, ahorra agua, verdadero o falso...). Lo único que cambia entre uno y
- * otro es `juego.banco`, que apunta a un arreglo de src/data/juegos/preguntas.js
+ * Es un quiz, pero las respuestas no se están quietas: flotan por la
+ * zona de juego y cambian de lugar cada cierto tiempo. Hay que leer y
+ * atrapar la buena antes de que se acabe el reloj.
  *
- * La dificultad cambia el tiempo por pregunta, cuántas preguntas hay,
- * cuántas opciones se muestran y con cuántas vidas arrancas.
+ * La dificultad cambia cada cuánto se mueven y cuánto tiempo hay, no las
+ * preguntas. El intervalo se limpia al desmontar.
  */
-export default function Quiz({ juego, personaje, dif, onTerminar, onSalir }) {
-  // Un juego puede leer de un banco o mezclar varios (reto contrarreloj).
-  const banco = (juego.bancos || [juego.banco]).flatMap((b) => PREGUNTAS[b] || []);
+export default function Atrapa({ juego, personaje, dif, onTerminar, onSalir }) {
+  const enTiempo = useTemporizadores();
 
-  const total = Math.min(banco.length, cuantasRondas(dif, juego.rondas || 8, 4));
-  const segundosPregunta = segundos(dif, juego.segundos || 18, 5);
+  const bancos = juego.bancos || [juego.banco];
+  const fuente = useMemo(
+    () => bancos.flatMap((b) => PREGUNTAS[b] || []),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    []
+  );
 
-  // La tanda se arma una sola vez por partida.
+  const total = Math.min(fuente.length, cuantasRondas(dif, juego.rondas || 8, 4, 14));
+  const segundosPregunta = segundos(dif, juego.segundos || 15, 5);
+  const intervaloMovimiento = Math.round(1500 * dif.ritmo);
+
   const tanda = useMemo(() => {
-    return revolver(banco)
+    return revolver(fuente)
       .slice(0, total)
       .map((p) => {
         const preg = comoOpciones(p);
@@ -49,7 +55,7 @@ export default function Quiz({ juego, personaje, dif, onTerminar, onSalir }) {
   const [puntos, setPuntos] = useState(0);
   const [racha, setRacha] = useState(0);
   const [retro, setRetro] = useState(null);
-  const [elegida, setElegida] = useState(null);
+  const [posiciones, setPosiciones] = useState([]);
 
   const puntosRef = useRef(0);
   const vidasRef = useRef(dif.vidas);
@@ -66,6 +72,23 @@ export default function Quiz({ juego, personaje, dif, onTerminar, onSalir }) {
     reinicio: indice,
     alTerminar: () => responder(null),
   });
+
+  /* Las respuestas se reacomodan solas. El intervalo se limpia al salir
+     del juego y al pasar de pregunta: nada queda corriendo detrás. */
+  useEffect(() => {
+    if (!jugando) return undefined;
+    const cuantas = pregunta.opciones.length;
+    const acomodar = () =>
+      setPosiciones(
+        Array.from({ length: cuantas }, (_, i) => ({
+          x: 6 + Math.random() * 52,
+          y: (i * 100) / cuantas + Math.random() * (60 / cuantas),
+        }))
+      );
+    acomodar();
+    const id = setInterval(acomodar, intervaloMovimiento);
+    return () => clearInterval(id);
+  }, [indice, jugando, intervaloMovimiento, pregunta]);
 
   function cerrar(completado) {
     if (cerrado.current) return;
@@ -87,20 +110,19 @@ export default function Quiz({ juego, personaje, dif, onTerminar, onSalir }) {
   function responder(opcion) {
     if (retro || !pregunta) return;
     const correcto = !!opcion?.ok;
-    setElegida(opcion?.texto ?? null);
-
     let ganados = 0;
+
     if (correcto) {
       rachaRef.current += 1;
       aciertosRef.current += 1;
-      ganados = puntosAcierto({ base: 20, tiempo, factorTiempo: 2, racha: rachaRef.current - 1 });
+      setRacha(rachaRef.current);
+      ganados = puntosAcierto({ base: 25, tiempo, factorTiempo: 3, racha: rachaRef.current - 1 });
       puntosRef.current += ganados;
       setPuntos(puntosRef.current);
-      setRacha(rachaRef.current);
-      sonido.bien();
+      sonido.moneda();
       if (rachaRef.current >= 3) {
         sonido.combo(rachaRef.current);
-        confeti({ colores: personaje?.colores, cantidad: 40 });
+        confeti({ colores: personaje?.colores, cantidad: 35 });
       }
     } else {
       rachaRef.current = 0;
@@ -110,24 +132,19 @@ export default function Quiz({ juego, personaje, dif, onTerminar, onSalir }) {
       sonido.mal();
     }
 
-    const buena = pregunta.opciones.find((o) => o.ok);
     setRetro({
       correcto,
       ganados,
-      respuestaCorrecta: buena?.texto,
+      sinTiempo: !opcion,
+      respuestaCorrecta: pregunta.opciones.find((o) => o.ok)?.texto,
       explicacion: pregunta.explicacion,
       dato: pregunta.dato,
-      sinTiempo: !opcion,
     });
   }
 
   function continuar() {
     sonido.clic();
     setRetro(null);
-    setElegida(null);
-
-    // Se cierra en el acto: si se dejara un respiro, el jugador podría
-    // volver a contestar la última pregunta antes de ver el resultado.
     if (vidasRef.current <= 0) {
       cerrar(false);
       return;
@@ -142,7 +159,7 @@ export default function Quiz({ juego, personaje, dif, onTerminar, onSalir }) {
   if (!pregunta) return null;
 
   return (
-    <div className={`mini mini--quiz ${juego.piel ? `mini--${juego.piel}` : ""}`}>
+    <div className="mini mini--atrapa">
       <MarcoJuego
         juego={juego}
         dificultad={dif}
@@ -165,7 +182,7 @@ export default function Quiz({ juego, personaje, dif, onTerminar, onSalir }) {
 
       {retro ? (
         <div className="quiz__retro">
-          {retro.sinTiempo && <p className="quiz__aviso">⏱️ Se acabó el tiempo</p>}
+          {retro.sinTiempo && <p className="quiz__aviso">⏱️ Se te escaparon</p>}
           <Retroalimentacion
             correcto={retro.correcto}
             respuestaCorrecta={retro.respuestaCorrecta}
@@ -174,7 +191,7 @@ export default function Quiz({ juego, personaje, dif, onTerminar, onSalir }) {
             ganados={retro.ganados}
           />
           <div className="opciones">
-            <button className="boton-grande" onClick={continuar} autoFocus>
+            <button className="boton-grande" autoFocus onClick={continuar}>
               {vidasRef.current <= 0
                 ? "Ver resultado"
                 : indice + 1 >= tanda.length
@@ -184,19 +201,18 @@ export default function Quiz({ juego, personaje, dif, onTerminar, onSalir }) {
           </div>
         </div>
       ) : (
-        <div className={`opciones ${pregunta.fijas ? "opciones--vf" : ""}`}>
+        <div className="cancha" aria-label="Atrapa la respuesta correcta">
           {pregunta.opciones.map((o, i) => (
             <button
               key={o.texto}
+              className="cancha__opcion"
+              style={{
+                left: `${posiciones[i]?.x ?? 10}%`,
+                top: `${posiciones[i]?.y ?? i * 25}%`,
+                transitionDuration: `${Math.max(400, intervaloMovimiento - 300)}ms`,
+              }}
               onClick={() => responder(o)}
-              disabled={!!elegida}
-              className={pregunta.fijas ? "opcion-vf" : ""}
             >
-              {!pregunta.fijas && (
-                <span className="opciones__letra" aria-hidden="true">
-                  {["A", "B", "C", "D"][i]}
-                </span>
-              )}
               {o.texto}
             </button>
           ))}

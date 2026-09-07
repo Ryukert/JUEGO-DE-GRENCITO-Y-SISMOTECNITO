@@ -738,6 +738,75 @@ export const PREGUNTAS = {
 
   /* ===================== 🧠 GENERALES ===================== */
 
+  tormenta: [
+    {
+      id: "to1",
+      icono: "⛈️",
+      situacion: "Vas caminando a casa y empieza una tormenta eléctrica.",
+      opciones: [
+        { texto: "Meterme a un edificio o a un carro cerrado", ok: true },
+        { texto: "Refugiarme bajo el árbol más grande", ok: false },
+        { texto: "Seguir caminando con el paraguas de metal", ok: false },
+        { texto: "Acostarme en el pasto del parque", ok: false },
+      ],
+      explicacion:
+        "Un techo o un carro cerrado. El árbol solitario es justo lo que atrae el rayo.",
+      dato: "El carro protege por la carrocería metálica, no por las llantas.",
+    },
+    {
+      id: "to2",
+      icono: "⚡",
+      situacion: "Ves el relámpago y cuentas 3 segundos hasta el trueno.",
+      opciones: [
+        { texto: "La tormenta está a un kilómetro: refugiarme ya", ok: true },
+        { texto: "Está a 30 kilómetros, hay tiempo de sobra", ok: false },
+        { texto: "El conteo no sirve para nada", ok: false },
+      ],
+      explicacion:
+        "Cada 3 segundos entre relámpago y trueno es aproximadamente un kilómetro.",
+      dato: "Si el trueno llega en menos de 30 segundos, ya estás en zona de riesgo.",
+    },
+    {
+      id: "to3",
+      icono: "🔌",
+      situacion: "Hay tormenta eléctrica fuerte y estás en casa.",
+      opciones: [
+        { texto: "Desconectar aparatos y no usar la ducha", ok: true },
+        { texto: "Cargar el celular por si se va la luz", ok: false },
+        { texto: "Salir al balcón a grabar los rayos", ok: false },
+      ],
+      explicacion:
+        "La descarga viaja por cables y tuberías. Ni enchufes ni agua durante la tormenta.",
+      dato: "Un rayo puede meterse por la instalación eléctrica y quemar todo lo conectado.",
+    },
+    {
+      id: "to4",
+      icono: "🌪️",
+      situacion: "Se anuncia viento muy fuerte para esta noche.",
+      opciones: [
+        { texto: "Meter macetas, tendederos y todo lo suelto del patio", ok: true },
+        { texto: "Amarrar la lámina del techo con un mecate", ok: false },
+        { texto: "Abrir las ventanas para que pase el viento", ok: false },
+      ],
+      explicacion:
+        "Todo lo suelto se vuelve proyectil. Abrir ventanas no equilibra nada: mete el viento.",
+      dato: "Una maceta a 80 km/h atraviesa un vidrio sin problema.",
+    },
+    {
+      id: "to5",
+      icono: "🚗",
+      situacion: "Vas en carretera y la lluvia no deja ver nada.",
+      opciones: [
+        { texto: "Orillarse fuera del carril, con luces intermitentes", ok: true },
+        { texto: "Prender las altas para ver mejor", ok: false },
+        { texto: "Pegarse al carro de adelante y seguirlo", ok: false },
+      ],
+      explicacion:
+        "Orillarse completamente fuera del carril. Las luces altas rebotan en la lluvia y ciegan más.",
+      dato: "Pegarse al de adelante es como se producen los choques en cadena.",
+    },
+  ],
+
   "quiz-relampago": [
     {
       id: "qr1",

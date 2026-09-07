@@ -165,4 +165,70 @@ export const ESCENAS = {
       ],
     },
   ],
+
+  /* -------------------------- ⚡ Electricidad -------------------------- */
+  electricidad: [
+    {
+      id: "taller",
+      titulo: "El taller de la casa",
+      pista: "Encuentra los riesgos eléctricos antes de que alguien se lastime.",
+      cielo: "#f2edd8",
+      piso: "#c9c2b4",
+      objetos: [
+        { id: "multi", icono: "🔌", nombre: "Multicontacto sobrecargado", x: 14, y: 34, objetivo: true, explicacion: "Un multicontacto no crea corriente: solo enchufes. Sobrecargarlo calienta el cable.", dato: "Las sobrecargas están detrás de buena parte de los incendios domésticos." },
+        { id: "cablepelado", icono: "🧵", nombre: "Cable pelado", x: 38, y: 22, objetivo: true, explicacion: "El cobre expuesto da toque al tocarlo y hace chispa si roza algo metálico.", dato: "Encintarlo es un parche: el cable dañado se cambia." },
+        { id: "agua", icono: "💦", nombre: "Contacto junto a la llave de agua", x: 62, y: 40, objetivo: true, explicacion: "Agua y electricidad no conviven. En cocinas y baños el contacto va alto y protegido.", dato: "Los contactos cerca del agua deben llevar interruptor diferencial." },
+        { id: "extension", icono: "➰", nombre: "Extensión bajo el tapete", x: 30, y: 70, objetivo: true, explicacion: "Pisada todo el día, la extensión se pela por dentro sin que nadie lo vea.", dato: "Además es la causa número uno de tropezones en casa." },
+        { id: "clavija", icono: "🔧", nombre: "Clavija jalada del cable", x: 84, y: 30, objetivo: true, explicacion: "Se desconecta del enchufe, nunca jalando el cable: se afloja por dentro.", dato: "Una clavija floja calienta y ennegrece el contacto." },
+        { id: "parche", icono: "🪛", nombre: "Fusible reemplazado con alambre", x: 52, y: 58, objetivo: true, explicacion: "El fusible existe para quemarse él antes que la instalación. Un alambre quita esa protección.", dato: "Un fusible 'reforzado' convierte una falla chica en un incendio." },
+        { id: "tierra", icono: "🟢", nombre: "Contacto con conexión a tierra", x: 8, y: 62, objetivo: false, explicacion: "Ese es el correcto: la tierra desvía la corriente si hay falla." },
+        { id: "pastilla", icono: "🎚️", nombre: "Centro de carga con pastillas", x: 92, y: 66, objetivo: false, explicacion: "Bien: las pastillas cortan solas cuando hay sobrecarga." },
+        { id: "lampara", icono: "💡", nombre: "Lámpara LED", x: 70, y: 16, objetivo: false, explicacion: "Consume poco y calienta poquísimo." },
+      ],
+    },
+  ],
+
+  /* -------------------------- 🏠 Casa eficiente -------------------------- */
+  "casa-eficiente": [
+    {
+      id: "casa",
+      titulo: "Tu casa, un martes cualquiera",
+      pista: "Encuentra lo que está desperdiciando agua, luz o dinero.",
+      cielo: "#e7f2d9",
+      piso: "#dcd3c2",
+      objetos: [
+        { id: "foco", icono: "💡", nombre: "Focos incandescentes viejos", x: 16, y: 20, objetivo: true, explicacion: "Convierten en calor el 90% de la energía que consumen.", dato: "Cambiarlos por LED baja hasta 85% el gasto de iluminación." },
+        { id: "boiler", icono: "🔥", nombre: "Bóiler de paso prendido todo el día", x: 44, y: 26, objetivo: true, explicacion: "Mantener el agua caliente sin usarla es gasto puro de gas.", dato: "El bóiler puede ser la mitad del consumo de gas de una casa." },
+        { id: "ventana", icono: "🪟", nombre: "Ventana sin cortina al sol poniente", x: 72, y: 22, objetivo: true, explicacion: "El sol de la tarde calienta la casa y luego se paga por enfriarla.", dato: "Una cortina gruesa baja varios grados sin gastar un peso." },
+        { id: "refri", icono: "🧊", nombre: "Refrigerador pegado a la estufa", x: 26, y: 52, objetivo: true, explicacion: "Enfriar junto a una fuente de calor obliga al motor a trabajar el doble.", dato: "Se recomienda dejarle 10 cm de aire por detrás y por los lados." },
+        { id: "lavadora", icono: "🧺", nombre: "Lavadora con media carga", x: 58, y: 62, objetivo: true, explicacion: "Media carga gasta casi la misma agua y luz que una carga completa.", dato: "Juntar la ropa y lavar completo ahorra miles de litros al año." },
+        { id: "llave", icono: "🚰", nombre: "Llave goteando en el patio", x: 88, y: 56, objetivo: true, explicacion: "El goteo constante tira más de 100 litros al mes.", dato: "Un empaque nuevo cuesta menos que un refresco." },
+        { id: "panel", icono: "☀️", nombre: "Panel solar en el techo", x: 50, y: 12, objetivo: false, explicacion: "Ese produce energía en vez de gastarla." },
+        { id: "cisterna", icono: "🛢️", nombre: "Cisterna de agua de lluvia", x: 10, y: 74, objetivo: false, explicacion: "Perfecto: agua gratis para el jardín y el escusado." },
+        { id: "arbol", icono: "🌳", nombre: "Árbol dando sombra a la fachada", x: 80, y: 78, objetivo: false, explicacion: "Un árbol bien puesto enfría la casa mejor que un ventilador." },
+      ],
+    },
+  ],
+
+  /* --------------------------- 🗺️ Mapa de riesgos --------------------------- */
+  "mapa-riesgos": [
+    {
+      id: "colonia",
+      titulo: "El mapa de tu colonia",
+      pista: "Marca los puntos peligrosos del mapa. Los refugios y salidas déjalos en paz.",
+      cielo: "#dde7ef",
+      piso: "#cfdcc8",
+      objetos: [
+        { id: "barranca", icono: "🏔️", nombre: "Casas al borde de la barranca", x: 14, y: 22, objetivo: true, explicacion: "Con lluvia fuerte la ladera sin árboles se desprende sobre las casas de abajo.", dato: "En México los deslaves causan más muertes que los sismos en años sin sismo grande." },
+        { id: "rio", icono: "🌊", nombre: "Vivienda en la orilla del río", x: 40, y: 34, objetivo: true, explicacion: "El cauce del río es del río. En temporada de lluvias lo recupera.", dato: "Se llama zona federal justamente porque no se debe construir ahí." },
+        { id: "gasera", icono: "⛽", nombre: "Gasera junto a la escuela", x: 66, y: 24, objetivo: true, explicacion: "Las instalaciones de riesgo necesitan distancia mínima a escuelas y hospitales.", dato: "El radio de seguridad lo marca protección civil de cada municipio." },
+        { id: "poste", icono: "🔌", nombre: "Poste inclinado con cables sueltos", x: 86, y: 48, objetivo: true, explicacion: "Un poste vencido cae con el primer viento fuerte y electrifica la calle.", dato: "Un cable caído puede electrificar el charco alrededor sin que se note." },
+        { id: "puente", icono: "🌉", nombre: "Puente peatonal dañado", x: 30, y: 62, objetivo: true, explicacion: "Si es la única forma de cruzar, un puente dañado corta la ruta de evacuación.", dato: "Las rutas de evacuación se revisan después de cada sismo." },
+        { id: "refugio", icono: "🏫", nombre: "Escuela habilitada como refugio", x: 58, y: 70, objetivo: false, explicacion: "Ese es un refugio temporal oficial: déjalo marcado." },
+        { id: "punto", icono: "🟢", nombre: "Punto de reunión de la colonia", x: 78, y: 78, objetivo: false, explicacion: "Zona abierta y lejos de cables: es exactamente donde debe estar." },
+        { id: "clinica", icono: "🏥", nombre: "Clínica", x: 8, y: 50, objetivo: false, explicacion: "Servicio de emergencia, no un riesgo." },
+        { id: "salida", icono: "🛣️", nombre: "Salida principal de la colonia", x: 50, y: 88, objetivo: false, explicacion: "Es la ruta de salida: debe quedar libre." },
+      ],
+    },
+  ],
 };
