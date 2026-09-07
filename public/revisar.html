@@ -1,0 +1,173 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Revisar el diseño · Escuadrón Tecnito y Greencito</title>
+    <style>
+      :root { color-scheme: light; }
+      * { box-sizing: border-box; }
+
+      body {
+        margin: 0;
+        padding: 20px;
+        font-family: "Trebuchet MS", "Segoe UI", Verdana, system-ui, sans-serif;
+        color: #10304f;
+        background: #eef3f8;
+      }
+
+      h1 { font-size: 22px; margin: 0 0 4px; }
+      p.intro { margin: 0 0 16px; max-width: 70ch; line-height: 1.5; color: #40566b; font-size: 14px; }
+
+      .barra {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+        align-items: center;
+        margin-bottom: 18px;
+        padding: 12px;
+        background: #fff;
+        border: 3px solid #10304f;
+        border-radius: 14px;
+      }
+
+      .barra label { font-size: 13px; font-weight: bold; }
+
+      .barra input {
+        flex: 1;
+        min-width: 220px;
+        font: inherit;
+        padding: 7px 10px;
+        border: 2px solid #8fb6dd;
+        border-radius: 10px;
+      }
+
+      .barra button {
+        font: inherit;
+        font-weight: bold;
+        cursor: pointer;
+        background: #0f6fc4;
+        color: #fff;
+        border: 3px solid #10304f;
+        border-radius: 12px;
+        padding: 7px 16px;
+        box-shadow: 0 4px 0 #10304f;
+      }
+
+      .barra button:active { transform: translateY(4px); box-shadow: 0 0 0 #10304f; }
+
+      .rejilla {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 22px;
+        align-items: flex-start;
+      }
+
+      figure { margin: 0; }
+
+      figcaption {
+        font-size: 12.5px;
+        font-weight: bold;
+        margin-bottom: 6px;
+        display: flex;
+        justify-content: space-between;
+        gap: 10px;
+      }
+
+      figcaption small { font-weight: normal; color: #5a6b7a; }
+
+      iframe {
+        border: 4px solid #10304f;
+        border-radius: 16px;
+        background: #fff;
+        box-shadow: 0 8px 0 rgba(0, 0, 0, 0.14);
+        display: block;
+      }
+    </style>
+  </head>
+
+  <body>
+    <h1>Revisar el diseño en varios tamaños</h1>
+    <p class="intro">
+      Cada marco es el juego real corriendo en el tamaño de un dispositivo distinto.
+      Se puede jugar dentro de cualquiera de ellos. Escribe una ruta para abrir todos
+      los marcos en la misma pantalla y comparar. Sirve con <code>npm run dev</code>
+      o con <code>npm run preview</code>.
+    </p>
+
+    <div class="barra">
+      <label for="ruta">Abrir en todos:</label>
+      <input id="ruta" value="/" placeholder="/" />
+      <button id="ir">Cargar</button>
+      <button id="recargar">Recargar todo</button>
+    </div>
+
+    <div class="rejilla" id="rejilla"></div>
+
+    <script>
+      // Tamaños reales de pantalla, no aproximaciones.
+      const DISPOSITIVOS = [
+        { nombre: "iPhone SE", w: 320, h: 568, nota: "el más apretado" },
+        { nombre: "Android de entrada", w: 360, h: 640, nota: "el más común en escuelas" },
+        { nombre: "iPhone 14", w: 390, h: 844, nota: "" },
+        { nombre: "Pixel 7 Pro", w: 412, h: 892, nota: "" },
+        { nombre: "iPhone acostado", w: 844, h: 390, nota: "poco alto" },
+        { nombre: "iPad vertical", w: 768, h: 1024, nota: "" },
+        { nombre: "iPad horizontal", w: 1024, h: 768, nota: "" },
+        { nombre: "Laptop", w: 1280, h: 800, nota: "" },
+      ];
+
+      const rejilla = document.getElementById("rejilla");
+      const campo = document.getElementById("ruta");
+
+      // En pantallas chicas los marcos grandes se muestran a escala para
+      // que quepan, pero por dentro siguen midiendo lo que dicen medir.
+      function escala(ancho) {
+        const disponible = Math.min(window.innerWidth - 60, 1300);
+        return ancho > disponible ? disponible / ancho : 1;
+      }
+
+      function pintar(ruta) {
+        rejilla.innerHTML = "";
+        DISPOSITIVOS.forEach((d) => {
+          const z = escala(d.w);
+          const fig = document.createElement("figure");
+          fig.style.width = d.w * z + "px";
+
+          const cap = document.createElement("figcaption");
+          cap.innerHTML =
+            "<span>" + d.nombre + "</span><small>" +
+            d.w + "×" + d.h + (d.nota ? " · " + d.nota : "") +
+            (z < 1 ? " · a escala" : "") + "</small>";
+
+          const marco = document.createElement("iframe");
+          marco.src = ruta;
+          marco.width = d.w;
+          marco.height = d.h;
+          marco.title = d.nombre;
+          marco.style.width = d.w + "px";
+          marco.style.height = d.h + "px";
+          marco.style.transform = "scale(" + z + ")";
+          marco.style.transformOrigin = "top left";
+
+          const caja = document.createElement("div");
+          caja.style.height = d.h * z + "px";
+          caja.style.width = d.w * z + "px";
+          caja.style.overflow = "hidden";
+          caja.appendChild(marco);
+
+          fig.appendChild(cap);
+          fig.appendChild(caja);
+          rejilla.appendChild(fig);
+        });
+      }
+
+      document.getElementById("ir").onclick = () => pintar(campo.value || "/");
+      document.getElementById("recargar").onclick = () => pintar(campo.value || "/");
+      campo.onkeydown = (e) => { if (e.key === "Enter") pintar(campo.value || "/"); };
+      window.addEventListener("resize", () => pintar(campo.value || "/"));
+
+      pintar("/");
+    </script>
+  </body>
+</html>

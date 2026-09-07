@@ -201,7 +201,7 @@ segundos, vidas y el tono con que la IA le habla a cada edad.
 
 ```
 api/chat.js                    función serverless: habla con Anthropic
-public/                        imágenes de los personajes (WebP sin fondo)
+public/                        imágenes: personajes y logos institucionales
 
 src/App.jsx                    estado de la partida y ruteo de pantallas
 src/components/Portada.jsx     elegir grado y personaje
@@ -209,6 +209,7 @@ src/components/Juego.jsx       HUD y ruteo de misión
 src/components/Reto.jsx        pregunta con cronómetro + chat
 src/components/minijuegos/     Memorama.jsx, Simulacro.jsx, Basura.jsx
 src/components/Final.jsx       rango, récord y medallas
+src/components/Creditos.jsx    logos UABC y FCITEC
 
 src/pages/Centro.jsx           catálogo de minijuegos por categoría
 src/juegos/registro.js         catálogo: qué juegos hay y con qué se juegan
@@ -230,9 +231,42 @@ src/lib/recompensas.js         score, XP, escudos y semillas
 src/lib/progreso.js            localStorage v2 con migración desde v1
 src/lib/                       sonido.js, confeti.js
 src/styles.css                 estilos del juego original
-src/styles-minijuegos.css      estilos de los minijuegos y del centro
+src/styles-minijuegos.css      estilos de los minijuegos, del centro y el
+                               sistema de tableros que se ajustan a la pantalla
+public/revisar.html            vista del juego en ocho tamaños a la vez
 
 pruebas/                       pruebas con vitest + jsdom
+```
+
+---
+
+## Logos institucionales
+
+Los archivos viven en `public/`:
+
+| Archivo | Qué es | Peso |
+|---|---|---|
+| `fcitec.webp` | Logotipo *UABC \| FCITEC* completo (trae el escudo integrado) | 15 KB |
+| `uabc-escudo.webp` | Escudo de la UABC solo, con transparencia | 36 KB |
+
+El PNG original del escudo venía a 2300×3138 y pesaba 755 KB. Convertido a WebP
+a la resolución que de verdad se usa, quedó en 36 KB sin pérdida visible.
+
+`src/components/Creditos.jsx` los coloca. Tiene tres variantes porque **el
+logotipo de FCITEC ya trae el escudo de la UABC integrado a la izquierda**, así
+que ponerlos juntos duplica el escudo:
+
+| Variante | Qué muestra | Dónde se usa |
+|---|---|---|
+| `lockup` (por omisión) | Solo `fcitec.webp`, que ya incluye el escudo | Portada |
+| `sello` | Solo el escudo de la UABC, chico | Final y centro |
+| `ambos` | Escudo y logotipo separados por una línea | ninguno, disponible |
+
+Si tu facultad pide la versión con las dos marcas separadas, es cambiar una
+palabra en `Portada.jsx`:
+
+```jsx
+<Creditos variante="ambos" />
 ```
 
 ---
@@ -319,19 +353,79 @@ reparten. La XP acumulada es lo que desbloquea juegos nuevos.
 
 ---
 
+## Cómo se adapta a cada pantalla
+
+El problema real de un juego de cuadrícula en un teléfono no es el ancho: es el
+alto. El tablero compite con el HUD, el cronómetro y los controles, y si solo se
+limita el ancho, en pantallas bajas los botones quedan fuera de la vista.
+
+Por eso los tableros se calculan contra las **dos** medidas de su zona:
+
+```
+ancho = min( ancho de la zona, alto de la zona × proporción, tope de diseño )
+```
+
+Eso vive en `.tablero-zona` (un contenedor de consulta) y `.tablero-ajustable`
+dentro de `src/styles-minijuegos.css`. El componente solo declara cuántas filas
+y columnas tiene:
+
+```jsx
+<div className="tablero-zona">
+  <div className="mapa tablero-ajustable" style={{ "--columnas": 11, "--filas": 12 }}>
+```
+
+De ahí sale todo lo demás: el tamaño de cada casilla, el de la letra dentro de
+ella y el alto total. Las casillas ya no llevan proporción propia; la rejilla
+reparte el espacio con `minmax(0, 1fr)`, así que **siempre** caben.
+
+Si el navegador no soporta contenedores de consulta (anterior a 2023), se cae al
+comportamiento clásico: ancho limitado y la pantalla se desplaza. Sigue siendo
+usable, solo menos ajustado.
+
+**Redes de seguridad.** Aunque el alto se acabe, el tablero nunca desaparece:
+tiene un piso de `min(170px, 34dvh)` y en ese caso lo que se desplaza es el
+cuerpo del juego, dejando el HUD y el cronómetro siempre a la vista.
+
+**Puntos de quiebre:** móvil angosto (≤380 px), teléfono acostado (horizontal y
+≤560 px de alto), tablet (≥620 px), pantalla alta (≥700×900) y escritorio
+(≥900 px, donde el juego se enmarca en una tarjeta centrada). Las ilustraciones
+de personajes se limitan contra `dvh` además de `vw`, que era lo que empujaba el
+botón de empezar fuera del doblez en horizontal.
+
+### Verlo con tus propios ojos
+
+```bash
+npm run dev
+```
+
+y abre **http://localhost:5173/revisar.html**
+
+Esa página muestra el juego real corriendo dentro de ocho tamaños de pantalla a
+la vez, del iPhone SE a una laptop, y se puede jugar dentro de cualquiera de
+ellos. El campo de arriba abre la misma ruta en todos los marcos para comparar
+una pantalla concreta.
+
+---
+
 ## Pruebas
 
 ```bash
 npm test
 ```
 
-81 pruebas. Monta los 46 minijuegos del catálogo, juega hasta el final los seis
+131 pruebas. Monta los 46 minijuegos del catálogo, juega hasta el final los seis
 jefes de simulación, comprueba que los indicadores nunca se salen de 0 a 100,
 que el presupuesto no se va a negativos, que todas las palabras listadas en la
 sopa de letras están de verdad en el tablero, que el rompecabezas siempre
 arranca revuelto y tiene solución, que la XP y los récords se guardan, que la
 migración de progreso v1 a v2 no pierde nada y que no queda ningún `setInterval`
 vivo al salir de un juego. Cualquier advertencia de React hace fallar la prueba.
+
+Sobre el ajuste a pantalla, comprueba que cada tablero declara filas y columnas
+coherentes con sus datos, que ninguna casilla se sale del marco, que la hoja de
+estilos no volvió a fijar anchos rígidos, y reproduce en JavaScript la fórmula
+de ajuste sobre siete tamaños de pantalla y cinco tableros para confirmar que
+ninguno se sale ni queda tan chico que no se pueda tocar.
 
 ## Costos
 

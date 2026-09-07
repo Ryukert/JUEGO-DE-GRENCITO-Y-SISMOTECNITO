@@ -8,11 +8,111 @@
 ------------------------------------------------------------------- */
 
 .juego--mini {
+  /* vh primero como respaldo para navegadores viejos sin dvh */
+  height: 100vh;
   height: 100dvh;
+  max-height: 100vh;
   max-height: 100dvh;
   overflow-y: auto;
   overscroll-behavior: contain;
   background: linear-gradient(170deg, var(--fondo) 0%, var(--fondo2) 100%);
+}
+
+/* ==================================================================
+   SISTEMA DE TABLEROS QUE SE AJUSTAN A LA PANTALLA
+
+   El problema de un juego de cuadrícula en móvil es que el tablero
+   compite por el alto con el HUD, el cronómetro y los controles. Si
+   solo se limita el ancho, en pantallas bajas el tablero empuja los
+   botones fuera de la vista.
+
+   Aquí el tablero se calcula contra las DOS medidas disponibles:
+   ancho y alto de su zona. `.tablero-zona` es un contenedor de
+   consulta y el tablero toma el menor de:
+       ancho de la zona · alto de la zona × proporción · tope de diseño
+
+   Si el navegador no soporta contenedores de consulta, se cae al
+   comportamiento anterior (ancho limitado y la pantalla scrollea),
+   que sigue siendo usable.
+================================================================== */
+
+.tablero-zona {
+  display: grid;
+  place-items: center;
+  width: 100%;
+  min-height: 0;
+  margin-block: 4px;
+  flex: 0 0 auto;
+}
+
+/* Lo que acompaña al tablero no se deja aplastar. */
+.busca__pista,
+.clasifica__pista,
+.sopa__ayuda,
+.sopa__lista,
+.coloca__ayuda,
+.cronometro,
+.jm__progreso {
+  flex-shrink: 0;
+}
+
+.tablero-ajustable {
+  --ar: calc(var(--columnas) / var(--filas));
+  width: min(100%, var(--tope, 520px));
+  aspect-ratio: var(--columnas) / var(--filas);
+  display: grid;
+  grid-template-columns: repeat(var(--columnas), minmax(0, 1fr));
+  grid-template-rows: repeat(var(--filas), minmax(0, 1fr));
+  font-size: clamp(9px, 2.6vw, 20px);
+}
+
+/* las casillas heredan el tamaño de letra del tablero y llenan su celda */
+.tablero-ajustable > * {
+  min-width: 0;
+  min-height: 0;
+  font-size: inherit;
+}
+
+@supports (container-type: size) {
+  /* La pantalla deja de desplazarse y el que se desplaza, si de plano no
+     cabe nada, es el cuerpo del juego. Así el HUD y el cronómetro
+     siempre quedan a la vista. */
+  .juego--mini { overflow: hidden; }
+  .mini { overflow-y: auto; overscroll-behavior: contain; }
+
+  .tablero-zona {
+    flex: 1 1 0;
+    container-type: size;
+    /* piso de seguridad: aunque el alto se acabe, el tablero nunca
+       desaparece; en ese caso el cuerpo del juego se desplaza */
+    min-height: min(170px, 34dvh);
+  }
+
+  .escena {
+    width: min(100cqw, calc(100cqh * var(--arw) / var(--arh)), var(--tope, 620px));
+  }
+
+  .tablero-ajustable {
+    width: min(100cqw, calc(100cqh * var(--ar)), var(--tope, 520px));
+    height: auto;
+    font-size: min(
+      calc(100cqw / var(--columnas) * 0.5),
+      calc(100cqh / var(--filas) * 0.5),
+      26px
+    );
+  }
+
+  /* las pantallas de texto sí pueden desplazarse por dentro */
+  .mini--intro,
+  .jm__resultado,
+  .quiz__retro,
+  .clasifica__retro,
+  .busca__retro,
+  .codigo__historial {
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    min-height: 0;
+  }
 }
 
 /* ============================ marco común ============================ */
@@ -217,10 +317,11 @@
 }
 
 .escena {
+  --arw: 4;
+  --arh: 3;
   position: relative;
-  width: min(100%, 620px);
-  margin: 4px auto;
-  aspect-ratio: 4 / 3;
+  width: min(100%, var(--tope, 620px));
+  aspect-ratio: var(--arw) / var(--arh);
   border: 4px solid var(--tinta);
   border-radius: 18px;
   overflow: hidden;
@@ -238,11 +339,11 @@
 .escena__obj {
   position: absolute;
   transform: translate(-50%, -50%);
-  min-width: 46px;
-  min-height: 46px;
+  min-width: 44px;
+  min-height: 44px;
   display: grid;
   place-items: center;
-  font-size: clamp(24px, 6.5vw, 34px);
+  font-size: clamp(22px, 6.5vw, 34px);
   line-height: 1;
   background: rgba(255, 255, 255, 0.72);
   border: 2px solid rgba(16, 48, 79, 0.35);
@@ -316,11 +417,8 @@
 /* ========================= ruta de evacuación ========================= */
 
 .mapa {
-  display: grid;
-  grid-template-columns: repeat(var(--columnas, 11), 1fr);
+  --tope: 460px;
   gap: 2px;
-  width: min(100%, 460px);
-  margin: 4px auto;
   border: 4px solid var(--tinta);
   border-radius: 14px;
   padding: 4px;
@@ -328,48 +426,50 @@
 }
 
 .celda {
-  aspect-ratio: 1;
   display: grid;
   place-items: center;
-  font-size: clamp(11px, 3vw, 18px);
   line-height: 1;
   border-radius: 3px;
+  overflow: hidden;
 }
 
 .celda--muro { background: #4b5b6b; }
 .celda--piso { background: #f4f1e6; }
 .celda--yo { background: #ffe7a8; }
-.celda__yo { font-size: clamp(13px, 3.4vw, 20px); }
+.celda__yo { font-size: 1.15em; }
 
+/* Rejilla de 3×3 en vez de posiciones fijas: así la cruceta se encoge
+   sola en pantallas bajas sin que los botones se despeguen. */
 .cruceta {
-  position: relative;
-  width: 168px;
-  height: 168px;
-  margin: 6px auto max(10px, env(safe-area-inset-bottom));
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  grid-template-rows: repeat(3, 1fr);
+  gap: 5px;
+  width: min(174px, 44vw, 25dvh);
+  aspect-ratio: 1;
+  margin: 6px auto max(8px, env(safe-area-inset-bottom));
   flex-shrink: 0;
 }
 
 .cruceta__btn {
-  position: absolute;
-  width: 54px;
-  height: 54px;
   display: grid;
   place-items: center;
   background: #fff;
   border: 3px solid var(--tinta);
   border-radius: 14px;
   box-shadow: 0 4px 0 var(--tinta);
-  font-size: 18px;
+  font-size: clamp(13px, 4.5vw, 18px);
   cursor: pointer;
   touch-action: manipulation;
+  padding: 0;
 }
 
 .cruceta__btn:active { transform: translateY(4px); box-shadow: 0 0 0 var(--tinta); }
-.cruceta__arriba { top: 0; left: 57px; }
-.cruceta__abajo { bottom: 0; left: 57px; }
-.cruceta__izq { left: 0; top: 57px; }
-.cruceta__der { right: 0; top: 57px; }
-.cruceta__centro { position: absolute; left: 57px; top: 57px; width: 54px; height: 54px; display: grid; place-items: center; font-size: 22px; }
+.cruceta__arriba { grid-area: 1 / 2; }
+.cruceta__abajo { grid-area: 3 / 2; }
+.cruceta__izq { grid-area: 2 / 1; }
+.cruceta__der { grid-area: 2 / 3; }
+.cruceta__centro { grid-area: 2 / 2; display: grid; place-items: center; font-size: clamp(16px, 5.5vw, 22px); }
 
 /* =============================== cultivo =============================== */
 
@@ -383,14 +483,21 @@
   overflow: hidden;
 }
 
+.cultivo {
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+}
+
 .cultivo__cielo {
   display: grid;
   place-items: center;
-  min-height: 130px;
+  flex: 1 1 auto;
+  min-height: clamp(74px, 17dvh, 150px);
   background: linear-gradient(to bottom, #cfe8f7, #eaf6da);
 }
 
-.cultivo__planta { font-size: clamp(56px, 16vw, 88px); line-height: 1; transition: font-size 0.4s ease; }
+.cultivo__planta { font-size: min(clamp(46px, 16vw, 88px), 14dvh); line-height: 1; transition: font-size 0.4s ease; }
 
 .cultivo__tierra {
   display: flex;
@@ -480,7 +587,7 @@
   padding-bottom: 4px;
 }
 
-.tarjetas { display: grid; grid-template-columns: 1fr; gap: 10px; }
+.tarjetas { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 270px), 1fr)); gap: 10px; }
 
 .tarjeta {
   display: flex;
@@ -548,20 +655,24 @@
 /* ============================ responsivo ============================= */
 
 @media (min-width: 620px) {
-  .tarjetas { grid-template-columns: 1fr 1fr; }
   .botes--muchos { grid-template-columns: repeat(6, 1fr); }
-  .escena__obj { min-width: 54px; min-height: 54px; }
+  .escena__obj { min-width: 52px; min-height: 52px; }
 }
 
-@media (max-height: 500px) and (orientation: landscape) {
-  .escena { aspect-ratio: 16 / 7; }
-  .cruceta { width: 140px; height: 140px; }
-  .cruceta__btn { width: 46px; height: 46px; }
-  .cruceta__arriba, .cruceta__abajo { left: 47px; }
-  .cruceta__izq, .cruceta__der { top: 47px; }
-  .cruceta__centro { left: 47px; top: 47px; width: 46px; height: 46px; }
-  .cultivo__cielo { min-height: 90px; }
-  .dificultades { max-width: 520px; }
+/* Teléfono acostado: hay mucho ancho y muy poco alto. La escena se
+   ensancha, la cruceta se encoge y las instrucciones caben en dos
+   columnas para que el botón de empezar no quede fuera de la vista. */
+@media (orientation: landscape) and (max-height: 560px) {
+  .escena { --arw: 16; --arh: 7; }
+  .cruceta { width: min(120px, 24dvh); }
+  .cultivo__cielo { min-height: 64px; }
+  .dificultades { max-width: 560px; }
+  .mini__figura { height: clamp(70px, 18dvh, 120px); }
+  .mini--intro h2 { font-size: clamp(17px, 4vw, 22px); margin: 0; }
+  .jm__estrellas { font-size: 24px; }
+  .jm__desglose li { padding: 4px 12px; font-size: 13px; }
+  .quiz__escena { padding: 8px 12px; }
+  .quiz__icono { font-size: clamp(26px, 6vw, 36px); }
 }
 
 @media (min-width: 900px) {
@@ -609,6 +720,7 @@
 .tablero-sim {
   display: grid;
   gap: 5px;
+  flex-shrink: 0;
   margin: 8px clamp(12px, 3vw, 18px) 0;
   background: rgba(255, 255, 255, 0.75);
   border: 3px solid var(--tinta);
@@ -692,6 +804,9 @@
   gap: 4px;
   width: min(100%, 420px);
   margin: 8px auto 0;
+  min-height: 0;
+  overflow-y: auto;
+  overscroll-behavior: contain;
 }
 
 .obra__pieza {
@@ -741,11 +856,8 @@
 }
 
 .terreno {
-  display: grid;
-  grid-template-columns: repeat(var(--columnas, 5), 1fr);
+  --tope: 470px;
   gap: 4px;
-  width: min(100%, 460px);
-  margin: 6px auto;
   border: 4px solid var(--tinta);
   border-radius: 14px;
   padding: 5px;
@@ -754,20 +866,19 @@
 
 .terreno__celda {
   position: relative;
-  aspect-ratio: 1;
   display: grid;
   place-items: center;
   border: 2px solid rgba(16, 48, 79, 0.3);
   border-radius: 8px;
-  font-size: clamp(17px, 5vw, 26px);
   line-height: 1;
   cursor: pointer;
   padding: 0;
   touch-action: manipulation;
+  overflow: hidden;
 }
 
 .terreno__celda--puesto { border-color: var(--tinta); box-shadow: inset 0 0 0 3px #fff; }
-.terreno__rinde { position: absolute; bottom: 1px; right: 3px; font-size: 9px; opacity: 0.6; }
+.terreno__rinde { position: absolute; bottom: 1px; right: 3px; font-size: 0.42em; opacity: 0.6; }
 
 .coloca__marcador {
   margin: 4px clamp(12px, 3vw, 18px);
@@ -850,11 +961,8 @@
 /* =========================== sopa de letras =========================== */
 
 .sopa {
-  display: grid;
-  grid-template-columns: repeat(var(--lado, 10), 1fr);
+  --tope: 460px;
   gap: 2px;
-  width: min(100%, 440px);
-  margin: 6px auto;
   border: 4px solid var(--tinta);
   border-radius: 12px;
   padding: 4px;
@@ -862,17 +970,16 @@
 }
 
 .sopa__celda {
-  aspect-ratio: 1;
   display: grid;
   place-items: center;
   background: #fff;
   border: none;
   border-radius: 3px;
-  font-size: clamp(9px, 2.6vw, 14px);
   font-weight: bold;
   cursor: pointer;
   padding: 0;
   touch-action: manipulation;
+  overflow: hidden;
 }
 
 .sopa__celda--ok { background: var(--bien); color: #fff; }
@@ -905,12 +1012,8 @@
 .puzzle__movs { font-size: 11px; opacity: 0.85; flex-shrink: 0; }
 
 .puzzle {
-  display: grid;
-  grid-template-columns: repeat(var(--lado, 3), 1fr);
+  --tope: 400px;
   gap: 3px;
-  width: min(100%, 380px);
-  aspect-ratio: 1;
-  margin: 8px auto;
   border: 4px solid var(--tinta);
   border-radius: 14px;
   padding: 4px;
@@ -932,14 +1035,14 @@
 
 /* ================================ ruleta ================================ */
 
-.ruleta { position: relative; width: min(74vw, 280px); margin: 10px auto 4px; }
+.ruleta { position: relative; width: min(74vw, 280px, 32dvh); margin: 10px auto 4px; flex-shrink: 0; }
 
 .ruleta__aguja {
   position: absolute;
-  top: -12px;
+  top: -0.42em;
   left: 50%;
   transform: translateX(-50%);
-  font-size: 26px;
+  font-size: clamp(18px, 8cqw, 26px);
   color: var(--tinta);
   z-index: 2;
 }
@@ -980,8 +1083,8 @@
 
 .cancha {
   position: relative;
-  flex: 1;
-  min-height: 210px;
+  flex: 1 1 auto;
+  min-height: min(200px, 34dvh);
   margin: 8px clamp(12px, 3vw, 18px) max(10px, env(safe-area-inset-bottom));
   border: 3px dashed var(--linea);
   border-radius: 16px;
@@ -1014,16 +1117,55 @@
 
 @media (min-width: 620px) {
   .sim__ind { font-size: 13px; }
-  .terreno, .sopa, .puzzle { width: min(100%, 520px); }
+  .terreno, .sopa { --tope: 540px; }
+  .puzzle { --tope: 460px; }
   .cancha__opcion { font-size: 15px; max-width: 46%; }
 }
 
-@media (max-height: 500px) and (orientation: landscape) {
-  .ruleta { width: 150px; }
-  .puzzle { width: min(58vh, 300px); }
+@media (orientation: landscape) and (max-height: 560px) {
+  .ruleta { width: min(30dvh, 150px); }
   .obra { max-width: 520px; }
-  .codigo__historial { max-height: 22vh; }
-  .cancha { min-height: 150px; }
+  .codigo__historial { max-height: 20dvh; }
+  .cancha { min-height: 120px; }
+  .codigo__hueco { width: 42px; height: 42px; font-size: 21px; }
+  .ficha--simbolo { min-height: 46px; font-size: 21px; }
+  .tablero-sim { padding: 5px 8px; gap: 3px; }
+  .sim__barra { height: 9px; }
+}
+
+/* ------------------------ pantallas angostas ------------------------
+   Debajo de 380 px (iPhone SE, gama de entrada Android) todo se aprieta
+   un poco: menos relleno, letra ligeramente menor y las dificultades en
+   rejilla fluida para que no se desborden.                            */
+@media (max-width: 380px) {
+  .dificultades { grid-template-columns: repeat(auto-fit, minmax(92px, 1fr)); gap: 6px; }
+  .dificultad { padding: 7px 3px; font-size: 11px; }
+  .dificultad strong { font-size: 13px; }
+  .dificultad small { font-size: 9.5px; }
+  .jm__hud { gap: 6px; padding: 7px 10px; }
+  .jm__nombre { font-size: 12.5px; }
+  .quiz__escena { gap: 9px; padding: 10px 11px; }
+  .opciones button { padding: 9px 11px; gap: 8px; }
+  .opciones__letra { width: 22px; height: 22px; font-size: 12px; }
+  .codigo__hueco { width: 44px; height: 44px; font-size: 22px; }
+  .codigo__teclas { grid-template-columns: repeat(auto-fit, minmax(50px, 1fr)); }
+  .ficha--simbolo { min-height: 50px; font-size: 22px; }
+  .cartera__dato { font-size: 11.5px; padding: 4px 9px; }
+  .pestana { font-size: 12px; padding: 9px 3px; }
+  .tarjeta { gap: 9px; padding: 10px; }
+  .tarjeta__icono { font-size: 28px; width: 36px; }
+  .tarjeta__nombre { font-size: 14.5px; }
+  .tarjeta__desc { font-size: 12px; }
+}
+
+/* --------------------------- pantallas altas ---------------------------
+   En tablet vertical sobra alto: se aprovecha subiendo el tope de los
+   tableros para que no se queden chiquitos en medio de la pantalla.  */
+@media (min-width: 700px) and (min-height: 900px) {
+  .mapa { --tope: 560px; }
+  .terreno, .sopa { --tope: 600px; }
+  .puzzle { --tope: 520px; }
+  .escena { --tope: 720px; }
 }
 
 /* Sin animación si el sistema lo pide: la ruleta salta al resultado. */
@@ -1031,6 +1173,157 @@
   .ruleta__disco, .sim__relleno, .cancha__opcion { transition: none !important; }
 }
 
+/* ------------------- arreglos de ajuste heredados -------------------
+   El tablero del memorama repartía las cartas por su proporción fija, y
+   en pantallas bajas la última fila se salía. Ahora las filas reparten
+   el alto disponible, así que las doce cartas caben siempre.
+   Se conserva el diseño: solo cambia cómo se calcula el alto.        */
+
+.tablero {
+  grid-auto-rows: minmax(0, 1fr);
+  align-content: stretch;
+}
+
+.memo { min-height: 0; }
+
+/* La ficha de "clasifica" ocupaba un alto fijo enorme en pantallas
+   bajas; ahora el icono se limita también contra el alto de pantalla. */
+.residuo__icono { font-size: min(clamp(52px, 20vw, 110px), 16dvh); }
+.residuo__nombre { font-size: min(clamp(15px, 4.4vw, 20px), 3.4dvh); }
+.bote { min-height: min(84px, 13dvh); }
+.ficha { min-height: min(88px, 14dvh); }
+
 .opcion--sin-recurso { opacity: 0.45; cursor: not-allowed; box-shadow: 0 4px 0 #9aacbd; border-color: #9aacbd; }
 .opcion--sin-recurso:active { transform: none; box-shadow: 0 4px 0 #9aacbd; }
 .sim__nota { text-align: center; margin: 0 auto 8px; }
+
+/* ==================================================================
+   AJUSTES DE LAS PANTALLAS ORIGINALES
+
+   Portada, final y centro se desplazan con la página, así que nunca
+   cortan contenido. Lo que fallaba en pantallas bajas era la
+   proporción: los personajes ocupaban casi todo el alto y el botón
+   quedaba debajo del doblez. Aquí las ilustraciones se limitan también
+   contra el alto de la ventana, no solo contra el ancho.
+================================================================== */
+
+.portada__mini { height: min(clamp(110px, 24vw, 180px), 26dvh); }
+.carta__figura { height: min(clamp(140px, 30vw, 210px), 34dvh); }
+.final__figura { height: min(clamp(130px, 28vw, 200px), 30dvh); }
+.mini__figura { height: min(clamp(110px, 24vw, 170px), 26dvh); }
+
+@media (orientation: landscape) and (max-height: 560px) {
+  .portada {
+    padding-block: clamp(12px, 3dvh, 24px);
+    gap: clamp(10px, 2.5dvh, 18px);
+  }
+
+  .portada h1 { font-size: clamp(20px, 4vw, 30px); }
+  .portada__intro p { font-size: 13.5px; }
+  .portada__pie { font-size: 12px; }
+  .portada__duo { gap: 12px; }
+
+  /* con tanto ancho disponible, dos columnas desde ya */
+  .cartas, .grados { grid-template-columns: 1fr 1fr; }
+  .carta { padding: 12px; }
+  .carta h2 { margin: 4px 0 2px; }
+  .carta p { font-size: 13px; }
+  .grado { padding: 12px; }
+
+  .final h2 { font-size: clamp(22px, 5vw, 32px); }
+  .centro__cabeza { display: grid; }
+  .centro h1 { font-size: clamp(18px, 4vw, 26px); }
+}
+
+/* Móviles muy angostos: la portada respira menos y el texto se acomoda. */
+@media (max-width: 360px) {
+  .portada { padding-inline: 12px; }
+  .carta p { font-size: 13px; }
+  .grado strong { font-size: 18px; }
+  .boton-centro { font-size: 15px; padding: 11px 14px; }
+}
+
+/* Escritorio: el centro y la portada no se estiran de más. */
+@media (min-width: 1100px) {
+  .centro { width: min(1040px, 100%); }
+  .centro__lista { max-width: 1040px; }
+}
+
+/* ==================================================================
+   CRÉDITOS INSTITUCIONALES (UABC · FCITEC)
+
+   Van al pie, discretos, sin competir con los personajes del juego.
+   El tamaño se limita contra el ancho y contra el alto de la ventana,
+   igual que el resto de las ilustraciones, para que en un teléfono
+   acostado no empujen el contenido fuera de la vista.
+================================================================== */
+
+.creditos {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  max-width: 560px;
+  margin: clamp(10px, 2.5vw, 20px) auto 0;
+  padding-top: clamp(10px, 2.5vw, 18px);
+  border-top: 2px dashed #a8c0d6;
+}
+
+.creditos__marcas {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: clamp(10px, 3vw, 18px);
+}
+
+/* El lockup ya trae el escudo integrado: se muestra completo. */
+.creditos__lockup {
+  height: auto;
+  width: min(280px, 62vw);
+  max-height: 12dvh;
+  object-fit: contain;
+}
+
+.creditos__escudo {
+  width: auto;
+  height: min(clamp(46px, 11vw, 68px), 9dvh);
+  object-fit: contain;
+}
+
+.creditos__division {
+  width: 2px;
+  align-self: stretch;
+  background: #10304f;
+  opacity: 0.35;
+  border-radius: 2px;
+}
+
+.creditos__texto {
+  margin: 0;
+  max-width: 44ch;
+  text-align: center;
+  font-size: 12px;
+  line-height: 1.45;
+  color: #5a6b7a;
+}
+
+/* En la variante "ambos" el escudo se muestra más grande porque va solo,
+   sin el escudo chico que trae el lockup dentro. */
+.creditos--ambos .creditos__lockup { width: min(210px, 44vw); }
+
+/* En el resultado del juego el sello va suelto y sin línea divisoria. */
+.creditos--sello { border-top: none; padding-top: 0; gap: 6px; }
+.final .creditos { margin-top: 14px; }
+
+@media (orientation: landscape) and (max-height: 560px) {
+  .creditos { margin-top: 8px; padding-top: 8px; gap: 5px; }
+  .creditos__lockup { width: min(200px, 26vw); max-height: 16dvh; }
+  .creditos__escudo { height: min(46px, 13dvh); }
+  .creditos__texto { font-size: 11px; }
+}
+
+@media (max-width: 360px) {
+  .creditos__lockup { width: 74vw; }
+  .creditos__texto { font-size: 11.5px; }
+}

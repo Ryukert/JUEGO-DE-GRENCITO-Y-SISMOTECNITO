@@ -210,6 +210,7 @@ export default function Ruta({ juego, personaje, dif, onTerminar, onSalir }) {
   if (!nivel) return null;
 
   const columnas = nivel.mapa[0].length;
+  const filas = nivel.mapa.length;
 
   return (
     <div className="mini mini--ruta">
@@ -234,12 +235,13 @@ export default function Ruta({ juego, personaje, dif, onTerminar, onSalir }) {
         )}
       </p>
 
-      <div
-        className="mapa"
-        style={{ "--columnas": columnas }}
-        role="img"
-        aria-label={`Mapa de evacuación, estás en la fila ${pos.y}, columna ${pos.x}`}
-      >
+      <div className="tablero-zona">
+        <div
+          className="mapa tablero-ajustable"
+          style={{ "--columnas": columnas, "--filas": filas }}
+          role="img"
+          aria-label={`Mapa de evacuación, estás en la fila ${pos.y}, columna ${pos.x}`}
+        >
         {nivel.mapa.map((fila, y) =>
           [...fila].map((celda, x) => {
             const llave = `${x},${y}`;
@@ -260,7 +262,8 @@ export default function Ruta({ juego, personaje, dif, onTerminar, onSalir }) {
               </span>
             );
           })
-        )}
+          )}
+        </div>
       </div>
 
       <div className="cruceta" aria-hidden={false}>
