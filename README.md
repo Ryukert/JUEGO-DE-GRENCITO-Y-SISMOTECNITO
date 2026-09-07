@@ -240,6 +240,44 @@ pruebas/                       pruebas con vitest + jsdom
 
 ---
 
+## Colores
+
+La paleta sale del escudo, no de una aproximación: los valores están tomados
+pixel a pixel del archivo original.
+
+| Variable | Color | Uso |
+|---|---|---|
+| `--uabc-verde` | `#007336` | Verde institucional. Greencito, aciertos, botones. |
+| `--uabc-dorado` | `#C7940D` | Dorado institucional. **Solo adornos.** |
+| `--uabc-oro` | `#8A6608` | Versión oscura del dorado. Tecnito, récords, texto. |
+| `--uabc-azul` | `#171796` | Azul del emblema. Pestaña de desafíos. |
+| `--tinta` | `#123B24` | Bordes gruesos y texto. Verde muy oscuro. |
+
+**Por qué hay dos dorados.** El dorado institucional puro tiene 2.74 de
+contraste contra blanco, muy por debajo del 4.5 que pide WCAG AA. No sirve ni
+para texto ni para fondos con letra blanca. Por eso `--uabc-oro` es la versión
+oscura de la misma familia, que da 5.27, y el dorado puro queda para adornos y
+superficies grandes.
+
+**Los dos personajes usan la misma pareja de colores, con los papeles
+cambiados.** Tecnito lleva el dorado como acento y el verde como secundario;
+Greencito al revés. Además de ser color de marca, el ámbar es el de la
+señalética de protección civil, así que a Tecnito le queda.
+
+```js
+sismo:  { acento: "#8A6608", acento2: "#007336", fondo: "#FBF2DC" }
+green:  { acento: "#007336", acento2: "#8A6608", fondo: "#E7F3E7" }
+```
+
+Sin personaje elegido (portada, centro de entrenamiento) manda el verde
+institucional.
+
+`pruebas/colores.test.jsx` calcula el contraste de cada combinación que de
+verdad se usa en los tres temas y falla si alguna baja de 4.5. También falla si
+vuelve a aparecer alguno de los azules o naranjas del diseño anterior.
+
+---
+
 ## Logos institucionales
 
 Los archivos viven en `public/`:

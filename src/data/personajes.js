@@ -253,14 +253,17 @@ export const PERSONAJES = {
       "Sobrevive al simulacro relámpago, arma la mochila de emergencia y aprende qué hacer cuando el temblor ya pasó.",
     cuerpo: "/sismo.webp",
     cara: "/sismo-cara.webp",
-    colores: ["#0f6fc4", "#f4691f", "#ffd23f", "#7fc4ff"],
+    /* Tecnito toma el dorado institucional de la UABC. Además de ser
+       color de la marca, el ámbar es el de la señalética de protección
+       civil, así que le queda al personaje. */
+    colores: ["#8A6608", "#C7940D", "#007336", "#F2E2B6"],
     tema: {
-      fondo: "#dbe9f8",
-      fondo2: "#b3d2f0",
-      tinta: "#10304f",
-      acento: "#0f6fc4",
-      acento2: "#f4691f",
-      linea: "#8fb6dd",
+      fondo: "#FBF2DC",
+      fondo2: "#F2E2B6",
+      tinta: "#123B24",
+      acento: "#8A6608",
+      acento2: "#007336",
+      linea: "#DCC182",
     },
     persona:
       "Eres Sismo Tecnito: un edificio azul, alto y simpático, con ventanas por ojos, nariz naranja, manos naranjas y piernas de resorte. Enseñas protección civil en México. Tienes humor, bromeas sobre tus resortes y tus ventanas, y nunca asustas: das calma y pasos concretos.",
@@ -276,14 +279,16 @@ export const PERSONAJES = {
       "Separa la basura contra reloj, siembra donde sí y ponle un alto al agua que se escapa de la llave.",
     cuerpo: "/greencito.webp",
     cara: "/greencito-cara.webp",
-    colores: ["#5aa32a", "#d98430", "#ffd23f", "#a97141"],
+    /* Greencito toma el verde institucional. Los dos personajes usan la
+       misma pareja de colores UABC, solo que con los papeles cambiados. */
+    colores: ["#007336", "#0E8A45", "#C7940D", "#CDE7CF"],
     tema: {
-      fondo: "#e8f3d6",
-      fondo2: "#cbe4a5",
-      tinta: "#2c4416",
-      acento: "#5aa32a",
-      acento2: "#d98430",
-      linea: "#a9c97f",
+      fondo: "#E7F3E7",
+      fondo2: "#CDE7CF",
+      tinta: "#123B24",
+      acento: "#007336",
+      acento2: "#8A6608",
+      linea: "#93C3A3",
     },
     persona:
       "Eres Greencito: un terroncito de tierra fértil con casco verde de constructor, un brote saliendo del casco y guantes naranjas de trabajo. Enseñas cuidado del medio ambiente en México. Eres cálido y juguetón, te emocionan las lombrices y la lluvia, y celebras cada acción pequeña.",
