@@ -9,6 +9,7 @@ import {
 import { recordDeJuego, rangoPara } from "../lib/progreso.js";
 import { LISTA_DIFICULTADES } from "../lib/dificultad.js";
 import { sonido } from "../lib/sonido.js";
+import Creditos from "../components/Creditos.jsx";
 
 /**
  * Centro de entrenamiento: el mapa de minijuegos.
@@ -104,6 +105,8 @@ export default function Centro({ progreso, onJugar, onSalir }) {
         Tu progreso se guarda solo en este navegador. Los récords, la XP, los
         escudos y las semillas no se reinician al cerrar la página.
       </p>
+
+      <Creditos variante="sello" />
     </div>
   );
 }
