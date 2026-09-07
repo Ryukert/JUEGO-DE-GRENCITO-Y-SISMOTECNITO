@@ -62,14 +62,41 @@ describe("simulaciones (jefes finales)", () => {
     });
   });
 
-  it("ciudad sostenible: no deja gastar más presupuesto del que hay", () => {
+  it("ciudad sostenible: el presupuesto se descuenta y nunca queda en negativo", () => {
     montar("ciudad-sostenible");
-    const recurso = () => Number(document.querySelector(".sim__recurso").textContent.replace(/\D/g, ""));
-    const inicial = recurso();
-    expect(inicial).toBe(100);
-    act(() => { fireEvent.click(primeraOpcion()); });
-    expect(recurso()).toBeLessThanOrEqual(inicial);
-    expect(recurso()).toBeGreaterThanOrEqual(0);
+    const recurso = () =>
+      Number(document.querySelector(".sim__recurso").textContent.replace(/\D/g, ""));
+    expect(recurso()).toBe(100);
+
+    // "Guardar presupuesto" tiene costo negativo: suma en vez de restar,
+    // así que la prueba busca una opción que sí gaste.
+    const gasta = [...document.querySelectorAll(".opciones button:not(:disabled)")].find((b) =>
+      /−\s*\d+/.test(b.textContent)
+    );
+    expect(gasta, "ninguna opción del turno muestra su costo").toBeTruthy();
+    const costo = Number(gasta.textContent.match(/−\s*(\d+)/)[1]);
+
+    act(() => { fireEvent.click(gasta); });
+    expect(recurso()).toBe(100 - costo);
+  });
+
+  it("nunca se puede elegir algo que no alcanza", () => {
+    montar("comandante-emergencias");
+    for (let i = 0; i < 40 && !screen.queryByText(/¡Reto superado!|Se acabó/); i++) {
+      const recurso = Number(document.querySelector(".sim__recurso")?.textContent.replace(/\D/g, "") ?? 0);
+      expect(recurso).toBeGreaterThanOrEqual(0);
+
+      // toda opción habilitada tiene que ser costeable
+      [...document.querySelectorAll(".opciones button:not(:disabled)")].forEach((b) => {
+        const m = b.textContent.match(/−\s*(\d+)/);
+        if (m) expect(Number(m[1])).toBeLessThanOrEqual(recurso);
+      });
+
+      const seguir = btn(/Siguiente turno|Ver cómo quedó/);
+      const objetivo = seguir || primeraOpcion();
+      if (!objetivo) break;
+      act(() => { fireEvent.click(objetivo); });
+    }
   });
 
   it("los indicadores nunca salen del rango 0-100", () => {
