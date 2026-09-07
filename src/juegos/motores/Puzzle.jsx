@@ -104,12 +104,13 @@ export default function Puzzle({ juego, personaje, dif, onTerminar, onSalir }) {
         deslizarla.
       </p>
 
-      <div
-        className="puzzle"
-        style={{ "--lado": lado }}
-        role="grid"
-        aria-label={`Rompecabezas de ${lado} por ${lado}`}
-      >
+      <div className="tablero-zona">
+        <div
+          className="puzzle tablero-ajustable"
+          style={{ "--columnas": lado, "--filas": lado }}
+          role="grid"
+          aria-label={`Rompecabezas de ${lado} por ${lado}`}
+        >
         {piezas.map((pieza, casilla) => {
           const esHueco = pieza === total - 1 && fase === "jugando";
           const fila = Math.floor(pieza / lado);
@@ -134,7 +135,8 @@ export default function Puzzle({ juego, personaje, dif, onTerminar, onSalir }) {
               }
             />
           );
-        })}
+          })}
+        </div>
       </div>
 
       {fase === "dato" ? (

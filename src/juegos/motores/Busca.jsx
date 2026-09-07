@@ -169,10 +169,11 @@ export default function Busca({ juego, personaje, dif, onTerminar, onSalir }) {
         <strong>{escena.titulo}.</strong> {escena.pista}
       </p>
 
-      <div
-        className="escena"
-        style={{ "--escena-cielo": escena.cielo, "--escena-piso": escena.piso }}
-      >
+      <div className="tablero-zona">
+        <div
+          className="escena"
+          style={{ "--escena-cielo": escena.cielo, "--escena-piso": escena.piso }}
+        >
         {objetos.map((o) => {
           const encontrado = hallados.includes(o.id);
           const fallado = errados.includes(o.id);
@@ -193,7 +194,8 @@ export default function Busca({ juego, personaje, dif, onTerminar, onSalir }) {
               {fallado && <span className="escena__marca escena__marca--no" aria-hidden="true">✕</span>}
             </button>
           );
-        })}
+          })}
+        </div>
       </div>
 
       {retro && (

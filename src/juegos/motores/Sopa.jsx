@@ -141,7 +141,13 @@ export default function Sopa({ juego, personaje, dif, onTerminar, onSalir }) {
         texto={`${halladas.length} / ${colocadas.length} · ${tema}`}
       />
 
-      <div className="sopa" style={{ "--lado": lado }} role="grid" aria-label="Sopa de letras">
+      <div className="tablero-zona">
+        <div
+          className="sopa tablero-ajustable"
+          style={{ "--columnas": lado, "--filas": lado }}
+          role="grid"
+          aria-label="Sopa de letras"
+        >
         {rejilla.map((fila, f) =>
           fila.map((letra, c) => {
             const marcada = marcadas.has(`${f},${c}`);
@@ -160,7 +166,8 @@ export default function Sopa({ juego, personaje, dif, onTerminar, onSalir }) {
               </button>
             );
           })
-        )}
+          )}
+        </div>
       </div>
 
       <p className="sopa__ayuda">
