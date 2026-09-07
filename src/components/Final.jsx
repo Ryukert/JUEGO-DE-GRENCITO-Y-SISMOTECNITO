@@ -49,7 +49,7 @@ export default function Final({ personaje: p, puntos, insignias, record, onRepet
         <button onClick={onInicio}>Volver al inicio</button>
       </div>
 
-      <Creditos variante="sello" texto={false} />
+      <Creditos variante="sello" />
     </div>
   );
 }

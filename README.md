@@ -246,28 +246,48 @@ Los archivos viven en `public/`:
 
 | Archivo | Qué es | Peso |
 |---|---|---|
-| `fcitec.webp` | Logotipo *UABC \| FCITEC* completo (trae el escudo integrado) | 15 KB |
+| `fcitec.webp` | Logotipo *UABC \| FCITEC* (trae el escudo integrado) | 18 KB |
+| `bcia.webp` | Bienestar Comunitario e Infraestructura Ambiental, A. C. | 30 KB |
+| `copits.webp` | Colegio de Profesionistas en Infraestructura y Tecnología Sostenible, A. C. | 26 KB |
 | `uabc-escudo.webp` | Escudo de la UABC solo, con transparencia | 36 KB |
 
-El PNG original del escudo venía a 2300×3138 y pesaba 755 KB. Convertido a WebP
-a la resolución que de verdad se usa, quedó en 36 KB sin pérdida visible.
+### Cómo se prepararon
 
-`src/components/Creditos.jsx` los coloca. Tiene tres variantes porque **el
-logotipo de FCITEC ya trae el escudo de la UABC integrado a la izquierda**, así
-que ponerlos juntos duplica el escudo:
+Los tres logotipos llegaron **aplanados sobre fondo negro**, sin canal de
+transparencia. Puestos tal cual sobre el degradado del juego se verían como
+recuadros negros. El proceso fue:
+
+1. Recortar el fondo a resolución completa con un umbral duro (todo píxel con
+   canal máximo menor a 14 es fondo).
+2. Componer sobre blanco **antes** de reducir la imagen. Esto importa: si se
+   reduce primero y se recorta después, quedan halos negros en los bordes.
+   Reduciendo al final, el propio reescalado genera el suavizado.
+3. Recortar al contenido real y guardar en WebP.
+
+El escudo de la UABC sí traía transparencia, pero venía a 2300×3138 y pesaba
+755 KB. Reducido a la resolución que de verdad se usa quedó en 36 KB.
+
+Como las tres marcas quedaron con fondo blanco, van dentro de una tarjeta
+blanca. No es capricho: son logotipos de tinta oscura y así se ven como
+corresponde, además de que es como se acomodan los logotipos institucionales en
+cualquier publicación.
+
+### Dónde aparecen
+
+`src/components/Creditos.jsx` tiene tres variantes:
 
 | Variante | Qué muestra | Dónde se usa |
 |---|---|---|
-| `lockup` (por omisión) | Solo `fcitec.webp`, que ya incluye el escudo | Portada |
-| `sello` | Solo el escudo de la UABC, chico | Final y centro |
-| `ambos` | Escudo y logotipo separados por una línea | ninguno, disponible |
+| `completo` (por omisión) | Las tres marcas y la línea de crédito | Portada |
+| `compacto` | Las tres marcas, más chicas y sin texto | Centro de entrenamiento |
+| `sello` | Solo el escudo de la UABC | Pantalla final |
 
-Si tu facultad pide la versión con las dos marcas separadas, es cambiar una
-palabra en `Portada.jsx`:
+Las tres marcas comparten un mismo alto y se envuelven solas en pantallas
+angostas. El escudo suelto **no** se pone junto al logotipo de FCITEC, porque
+ese ya lo trae integrado a la izquierda y se vería duplicado.
 
-```jsx
-<Creditos variante="ambos" />
-```
+Para agregar otra institución basta con meterla al arreglo `MARCAS` de
+`Creditos.jsx` con su ruta, medidas y nombre completo para lectores de pantalla.
 
 ---
 

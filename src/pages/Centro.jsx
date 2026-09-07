@@ -106,7 +106,7 @@ export default function Centro({ progreso, onJugar, onSalir }) {
         escudos y las semillas no se reinician al cerrar la página.
       </p>
 
-      <Creditos variante="sello" />
+      <Creditos variante="compacto" />
     </div>
   );
 }

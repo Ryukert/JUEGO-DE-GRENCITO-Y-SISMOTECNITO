@@ -181,50 +181,62 @@ describe("la fórmula de ajuste cabe en cualquier pantalla", () => {
 });
 
 describe("créditos institucionales", () => {
-  it("la portada muestra el logotipo UABC · FCITEC con texto alternativo", async () => {
+  const MARCAS = [
+    ["/fcitec.webp", /Ingeniería y Tecnología/],
+    ["/bcia.webp", /Bienestar Comunitario/],
+    ["/copits.webp", /Colegio de Profesionistas/],
+  ];
+
+  it("la portada muestra las tres instituciones con texto alternativo completo", async () => {
     const { default: App } = await import("../src/App.jsx");
     render(<App />);
-    const logo = document.querySelector(".creditos__lockup");
-    expect(logo, "falta el logotipo en la portada").toBeTruthy();
-    expect(logo.getAttribute("src")).toBe("/fcitec.webp");
-    expect(logo.getAttribute("alt")).toMatch(/Universidad Autónoma de Baja California/);
-    expect(logo.getAttribute("alt")).toMatch(/Ingeniería y Tecnología/);
-    // se declaran medidas para que no salte el diseño al cargar
-    expect(logo.getAttribute("width")).toBeTruthy();
-    expect(logo.getAttribute("height")).toBeTruthy();
-    expect(logo.getAttribute("loading")).toBe("lazy");
+
+    const marcas = [...document.querySelectorAll(".creditos__marca")];
+    expect(marcas.length).toBe(3);
+
+    MARCAS.forEach(([src, alt]) => {
+      const img = marcas.find((m) => m.getAttribute("src") === src);
+      expect(img, `falta el logotipo ${src}`).toBeTruthy();
+      expect(img.getAttribute("alt")).toMatch(alt);
+      // medidas declaradas: el diseño no salta mientras cargan
+      expect(Number(img.getAttribute("width"))).toBeGreaterThan(0);
+      expect(Number(img.getAttribute("height"))).toBeGreaterThan(0);
+      expect(img.getAttribute("loading")).toBe("lazy");
+    });
+
+    // el lockup de FCITEC ya trae el escudo: no se repite al lado
+    expect(document.querySelector(".creditos__escudo")).toBeNull();
+    expect(screen.getByText(/BCIA, A\. C\. y COPITS, A\. C\./)).toBeTruthy();
   });
 
-  it("sigue estando tras elegir grado, y el centro lleva el escudo", async () => {
+  it("siguen tras elegir grado y el centro las lleva en versión compacta", async () => {
     const { default: App } = await import("../src/App.jsx");
     render(<App />);
     fireEvent.click(screen.getByText("Primaria"));
-    expect(document.querySelector(".creditos__lockup")).toBeTruthy();
+    expect(document.querySelectorAll(".creditos__marca").length).toBe(3);
 
     fireEvent.click(screen.getByText(/Centro de entrenamiento/));
+    expect(document.querySelector(".creditos--compacto")).toBeTruthy();
+    expect(document.querySelectorAll(".creditos__marca").length).toBe(3);
+  });
+
+  it("la variante de sello muestra solo el escudo de la UABC", async () => {
+    const { default: Creditos } = await import("../src/components/Creditos.jsx");
+    render(<Creditos variante="sello" />);
     const escudo = document.querySelector(".creditos__escudo");
     expect(escudo).toBeTruthy();
     expect(escudo.getAttribute("src")).toBe("/uabc-escudo.webp");
-    expect(escudo.getAttribute("alt")).toBe("Universidad Autónoma de Baja California");
+    expect(document.querySelectorAll(".creditos__marca").length).toBe(0);
   });
 
-  it("la variante 'ambos' muestra escudo y logotipo sin repetir el texto alternativo", async () => {
-    const { default: Creditos } = await import("../src/components/Creditos.jsx");
-    render(<Creditos variante="ambos" />);
-    expect(document.querySelector(".creditos__escudo")).toBeTruthy();
-    expect(document.querySelector(".creditos__lockup")).toBeTruthy();
-    expect(document.querySelector(".creditos__division")).toBeTruthy();
-    // el logotipo ya no repite "Universidad Autónoma": lo dice el escudo
-    expect(document.querySelector(".creditos__lockup").getAttribute("alt")).toBe(
-      "Facultad de Ciencias de la Ingeniería y Tecnología"
-    );
-  });
-
-  it("los logos se limitan también contra el alto de la ventana", () => {
-    const lockup = CSS.match(/^\.creditos__lockup \{[^}]*\}/m)[0];
+  it("los logotipos se limitan también contra el alto de la ventana", () => {
+    const marca = CSS.match(/^\.creditos__marca \{[^}]*\}/m)[0];
     const escudo = CSS.match(/^\.creditos__escudo \{[^}]*\}/m)[0];
-    expect(lockup).toContain("dvh");
+    expect(marca).toContain("dvh");
     expect(escudo).toContain("dvh");
-    expect(CSS).toContain(".creditos--sello");
+    // altura pareja: es lo que ordena una fila de logotipos
+    expect(marca).toContain("height:");
+    expect(marca).toContain("width: auto");
+    expect(CSS).toContain(".creditos--compacto");
   });
 });
