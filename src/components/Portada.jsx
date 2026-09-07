@@ -2,6 +2,7 @@ import { useState } from "react";
 import { PERSONAJES, GRADOS } from "../data/personajes.js";
 import { rangoPara } from "../lib/progreso.js";
 import { sonido } from "../lib/sonido.js";
+import Creditos from "./Creditos.jsx";
 
 export default function Portada({ progreso, onElegir, onCentro }) {
   const [grado, setGrado] = useState(progreso.grado || null);
@@ -47,6 +48,8 @@ export default function Portada({ progreso, onElegir, onCentro }) {
           un distractor más y retos que valen doble. En el Centro de
           entrenamiento hay más de veinte minijuegos sueltos.
         </p>
+
+        <Creditos />
       </div>
     );
   }
@@ -94,6 +97,8 @@ export default function Portada({ progreso, onElegir, onCentro }) {
         Misiones de preguntas contra reloj + un minijuego de acción por
         personaje. Responde rápido y encadena aciertos para multiplicar puntos.
       </p>
+
+      <Creditos />
     </div>
   );
 }

@@ -147,12 +147,13 @@ export default function Coloca({ juego, personaje, dif, onTerminar, onSalir }) {
         <strong>{datos.titulo}.</strong> {datos.pista}
       </p>
 
-      <div
-        className="terreno"
-        style={{ "--columnas": columnas }}
-        role="grid"
-        aria-label={`Terreno de ${filas} por ${columnas}`}
-      >
+      <div className="tablero-zona">
+        <div
+          className="terreno tablero-ajustable"
+          style={{ "--columnas": columnas, "--filas": filas }}
+          role="grid"
+          aria-label={`Terreno de ${filas} por ${columnas}`}
+        >
         {datos.mapa.map((fila, f) =>
           fila.map((clave, c) => {
             const t = datos.terrenos[clave];
@@ -174,7 +175,8 @@ export default function Coloca({ juego, personaje, dif, onTerminar, onSalir }) {
               </button>
             );
           })
-        )}
+          )}
+        </div>
       </div>
 
       {fase === "colocando" ? (
