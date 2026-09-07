@@ -36,6 +36,10 @@ respuesta mala la rompe.
 - *Separa o pierde* (Greencito): caen diez residuos y hay que mandarlos al bote
   orgánico, reciclable o peligroso antes de que se acabe su tiempo.
 
+**Centro de entrenamiento.** Aparte de las misiones hay un catálogo de 25
+minijuegos sueltos, con dificultad propia (fácil / medio / difícil), récord por
+juego y desbloqueo por XP. Se entra desde la portada o desde la pantalla final.
+
 **El chat sigue vivo.** En cualquier momento se le puede preguntar lo que sea al
 personaje, y contesta en su voz y al nivel del grado elegido.
 
@@ -192,19 +196,127 @@ segundos, vidas y el tono con que la IA le habla a cada edad.
 ```
 api/chat.js                    función serverless: habla con Anthropic
 public/                        imágenes de los personajes (WebP sin fondo)
-src/App.jsx                    estado de la partida: vidas, racha, misiones
+
+src/App.jsx                    estado de la partida y ruteo de pantallas
 src/components/Portada.jsx     elegir grado y personaje
 src/components/Juego.jsx       HUD y ruteo de misión
 src/components/Reto.jsx        pregunta con cronómetro + chat
 src/components/minijuegos/     Memorama.jsx, Simulacro.jsx, Basura.jsx
 src/components/Final.jsx       rango, récord y medallas
-src/data/personajes.js         TODO el contenido editable
-src/lib/                       sonido, confeti, progreso guardado
-src/styles.css                 estilos responsivos
+
+src/pages/Centro.jsx           catálogo de minijuegos por categoría
+src/juegos/registro.js         catálogo: qué juegos hay y con qué se juegan
+src/juegos/PantallaMinijuego.jsx  instrucciones → juego → recompensa
+src/juegos/ui/Marco.jsx        HUD, cronómetro, dificultad, resultado, feedback
+src/juegos/motores/            Quiz, Busca, Clasifica, Ruta, Cultiva, Clasicos
+
+src/data/personajes.js         contenido de las misiones
+src/data/juegos/               contenido de los minijuegos (preguntas, escenas...)
+
+src/hooks/useCronometro.js     cronómetro y timeouts que se limpian solos
+src/lib/dificultad.js          fácil / medio / difícil
+src/lib/recompensas.js         score, XP, escudos y semillas
+src/lib/progreso.js            localStorage v2 con migración desde v1
+src/lib/                       sonido.js, confeti.js
+src/styles.css                 estilos del juego original
+src/styles-minijuegos.css      estilos de los minijuegos y del centro
+
+pruebas/                       pruebas con vitest + jsdom
 ```
+
+---
+
+## Los minijuegos
+
+Hay cinco motores genéricos. Un minijuego nuevo casi nunca necesita código
+nuevo: necesita datos y una entrada en `src/juegos/registro.js`.
+
+| Motor | Qué hace | Datos que lee |
+|---|---|---|
+| `Quiz` | situación + opciones + cronómetro | `data/juegos/preguntas.js` |
+| `Busca` | encontrar N objetos en una escena | `data/juegos/escenas.js` |
+| `Clasifica` | arrastrar o tocar hacia contenedores | `data/juegos/clasificacion.js` |
+| `Ruta` | moverse por un mapa hasta la salida | `data/juegos/rutas.js` |
+| `Cultiva` | decisiones con consecuencia visible | `data/juegos/cultivo.js` |
+
+`Clasicos` no es un motor: es el adaptador que deja jugar Memorama, Simulacro y
+Separa o pierde desde el centro sin haberlos modificado.
+
+**Agregar un minijuego de preguntas** son dos pasos:
+
+```js
+// 1. src/data/juegos/preguntas.js
+export const PREGUNTAS = {
+  "mi-juego": [
+    {
+      id: "m1",
+      icono: "🌎",
+      situacion: "Lo que le pasa al jugador.",
+      opciones: [{ texto: "La buena", ok: true }, { texto: "La mala", ok: false }],
+      explicacion: "Por qué la buena es la buena.",
+      dato: "El ¿sabías que...?",
+    },
+  ],
+};
+
+// 2. src/juegos/registro.js
+{
+  id: "mi-juego", nombre: "Mi juego", icono: "🌎",
+  familia: "greencito", categoria: "Agua", personaje: "green",
+  motor: Quiz, banco: "mi-juego", rondas: 8, segundos: 18, xp: 0,
+  descripcion: "Lo que aparece en la tarjeta del centro.",
+}
+```
+
+Aparece solo en el Centro, con su tarjeta, sus tres dificultades, su récord y
+su recompensa.
+
+### Dificultad
+
+`src/lib/dificultad.js` no cambia las preguntas: cambia el tiempo, cuántos
+objetos hay en pantalla, cuántas rondas, cuántas opciones y con cuántas vidas
+arrancas. Fácil da 40% más tiempo y menos objetos; difícil da 28% menos tiempo,
+más objetos y solo dos vidas, y a cambio paga 1.8× puntos.
+
+### Recompensas
+
+Todos los minijuegos devuelven el mismo objeto, calculado en un solo lugar
+(`src/lib/recompensas.js`):
+
+```js
+{ score, xp, livesLost, accuracy, completed, reward: { shields, seeds } }
+```
+
+Ese mismo objeto trae también `puntos`, `vidasRestantes`, `exito` y `resumen`,
+que es lo que ya esperaba el flujo de misiones. Por eso no hubo que tocar
+`App.jsx` ni `Juego.jsx` para que los juegos viejos siguieran funcionando.
+
+Tecnito paga escudos, Greencito paga semillas y los desafíos generales
+reparten. La XP acumulada es lo que desbloquea juegos nuevos.
+
+---
+
+## Pruebas
+
+```bash
+npm test
+```
+
+Monta los 25 minijuegos del catálogo, juega partidas completas, comprueba que
+la XP y los récords se guardan, que la migración de progreso v1 a v2 no pierde
+nada y que no queda ningún `setInterval` vivo al salir de un juego. Cualquier
+advertencia de React hace fallar la prueba.
 
 ## Costos
 
 Cada comentario del personaje consume tokens de tu cuenta de Anthropic, con
 tope de 700 de salida. El juego es jugable sin la API, así que si abres el sitio
 al público conviene poner un límite de gasto en la consola de Anthropic.
+
+`api/chat.js` limita a 12 peticiones por minuto y por IP, recorta los mensajes
+del jugador a 600 caracteres y descarta los vacíos. El límite vive en memoria de
+la instancia: frena el abuso obvio, pero si el sitio va a recibir mucho tráfico
+conviene moverlo a Redis (Upstash) para que sea un candado real.
+
+Los minijuegos **no** usan la API: todo su contenido educativo está escrito en
+`src/data/juegos/`, así que funcionan sin internet y sin costo.
