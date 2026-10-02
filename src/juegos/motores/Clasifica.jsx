@@ -6,8 +6,8 @@ import { useCronometro, useTemporizadores } from "../../hooks/useCronometro.js";
 import { sonido } from "../../lib/sonido.js";
 import { confeti } from "../../lib/confeti.js";
 import { MarcoJuego, Cronometro, Progreso, Retroalimentacion, Aviso } from "../ui/Marco.jsx";
+import { revolver } from "../../lib/azar.js";
 
-const revolver = (lista) => [...lista].sort(() => Math.random() - 0.5);
 
 /**
  * Motor de clasificar objetos en contenedores.
@@ -23,7 +23,12 @@ export default function Clasifica({ juego, personaje, dif, onTerminar, onSalir }
   const datos = CLASIFICACIONES[juego.clasificacion];
   const enTiempo = useTemporizadores();
 
-  const contenedores = datos?.contenedores || [];
+  // En fácil los contenedores se quedan en su lugar; en medio y difícil
+  // cambian de orden cada partida para que no se toque de memoria.
+  const [contenedores] = useState(() => {
+    const lista = datos?.contenedores || [];
+    return dif.id === "facil" ? lista : revolver(lista);
+  });
   const total = Math.min(
     datos?.objetos.length || 0,
     cuantasRondas(dif, juego.rondas || 10, 5)

@@ -18,7 +18,14 @@ import { MarcoJuego, Cronometro, Retroalimentacion } from "../ui/Marco.jsx";
  * tiene que deducirla del paisaje, que es de lo que trata el juego.
  */
 export default function Coloca({ juego, personaje, dif, onTerminar, onSalir }) {
-  const datos = COLOCACIONES[juego.colocacion];
+  // El terreno sale en espejo la mitad de las veces: hay que leer el
+  // paisaje cada partida en lugar de recordar qué casillas tocar. Solo se
+  // voltea de lado; arriba sigue siendo el norte.
+  const [datos] = useState(() => {
+    const original = COLOCACIONES[juego.colocacion];
+    if (!original || Math.random() < 0.5) return original;
+    return { ...original, mapa: original.mapa.map((fila) => [...fila].reverse()) };
+  });
 
   const equipos = cuantos(dif, datos?.equipos || 4, 2, 8);
   const totalSegundos = segundos(dif, juego.segundos || 60, 20);

@@ -2,9 +2,9 @@ import { useState, useEffect, useRef } from "react";
 import { BOTES, RESIDUOS } from "../../data/personajes.js";
 import { sonido } from "../../lib/sonido.js";
 import { confeti } from "../../lib/confeti.js";
+import { revolver } from "../../lib/azar.js";
 
 const TOTAL = 10;
-const revolver = (lista) => [...lista].sort(() => Math.random() - 0.5);
 
 export default function Basura({ personaje: p, grado, vidas: vidasIniciales, onTerminar }) {
   const segundosPorPieza = grado === "secundaria" ? 3.5 : 5;

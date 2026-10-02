@@ -2,6 +2,7 @@ import { useState, useEffect, useRef, useCallback } from "react";
 import { ACCIONES_SIMULACRO, TRAMPAS_SIMULACRO } from "../../data/personajes.js";
 import { sonido } from "../../lib/sonido.js";
 import { confeti } from "../../lib/confeti.js";
+import { revolver } from "../../lib/azar.js";
 
 const RONDAS = [
   { trampas: 1, segundos: 9 },
@@ -9,7 +10,6 @@ const RONDAS = [
   { trampas: 3, segundos: 5.5 },
 ];
 
-const revolver = (lista) => [...lista].sort(() => Math.random() - 0.5);
 
 export default function Simulacro({ personaje: p, vidas: vidasIniciales, onTerminar }) {
   const [fase, setFase] = useState("instrucciones");

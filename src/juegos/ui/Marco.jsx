@@ -8,6 +8,19 @@
  */
 
 import { sonido } from "../../lib/sonido.js";
+import { puedeLeer, leer } from "../../lib/voz.js";
+
+/* ------------------------- escuchar en voz alta ------------------------- */
+
+/** Botón para que el juego lea el texto. No aparece si el navegador no puede. */
+export function Escuchar({ texto, etiqueta = "Escuchar" }) {
+  if (!puedeLeer() || !texto) return null;
+  return (
+    <button type="button" className="escuchar" onClick={() => leer(texto)} aria-label={`${etiqueta} en voz alta`}>
+      <span aria-hidden="true">🔊</span> {etiqueta}
+    </button>
+  );
+}
 
 /* ------------------------------ encabezado ------------------------------ */
 

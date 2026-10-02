@@ -320,6 +320,20 @@ un laberinto nuevo cada partida (`src/lib/laberinto.js`), hay réplicas que
 tiran escombro sin cerrar nunca el último camino y en medio y difícil se va la
 luz. El tiempo se calcula con el largo de la ruta segura más corta. `Quiz` y `Atrapa` pueden mezclar varios bancos con `bancos`.
 
+**Todo sale al azar.** Para que la dificultad no se pueda aprender de memoria,
+los juegos revuelven con `src/lib/azar.js` (Fisher-Yates: el viejo
+`sort(() => Math.random() - 0.5)` no revolvía parejo). Se revuelven preguntas
+y opciones (también en el modo historia, donde la buena siempre era la A), los
+lugares de los objetos en `Busca`, el orden de los contenedores en `Clasifica`
+(medio y difícil), el terreno de `Coloca` (en espejo) y las decisiones de las
+simulaciones por fases.
+
+`Construye` dibuja el edificio pieza por pieza (`src/juegos/ui/Edificio.jsx`)
+y al final lo somete al sismo: aguanta, se agrieta o se cae según lo elegido.
+En fácil (primaria) usa textos cortos (`preguntaCorta`, `corto`,
+`explicacionCorta`, `resultadosCortos`), solo dos opciones grandes y lectura en
+voz alta (`src/lib/voz.js`, con la voz del navegador).
+
 `Clasicos` no es un motor: es el adaptador que deja jugar Memorama, Simulacro y
 Separa o pierde desde el centro sin haberlos modificado.
 

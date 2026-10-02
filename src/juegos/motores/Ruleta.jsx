@@ -7,9 +7,9 @@ import { useCronometro, useTemporizadores } from "../../hooks/useCronometro.js";
 import { sonido } from "../../lib/sonido.js";
 import { confeti } from "../../lib/confeti.js";
 import { MarcoJuego, Cronometro, Progreso, Retroalimentacion } from "../ui/Marco.jsx";
+import { revolver } from "../../lib/azar.js";
 
 const azar = (n) => Math.floor(Math.random() * n);
-const revolver = (l) => [...l].sort(() => Math.random() - 0.5);
 
 /**
  * Ruleta educativa.

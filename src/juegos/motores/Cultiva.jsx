@@ -4,8 +4,8 @@ import { construirResultado } from "../../lib/recompensas.js";
 import { sonido } from "../../lib/sonido.js";
 import { confeti } from "../../lib/confeti.js";
 import { MarcoJuego, Progreso, Retroalimentacion } from "../ui/Marco.jsx";
+import { revolver } from "../../lib/azar.js";
 
-const revolver = (lista) => [...lista].sort(() => Math.random() - 0.5);
 
 /**
  * Motor de decisiones con consecuencia visible.

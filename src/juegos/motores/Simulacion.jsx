@@ -4,8 +4,8 @@ import { construirResultado } from "../../lib/recompensas.js";
 import { sonido } from "../../lib/sonido.js";
 import { confeti } from "../../lib/confeti.js";
 import { MarcoJuego, Progreso, Retroalimentacion } from "../ui/Marco.jsx";
+import { revolver } from "../../lib/azar.js";
 
-const revolver = (lista) => [...lista].sort(() => Math.random() - 0.5);
 const acotar = (n) => Math.max(0, Math.min(100, Math.round(n)));
 
 /**
@@ -54,11 +54,12 @@ export default function Simulacion({ juego, personaje, dif, onTerminar, onSalir 
   const buenasRef = useRef(0);
   const cerrado = useRef(false);
 
-  /* Las opciones del turno: fijas si la simulación es por fases (el
-     simulador de emergencia sigue un orden), al azar en las demás. */
+  /* Las opciones del turno: las de la fase si la simulación es por fases
+     (el simulador de emergencia sigue un orden), al azar en las demás. En
+     los dos casos se revuelven para que la buena no salga siempre igual. */
   const opciones = useMemo(() => {
     if (!datos) return [];
-    if (datos.fases) return datos.fases[Math.min(turno, datos.fases.length - 1)].decisiones;
+    if (datos.fases) return revolver(datos.fases[Math.min(turno, datos.fases.length - 1)].decisiones);
 
     const libres = datos.decisiones.filter((d) => !usadas.includes(d.id));
     const fuente = libres.length >= opcionesPorTurno ? libres : datos.decisiones;

@@ -8,6 +8,12 @@
  * Cada opción tiene:
  *   solidez  → cuánto aporta al resultado final (-2 a 2)
  *   icono    → lo que se dibuja en la pila
+ *   forma    → cómo se dibuja la pieza (solo con `dibujo: "edificio"`,
+ *              ver src/juegos/ui/Edificio.jsx)
+ *
+ * Lectura fácil (primaria): `preguntaCorta`, `corto`, `explicacionCorta` y
+ * `resultadosCortos` reemplazan a los textos largos en fácil. Son opcionales;
+ * si faltan se usa el texto normal.
  */
 
 export const CONSTRUCCIONES = {
@@ -16,55 +22,61 @@ export const CONSTRUCCIONES = {
     titulo: "Construye un edificio",
     escenario: "Un terreno en zona sísmica",
     prueba: "🌋 Simulacro de sismo magnitud 7.5",
+    dibujo: "edificio",
     etapas: [
       {
         id: "suelo",
         nombre: "Estudio del terreno",
         pregunta: "Antes de nada: ¿sobre qué vamos a construir?",
+        preguntaCorta: "¿Revisamos el suelo antes de construir?",
         opciones: [
-          { texto: "Hacer estudio de mecánica de suelos primero", icono: "🧪", solidez: 2, explicacion: "El suelo decide todo lo demás. Un suelo blando amplifica la sacudida hasta cinco veces.", dato: "La Ciudad de México sufre tanto porque está sobre el lecho de un lago." },
-          { texto: "Construir directo, el terreno se ve firme", icono: "👀", solidez: -2, explicacion: "Lo que se ve firme en seco puede volverse lodo con agua y vibración.", dato: "Se llama licuefacción: el suelo se comporta como líquido durante el sismo." },
-          { texto: "Preguntarle al vecino cómo le fue a él", icono: "🗣️", solidez: -1, explicacion: "Sirve como pista, no como estudio. Dos lotes pegados pueden tener suelos distintos.", dato: "El estudio de suelos es obligatorio por reglamento en la mayoría de los municipios." },
+          { texto: "Hacer estudio de mecánica de suelos primero", corto: "Estudiar el suelo primero", forma: "firme", icono: "🧪", solidez: 2, explicacion: "El suelo decide todo lo demás. Un suelo blando amplifica la sacudida hasta cinco veces.", explicacionCorta: "¡Bien! Así sabemos si el suelo es firme o blando.", dato: "La Ciudad de México sufre tanto porque está sobre el lecho de un lago." },
+          { texto: "Construir directo, el terreno se ve firme", corto: "Construir sin revisar", forma: "lodo", icono: "👀", solidez: -2, explicacion: "Lo que se ve firme en seco puede volverse lodo con agua y vibración.", explicacionCorta: "Con el sismo, el suelo puede volverse lodo. Siempre se revisa.", dato: "Se llama licuefacción: el suelo se comporta como líquido durante el sismo." },
+          { texto: "Preguntarle al vecino cómo le fue a él", corto: "Preguntarle al vecino", forma: "dudoso", icono: "🗣️", solidez: -1, explicacion: "Sirve como pista, no como estudio. Dos lotes pegados pueden tener suelos distintos.", explicacionCorta: "Tu vecino no sabe cómo es tu suelo. Hay que estudiarlo.", dato: "El estudio de suelos es obligatorio por reglamento en la mayoría de los municipios." },
         ],
       },
       {
         id: "cimentacion",
         nombre: "Cimentación",
         pregunta: "¿Qué cimentación le ponemos?",
+        preguntaCorta: "¿Qué ponemos abajo del edificio?",
         opciones: [
-          { texto: "Losa de cimentación amarrada, del ancho del edificio", icono: "🟫", solidez: 2, explicacion: "La losa reparte el peso y hace que todo el edificio se mueva como una sola pieza.", dato: "Si una parte se hunde más que otra, el edificio se parte solo." },
-          { texto: "Zapatas sueltas, cada una por su lado", icono: "🧱", solidez: -1, explicacion: "Sin trabes de liga cada zapata se mueve distinto y agrieta los muros.", dato: "Las zapatas van amarradas entre sí, siempre." },
-          { texto: "Nada, el edificio es chico", icono: "🚫", solidez: -2, explicacion: "Sin cimentación el edificio se voltea completo, no importa qué tan bueno sea arriba.", dato: "En un sismo la falla más común empieza abajo, no arriba." },
+          { texto: "Losa de cimentación amarrada, del ancho del edificio", corto: "Una base grande y unida", forma: "losa", icono: "🟫", solidez: 2, explicacion: "La losa reparte el peso y hace que todo el edificio se mueva como una sola pieza.", explicacionCorta: "¡Bien! La base unida hace que todo se mueva junto.", dato: "Si una parte se hunde más que otra, el edificio se parte solo." },
+          { texto: "Zapatas sueltas, cada una por su lado", corto: "Bloques sueltos", forma: "zapatas", icono: "🧱", solidez: -1, explicacion: "Sin trabes de liga cada zapata se mueve distinto y agrieta los muros.", explicacionCorta: "Cada bloque se mueve por su lado y el edificio se agrieta.", dato: "Las zapatas van amarradas entre sí, siempre." },
+          { texto: "Nada, el edificio es chico", corto: "Nada, es chiquito", forma: "nada", icono: "🚫", solidez: -2, explicacion: "Sin cimentación el edificio se voltea completo, no importa qué tan bueno sea arriba.", explicacionCorta: "Sin base, el edificio se puede voltear.", dato: "En un sismo la falla más común empieza abajo, no arriba." },
         ],
       },
       {
         id: "columnas",
         nombre: "Columnas",
         pregunta: "¿Cómo van las columnas?",
+        preguntaCorta: "¿Cómo son las columnas?",
         opciones: [
-          { texto: "Columnas gruesas, parejas y bien distribuidas", icono: "🏛️", solidez: 2, explicacion: "La regularidad es lo que salva edificios. Las cargas se reparten y nada se concentra.", dato: "Los edificios simétricos aguantan muchísimo mejor que los caprichosos." },
-          { texto: "Planta baja abierta para estacionamiento, sin muros", icono: "🅿️", solidez: -2, explicacion: "Es el famoso piso débil: todo el edificio se apoya en columnas delgadas que ceden primero.", dato: "En 1985 y en 2017 muchos colapsos en México fueron por planta baja débil." },
-          { texto: "Columnas delgadas pero muchas", icono: "📏", solidez: 0, explicacion: "Aguantan el peso vertical, pero se doblan con el movimiento lateral.", dato: "En sismo lo que importa no es sostener: es no doblarse de lado." },
+          { texto: "Columnas gruesas, parejas y bien distribuidas", corto: "Gruesas y parejas", forma: "gruesas", icono: "🏛️", solidez: 2, explicacion: "La regularidad es lo que salva edificios. Las cargas se reparten y nada se concentra.", explicacionCorta: "¡Bien! Columnas fuertes y repartidas aguantan más.", dato: "Los edificios simétricos aguantan muchísimo mejor que los caprichosos." },
+          { texto: "Planta baja abierta para estacionamiento, sin muros", corto: "Abajo sin paredes, para coches", forma: "piso-debil", icono: "🅿️", solidez: -2, explicacion: "Es el famoso piso débil: todo el edificio se apoya en columnas delgadas que ceden primero.", explicacionCorta: "Abajo queda débil y es lo primero que se cae.", dato: "En 1985 y en 2017 muchos colapsos en México fueron por planta baja débil." },
+          { texto: "Columnas delgadas pero muchas", corto: "Muchas y delgaditas", forma: "delgadas", icono: "📏", solidez: 0, explicacion: "Aguantan el peso vertical, pero se doblan con el movimiento lateral.", explicacionCorta: "Las columnas delgadas se doblan cuando tiembla.", dato: "En sismo lo que importa no es sostener: es no doblarse de lado." },
         ],
       },
       {
         id: "trabes",
         nombre: "Vigas y trabes",
         pregunta: "¿Cómo unimos las columnas entre sí?",
+        preguntaCorta: "¿Cómo unimos las columnas?",
         opciones: [
-          { texto: "Trabes en los dos sentidos, formando marcos", icono: "🔲", solidez: 2, explicacion: "Los marcos rígidos son lo que evita que el edificio se abra como caja de cartón.", dato: "Se busca que la trabe falle antes que la columna: columna fuerte, viga débil." },
-          { texto: "Trabes solo en un sentido", icono: "➖", solidez: -1, explicacion: "En el otro sentido el edificio queda flojo y ahí se abre.", dato: "El sismo no elige dirección: llega por donde quiere." },
-          { texto: "Losa apoyada directo sobre las columnas", icono: "⬜", solidez: -2, explicacion: "Sin trabes la losa se punzona alrededor de la columna y se cae plana.", dato: "Se le llama falla por punzonamiento y es de las más violentas." },
+          { texto: "Trabes en los dos sentidos, formando marcos", corto: "Vigas por todos lados", forma: "marcos", icono: "🔲", solidez: 2, explicacion: "Los marcos rígidos son lo que evita que el edificio se abra como caja de cartón.", explicacionCorta: "¡Bien! Las vigas forman una caja fuerte.", dato: "Se busca que la trabe falle antes que la columna: columna fuerte, viga débil." },
+          { texto: "Trabes solo en un sentido", corto: "Vigas de un solo lado", forma: "un-sentido", icono: "➖", solidez: -1, explicacion: "En el otro sentido el edificio queda flojo y ahí se abre.", explicacionCorta: "Del otro lado queda flojo y se abre.", dato: "El sismo no elige dirección: llega por donde quiere." },
+          { texto: "Losa apoyada directo sobre las columnas", corto: "Sin vigas", forma: "sin-trabes", icono: "⬜", solidez: -2, explicacion: "Sin trabes la losa se punzona alrededor de la columna y se cae plana.", explicacionCorta: "Sin vigas, el techo se puede caer.", dato: "Se le llama falla por punzonamiento y es de las más violentas." },
         ],
       },
       {
         id: "muros",
         nombre: "Muros y acabados",
         pregunta: "Faltan los muros. ¿Qué hacemos?",
+        preguntaCorta: "¿Qué paredes le ponemos?",
         opciones: [
-          { texto: "Muros de relleno separados de la estructura, con castillos", icono: "🧱", solidez: 2, explicacion: "Bien confinados aportan rigidez sin pelearse con las columnas.", dato: "Un muro pegado a media columna la parte: se llama columna corta." },
-          { texto: "Muros pesados de piedra en los pisos altos", icono: "🪨", solidez: -2, explicacion: "El peso arriba multiplica la fuerza del sismo. Lo pesado va abajo.", dato: "Un edificio con la cabeza pesada se sacude como un martillo invertido." },
-          { texto: "Tablaroca ligera en todo", icono: "🪟", solidez: 1, explicacion: "Ligera y segura, aunque no aporta rigidez. Depende toda la estructura.", dato: "Ligero es bueno en sismo: menos masa, menos fuerza." },
+          { texto: "Muros de relleno separados de la estructura, con castillos", corto: "Paredes con castillos", forma: "castillos", icono: "🧱", solidez: 2, explicacion: "Bien confinados aportan rigidez sin pelearse con las columnas.", explicacionCorta: "¡Bien! Los castillos hacen las paredes más fuertes.", dato: "Un muro pegado a media columna la parte: se llama columna corta." },
+          { texto: "Muros pesados de piedra en los pisos altos", corto: "Paredes de piedra arriba", forma: "piedra", icono: "🪨", solidez: -2, explicacion: "El peso arriba multiplica la fuerza del sismo. Lo pesado va abajo.", explicacionCorta: "Lo pesado arriba hace que se mueva más. Lo pesado va abajo.", dato: "Un edificio con la cabeza pesada se sacude como un martillo invertido." },
+          { texto: "Tablaroca ligera en todo", corto: "Paredes ligeras", forma: "ligeros", icono: "🪟", solidez: 1, explicacion: "Ligera y segura, aunque no aporta rigidez. Depende toda la estructura.", explicacionCorta: "Ligeras está bien: menos peso, menos fuerza.", dato: "Ligero es bueno en sismo: menos masa, menos fuerza." },
         ],
       },
     ],
@@ -72,6 +84,11 @@ export const CONSTRUCCIONES = {
       excelente: "El edificio se movió, crujió y se quedó parado. Grietas de acabados, nada estructural. Así se ve un edificio bien hecho después de un sismo fuerte.",
       regular: "Aguantó, pero con daño: columnas agrietadas y un muro caído. Habitable después de revisión, aunque una réplica fuerte sería otro problema.",
       malo: "El edificio falló. No fue mala suerte: las decisiones de abajo se pagan arriba, y la planta baja débil o la cimentación floja no perdonan.",
+    },
+    resultadosCortos: {
+      excelente: "¡Tu edificio aguantó el sismo! Lo construiste muy bien.",
+      regular: "Aguantó, pero quedó dañado. Algunas partes estaban débiles.",
+      malo: "Tu edificio se cayó. Las partes débiles no aguantan un sismo.",
     },
   },
 

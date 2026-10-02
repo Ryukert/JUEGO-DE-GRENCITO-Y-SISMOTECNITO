@@ -1,7 +1,8 @@
 import { useState, useMemo, useRef, useEffect, useCallback } from "react";
 import { RUTAS, LECCIONES_RUTA } from "../../data/juegos/rutas.js";
 import { segundos } from "../../lib/dificultad.js";
-import { generarMapa, rutaSegura, revolver, voltear } from "../../lib/laberinto.js";
+import { generarMapa, rutaSegura, voltear } from "../../lib/laberinto.js";
+import { revolver } from "../../lib/azar.js";
 import { construirResultado } from "../../lib/recompensas.js";
 import { useCronometro, useTemporizadores } from "../../hooks/useCronometro.js";
 import { sonido } from "../../lib/sonido.js";

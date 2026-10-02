@@ -2,9 +2,9 @@ import { useState, useEffect, useRef } from "react";
 import { MEMORAMA } from "../../data/personajes.js";
 import { sonido } from "../../lib/sonido.js";
 import { confeti } from "../../lib/confeti.js";
+import { revolver } from "../../lib/azar.js";
 
 const PARES = 6;
-const revolver = (lista) => [...lista].sort(() => Math.random() - 0.5);
 
 /** Construye las doce cartas del tablero según el grado. */
 function armarTablero(personajeId, grado) {

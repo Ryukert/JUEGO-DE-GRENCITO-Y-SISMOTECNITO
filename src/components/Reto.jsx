@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from "react";
 import { GRADOS, construirSistema } from "../data/personajes.js";
 import { sonido } from "../lib/sonido.js";
 import { confeti } from "../lib/confeti.js";
+import { revolver } from "../lib/azar.js";
 
 export default function Reto({
   personaje: p,
@@ -29,11 +30,13 @@ export default function Reto({
 
   const enBono = etapa === "bono";
   const pregunta = enBono ? mision.retoSecundaria : mision;
-  const opciones = enBono
-    ? mision.retoSecundaria.opciones
-    : cfg.opcionExtra && mision.opcionExtra
-      ? [...mision.opciones, mision.opcionExtra]
-      : mision.opciones;
+
+  // En los datos la respuesta buena va primero; sin revolver siempre sería la A.
+  const [principales] = useState(() =>
+    revolver(cfg.opcionExtra && mision.opcionExtra ? [...mision.opciones, mision.opcionExtra] : mision.opciones)
+  );
+  const [delBono] = useState(() => revolver(mision.retoSecundaria?.opciones || []));
+  const opciones = enBono ? delBono : principales;
 
   useEffect(() => {
     finRef.current?.scrollIntoView({ behavior: "smooth", block: "end" });

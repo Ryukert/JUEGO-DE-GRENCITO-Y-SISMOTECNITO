@@ -8,6 +8,8 @@
  * queda al menos un camino seguro hasta la salida.
  */
 
+import { revolver } from "./azar.js";
+
 const DIRECCIONES = [
   [0, -1],
   [0, 1],
@@ -17,15 +19,6 @@ const DIRECCIONES = [
 
 /** Casillas que no se pueden pisar: muros, zonas de riesgo, elevador y escombro. */
 export const BLOQUEAN = new Set(["#", "X", "T", "R"]);
-
-/** Mezcla una lista en su lugar (Fisher-Yates) y la regresa. */
-export function revolver(lista, azar = Math.random) {
-  for (let i = lista.length - 1; i > 0; i--) {
-    const j = Math.floor(azar() * (i + 1));
-    [lista[i], lista[j]] = [lista[j], lista[i]];
-  }
-  return lista;
-}
 
 /**
  * Camino más corto desde `desde` hasta la salida (S) sin pisar nada que
