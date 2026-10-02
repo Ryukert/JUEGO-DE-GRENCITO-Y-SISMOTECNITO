@@ -6,8 +6,8 @@ import { useCronometro, useTemporizadores } from "../../hooks/useCronometro.js";
 import { sonido } from "../../lib/sonido.js";
 import { confeti } from "../../lib/confeti.js";
 import { MarcoJuego, Cronometro, Progreso, Retroalimentacion, Aviso } from "../ui/Marco.jsx";
+import { revolver } from "../../lib/azar.js";
 
-const revolver = (lista) => [...lista].sort(() => Math.random() - 0.5);
 
 /**
  * Motor de "encuentra los N objetos en la escena".
@@ -39,7 +39,11 @@ export default function Busca({ juego, personaje, dif, onTerminar, onSalir }) {
       objetivos.length,
       cuantos(dif, juego.objetivos || 5, 3, objetivos.length)
     );
-    return [...revolver(objetivos).slice(0, cuantosBuscar), ...otros];
+    const enJuego = [...revolver(objetivos).slice(0, cuantosBuscar), ...otros];
+    // Cada partida los objetos se reparten en otros lugares de la escena:
+    // ya no sirve recordar "el que está arriba a la izquierda".
+    const lugares = revolver(escena.objetos.map(({ x, y }) => ({ x, y })));
+    return enJuego.map((o, i) => ({ ...o, ...lugares[i] }));
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [escena]);
 

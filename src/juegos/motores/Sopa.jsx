@@ -6,10 +6,10 @@ import { useCronometro, useTemporizadores } from "../../hooks/useCronometro.js";
 import { sonido } from "../../lib/sonido.js";
 import { confeti } from "../../lib/confeti.js";
 import { MarcoJuego, Cronometro, Progreso, Aviso } from "../ui/Marco.jsx";
+import { revolver } from "../../lib/azar.js";
 
 const LETRAS = "ABCDEFGHIJLMNOPRSTUVZ";
 const azar = (n) => Math.floor(Math.random() * n);
-const revolver = (l) => [...l].sort(() => Math.random() - 0.5);
 
 /**
  * Sopa de letras generada al vuelo.

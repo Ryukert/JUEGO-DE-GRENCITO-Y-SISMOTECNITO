@@ -6,8 +6,8 @@ import { useCronometro } from "../../hooks/useCronometro.js";
 import { sonido } from "../../lib/sonido.js";
 import { confeti } from "../../lib/confeti.js";
 import { MarcoJuego, Cronometro, Progreso, Retroalimentacion } from "../ui/Marco.jsx";
+import { revolver } from "../../lib/azar.js";
 
-const revolver = (lista) => [...lista].sort(() => Math.random() - 0.5);
 
 /**
  * Motor de preguntas de decisión.
