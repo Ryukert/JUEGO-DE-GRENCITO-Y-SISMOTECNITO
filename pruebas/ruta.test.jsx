@@ -22,8 +22,33 @@ beforeEach(() => {
 });
 afterEach(() => { cleanup(); vi.restoreAllMocks(); vi.useRealTimers(); });
 
-function montar(dificultad) {
-  const juego = POR_ID["ruta-evacuacion"];
+/* Mapa fijo para probar el motor sin depender del azar. Ruta segura: 17 pasos. */
+RUTAS.prueba = [
+  {
+    id: "prueba",
+    titulo: "Mapa de prueba",
+    pista: "",
+    segundosPorPaso: 1,
+    castigo: 4,
+    mapa: [
+      "###########",
+      "#J..#..X..#",
+      "#.#.#.###.#",
+      "#.#.....#E#",
+      "#.###.#.#.#",
+      "#T..#.#...#",
+      "##.##.###.#",
+      "#....X..#.#",
+      "#.####..#.#",
+      "#....##.#P#",
+      "####.....S#",
+    ],
+  },
+];
+
+function montar(dificultad, rutas) {
+  const base = POR_ID["ruta-evacuacion"];
+  const juego = rutas ? { ...base, rutas } : base;
   render(
     <PantallaMinijuego juego={juego} personaje={PERSONAJES[juego.personaje]} grado="primaria"
       progreso={leerProgreso()} onSalir={() => {}} onProgreso={() => {}} />
@@ -68,11 +93,9 @@ function mapaEnPantalla() {
 }
 
 describe("laberintos al azar", () => {
-  const niveles = RUTAS["ruta-evacuacion"].slice(1);
-
-  niveles.forEach((nivel) => {
+  RUTAS["ruta-evacuacion"].forEach((nivel) => {
     it(`${nivel.id}: 300 laberintos, todos con salida y con peligros en el camino`, () => {
-      const { columnas, filas } = nivel.generar;
+      const { columnas, filas, peligros, elevadores } = nivel.generar;
       for (let i = 0; i < 300; i++) {
         const mapa = generarMapa(nivel.generar);
         expect(mapa.length).toBe(filas);
@@ -88,29 +111,39 @@ describe("laberintos al azar", () => {
         expect(ruta, mapa.join("\n")).toBeTruthy();
         // no es un paseo: la ruta segura es larga
         expect(ruta.length).toBeGreaterThan(columnas);
-        const { peligros, elevadores } = nivel.generar;
         expect((texto.match(/[XT]/g) || []).length, mapa.join("\n")).toBe(peligros + elevadores);
       }
     });
   });
 
-  it("los mapas hechos a mano tienen ruta segura aunque se volteen", () => {
-    RUTAS["ruta-evacuacion"][0].forEach((nivel) => {
-      [[false, false], [true, false], [false, true], [true, true]].forEach(([h, v]) => {
-        const mapa = voltear(nivel.mapa, h, v);
-        expect(rutaSegura(mapa, buscar(mapa, "J")), `${nivel.id} ${h} ${v}`).toBeTruthy();
-      });
+  it("voltear un mapa conserva su ruta segura", () => {
+    const original = RUTAS.prueba[0].mapa;
+    [[true, false], [false, true], [true, true]].forEach(([h, v]) => {
+      const mapa = voltear(original, h, v);
+      expect(rutaSegura(mapa, buscar(mapa, "J")).length).toBe(rutaSegura(original, buscar(original, "J")).length);
     });
+  });
+
+  it("cada nivel es más duro que el anterior", () => {
+    const [facil, medio, dificil] = RUTAS["ruta-evacuacion"];
+    expect(facil.vision).toBeUndefined();
+    expect(medio.vision).toBeGreaterThan(dificil.vision);
+    expect(medio.replicas.cada).toBeLessThan(facil.replicas.cada);
+    expect(dificil.replicas.cada).toBeLessThan(medio.replicas.cada);
+    expect(dificil.castigo).toBeGreaterThan(medio.castigo);
+    expect(medio.castigo).toBeGreaterThan(facil.castigo);
   });
 });
 
-describe("ruta de evacuación más difícil", () => {
-  it("los peligros tapan el paso: chocar quita una vida una sola vez y no avanza", () => {
-    // 0.99 → elige el mapa "edificio" y no lo voltea
-    vi.spyOn(Math, "random").mockReturnValue(0.99);
-    montar();
+describe("ruta de evacuación difícil de verdad", () => {
+  it("los peligros tapan el paso: chocar quita una vida y segundos una sola vez", () => {
+    vi.useFakeTimers();
+    montar(null, "prueba");
     const inicio = indiceYo();
     expect(vidas()).toBe(4);
+    // 17 pasos × 1 s × 1.4 (fácil) = 23.8 s
+    const reloj = () => document.querySelector(".cronometro__numero").textContent;
+    expect(reloj()).toBe("24");
 
     // del inicio (1,1) bajando tres casillas se llega junto al elevador (1,5)
     tecla("ArrowDown"); tecla("ArrowDown"); tecla("ArrowDown");
@@ -120,42 +153,56 @@ describe("ruta de evacuación más difícil", () => {
     tecla("ArrowDown");
     expect(indiceYo()).toBe(junto);
     expect(vidas()).toBe(3);
+    expect(reloj()).toBe("20");
     expect(document.querySelector(".retro")).toBeTruthy();
 
     act(() => { fireEvent.click(screen.getByText(/Seguir/)); });
     tecla("ArrowDown");
     expect(indiceYo()).toBe(junto);
     expect(vidas()).toBe(3);
+    expect(reloj()).toBe("20");
     expect(document.querySelector(".celda--golpe")).toBeTruthy();
   });
 
-  it("difícil: sin luz, solo se ve alrededor y la salida brilla", () => {
-    montar("Difícil");
+  it("si los choques se comen todo el reloj, se acaba la partida", () => {
+    RUTAS.castigo = [{ ...RUTAS.prueba[0], castigo: 30 }];
+    vi.useFakeTimers();
+    montar(null, "castigo");
+    tecla("ArrowDown"); tecla("ArrowDown"); tecla("ArrowDown"); tecla("ArrowDown");
+    act(() => { vi.advanceTimersByTime(2000); });
+    expect(screen.getByText(/Se acabó/)).toBeTruthy();
+  });
+
+  it("medio: se va la luz y la linterna alumbra poco", () => {
+    montar("Medio");
     const total = document.querySelectorAll(".celda").length;
-    const oscuras = document.querySelectorAll(".celda--oscura").length;
     expect(total).toBe(13 * 13);
-    expect(oscuras).toBeGreaterThan(total / 2);
-    expect(document.querySelector(".mapa").textContent).toContain("🟢");
+    expect(document.querySelectorAll(".celda--oscura").length).toBeGreaterThan(total / 2);
     expect(document.querySelector(".cruceta__centro").textContent).toBe("🔦");
   });
 
-  it("medio: las réplicas tiran escombro sin cerrar el último camino", () => {
+  it("difícil: casi a ciegas, solo se ve lo de junto y la salida brilla", () => {
+    montar("Difícil");
+    const total = document.querySelectorAll(".celda").length;
+    expect(total).toBe(13 * 15);
+    // la linterna alumbra 3×3 alrededor del jugador; lo demás, oscuro (salvo la salida)
+    const visibles = total - document.querySelectorAll(".celda--oscura").length;
+    expect(visibles).toBeLessThanOrEqual(10);
+    expect(document.querySelector(".mapa").textContent).toContain("🟢");
+  });
+
+  it("fácil: las réplicas tiran escombro sin cerrar el último camino", () => {
     vi.useFakeTimers();
-    montar("Medio");
+    montar();
     expect(document.querySelectorAll(".celda").length).toBe(11 * 11);
     expect(document.querySelector(".celda__escombro")).toBeNull();
 
-    act(() => { vi.advanceTimersByTime(9500); });
-    expect(document.querySelectorAll(".celda__escombro").length).toBeGreaterThan(0);
+    act(() => { vi.advanceTimersByTime(10500); });
+    // tembló; el escombro solo cae si hay dónde sin tapar la salida (casi siempre)
+    expect(document.querySelector(".tablero-zona.tiembla")).toBeTruthy();
+    expect(document.querySelector(".aviso-flotante").textContent).toMatch(/Réplica/);
 
     const { mapa, yo } = mapaEnPantalla();
     expect(rutaSegura(mapa, yo), mapa.join("\n")).toBeTruthy();
-  });
-
-  it("el tiempo sale del largo de la ruta segura, no de un número fijo", () => {
-    vi.spyOn(Math, "random").mockReturnValue(0.99);
-    montar();
-    // edificio: 17 pasos × 1.5 s × 1.4 (fácil) = 35.7 s; antes eran 98 s
-    expect(document.querySelector(".cronometro__numero").textContent).toBe("36");
   });
 });
