@@ -438,6 +438,18 @@
 .celda--yo { background: #ffe7a8; }
 .celda__yo { font-size: 1.15em; }
 
+/* peligro con el que ya chocaste: sigue ahí, pero marcado */
+.celda--golpe { background: #f6c9c2; }
+
+/* réplicas: el escombro cae desde arriba */
+.celda__escombro { animation: cae 0.45s ease-out; }
+
+/* sin luz: lo que no alumbra la linterna se pierde en la oscuridad */
+.mapa--oscuro { background: #05080b; }
+.celda--oscura { background: #11161c; }
+.celda--recuerdo { filter: brightness(0.5) saturate(0.6); }
+.celda--luz { background: #1d3b26; box-shadow: inset 0 0 0 2px #39d353; }
+
 /* Rejilla de 3×3 en vez de posiciones fijas: así la cruceta se encoge
    sola en pantallas bajas sin que los botones se despeguen. */
 .cruceta {

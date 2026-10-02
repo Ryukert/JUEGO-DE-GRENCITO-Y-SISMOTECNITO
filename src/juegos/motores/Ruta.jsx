@@ -1,6 +1,7 @@
 import { useState, useMemo, useRef, useEffect, useCallback } from "react";
 import { RUTAS, LECCIONES_RUTA } from "../../data/juegos/rutas.js";
 import { segundos } from "../../lib/dificultad.js";
+import { generarMapa, rutaSegura, revolver, voltear } from "../../lib/laberinto.js";
 import { construirResultado } from "../../lib/recompensas.js";
 import { useCronometro, useTemporizadores } from "../../hooks/useCronometro.js";
 import { sonido } from "../../lib/sonido.js";
@@ -15,6 +16,7 @@ const ICONOS = {
   T: "🛗",
   E: "🧯",
   P: "🪧",
+  R: "🧱",
 };
 
 const TECLAS = {
@@ -32,48 +34,77 @@ const TECLAS = {
   D: [1, 0],
 };
 
+const PELIGROS = ["X", "T", "R"];
+
+/** Elige el nivel según la dificultad y arma su mapa (al azar si toca). */
+function prepararNivel(juego, dif) {
+  const lista = RUTAS[juego.rutas] || [];
+  const i = dif.id === "facil" ? 0 : dif.id === "medio" ? 1 : 2;
+  let nivel = lista[Math.min(i, lista.length - 1)];
+  if (Array.isArray(nivel)) nivel = nivel[Math.floor(Math.random() * nivel.length)];
+  if (!nivel) return null;
+
+  let mapa = nivel.generar ? generarMapa(nivel.generar) : nivel.mapa;
+  if (nivel.voltear) mapa = voltear(mapa, Math.random() < 0.5, Math.random() < 0.5);
+  return { ...nivel, mapa };
+}
+
+const lejania = (a, b) => Math.max(Math.abs(a.x - b.x), Math.abs(a.y - b.y));
+
 /**
  * Ruta de evacuación.
  *
  * El mapa viene de src/data/juegos/rutas.js como renglones de texto. El
  * jugador se mueve con flechas, WASD o la cruceta en pantalla, esquiva las
- * zonas de riesgo y llega a la salida segura. La dificultad elige el mapa
- * (más grande y enredado) y recorta el tiempo.
+ * zonas de riesgo y llega a la salida segura. La dificultad elige el nivel:
+ * en medio y difícil el laberinto es nuevo cada partida, hay réplicas que
+ * tiran escombro y, en difícil, solo se ve lo que alumbra la linterna.
+ *
+ * Con `juego.peligrosBloquean` los peligros no se atraviesan: chocar cuesta
+ * una vida y hay que rodearlos.
  */
 export default function Ruta({ juego, personaje, dif, onTerminar, onSalir }) {
   const enTiempo = useTemporizadores();
 
-  const nivel = useMemo(() => {
-    const lista = RUTAS[juego.rutas] || [];
-    const i = dif.id === "facil" ? 0 : dif.id === "medio" ? 1 : 2;
-    return lista[Math.min(i, lista.length - 1)] || null;
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  const [nivel] = useState(() => prepararNivel(juego, dif));
+  const mapa = nivel?.mapa;
 
   const inicio = useMemo(() => {
-    if (!nivel) return { x: 1, y: 1 };
-    for (let y = 0; y < nivel.mapa.length; y++) {
-      const x = nivel.mapa[y].indexOf("J");
+    if (!mapa) return { x: 1, y: 1 };
+    for (let y = 0; y < mapa.length; y++) {
+      const x = mapa[y].indexOf("J");
       if (x >= 0) return { x, y };
     }
     return { x: 1, y: 1 };
-  }, [nivel]);
+  }, [mapa]);
 
-  const totalSegundos = segundos(dif, nivel?.segundos || 50, 15);
+  // Con segundosPorPaso el tiempo depende del largo real de la ruta segura:
+  // un laberinto corto no regala segundos y uno largo no es imposible.
+  const totalSegundos = useMemo(() => {
+    if (nivel?.segundosPorPaso) {
+      const ruta = rutaSegura(mapa, inicio);
+      const pasos = ruta ? ruta.length - 1 : 30;
+      return segundos(dif, pasos * nivel.segundosPorPaso, 15);
+    }
+    return segundos(dif, nivel?.segundos || 50, 15);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [nivel]);
 
   // Algunos mapas (polinizadores) exigen recoger todo antes de llegar a la
   // meta. El resto solo pide llegar a la salida.
   const iconos = { ...ICONOS, ...(juego.iconos || {}) };
   const porRecoger = useMemo(() => {
-    if (!nivel || !juego.recolectarTodo) return 0;
-    return nivel.mapa.join("").split("E").length - 1;
-  }, [nivel, juego.recolectarTodo]);
+    if (!mapa || !juego.recolectarTodo) return 0;
+    return mapa.join("").split("E").length - 1;
+  }, [mapa, juego.recolectarTodo]);
 
   const [pos, setPos] = useState(inicio);
   const [vidas, setVidas] = useState(dif.vidas);
   const [puntos, setPuntos] = useState(0);
   const [recogidos, setRecogidos] = useState([]);
   const [visitados, setVisitados] = useState([]);
+  const [escombros, setEscombros] = useState([]);
+  const [temblando, setTemblando] = useState(false);
   const [retro, setRetro] = useState(null);
   const [aviso, setAviso] = useState(null);
   const [activo, setActivo] = useState(true);
@@ -84,6 +115,21 @@ export default function Ruta({ juego, personaje, dif, onTerminar, onSalir }) {
   const erroresRef = useRef(0);
   const cerrado = useRef(false);
   const tiempoRef = useRef(totalSegundos);
+  const escombrosRef = useRef([]);
+  const replicasRef = useRef(0);
+
+  /* Casillas que ya alumbró la linterna: se quedan visibles, pero tenues. */
+  const vistasRef = useRef(null);
+  function alumbrar(p) {
+    const r = nivel?.vision;
+    if (!r) return;
+    for (let y = p.y - r; y <= p.y + r; y++)
+      for (let x = p.x - r; x <= p.x + r; x++) vistasRef.current.add(`${x},${y}`);
+  }
+  if (!vistasRef.current) {
+    vistasRef.current = new Set();
+    alumbrar(inicio);
+  }
 
   const tiempo = useCronometro({
     activo: activo && !retro,
@@ -126,25 +172,103 @@ export default function Ruta({ juego, personaje, dif, onTerminar, onSalir }) {
      actualizador de estado: ahí los efectos se duplicarían en StrictMode. */
   const posRef = useRef(inicio);
 
+  const celdaEn = (x, y) => (escombrosRef.current.includes(`${x},${y}`) ? "R" : mapa[y]?.[x]);
+
+  /* Réplica: tiembla, y cae escombro en casillas libres sin cerrar nunca
+     el último camino seguro hasta la salida. */
+  function lanzarReplica({ cuantas = 1, enRuta = false }) {
+    setTemblando(true);
+    sonido.temblor();
+    enTiempo(() => setTemblando(false), 1200);
+
+    const yo = posRef.current;
+    const tapadas = new Set(escombrosRef.current);
+    const libre = (c) => mapa[c.y][c.x] === "." && !tapadas.has(`${c.x},${c.y}`) && lejania(c, yo) > 1;
+
+    const ruta = rutaSegura(mapa, yo, tapadas) || [];
+    const enCamino = new Set(ruta.map((c) => `${c.x},${c.y}`));
+    const resto = [];
+    mapa.forEach((fila, y) =>
+      [...fila].forEach((_, x) => {
+        if (!enCamino.has(`${x},${y}`) && libre({ x, y })) resto.push({ x, y });
+      })
+    );
+
+    let caidos = 0;
+    const intentar = (lista, maximo) => {
+      for (const c of lista) {
+        if (caidos >= maximo) return;
+        if (!libre(c)) continue;
+        const llave = `${c.x},${c.y}`;
+        tapadas.add(llave);
+        if (rutaSegura(mapa, yo, tapadas)) caidos++;
+        else tapadas.delete(llave);
+      }
+    };
+    if (enRuta) intentar(revolver(ruta.slice(2, -1)), 1);
+    intentar(revolver(resto), cuantas);
+
+    escombrosRef.current = [...tapadas];
+    setEscombros(escombrosRef.current);
+    mostrarAviso(caidos ? "¡Réplica! Cayó escombro 🧱" : "¡Réplica!", "mal");
+  }
+
+  useEffect(() => {
+    const replicas = nivel?.replicas;
+    if (!replicas || !activo || retro || cerrado.current) return;
+    const toca = Math.floor((totalSegundos - tiempo) / replicas.cada);
+    if (toca <= replicasRef.current) return;
+    replicasRef.current = toca;
+    lanzarReplica(replicas);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [tiempo]);
+
+  /* Chocar con un peligro: cuesta una vida y explica por qué. */
+  function golpe(celda, llave) {
+    erroresRef.current += 1;
+    vidasRef.current -= 1;
+    setVidas(vidasRef.current);
+    setVisitados((v) => [...v, llave]);
+    sonido.mal();
+
+    const opciones = LECCIONES_RUTA[celda] || [];
+    const leccion = opciones[Math.floor(Math.random() * opciones.length)];
+
+    if (vidasRef.current <= 0) {
+      setActivo(false);
+      enTiempo(() => cerrar(false), 900);
+      mostrarAviso("Se acabaron las vidas", "mal");
+    } else if (leccion) {
+      setRetro(leccion);
+    }
+  }
+
   const mover = useCallback(
     (dx, dy) => {
-      if (!activo || retro || !nivel || cerrado.current) return;
+      if (!activo || retro || !mapa || cerrado.current) return;
 
       const p = posRef.current;
       const nx = p.x + dx;
       const ny = p.y + dy;
-      const fila = nivel.mapa[ny];
-      if (!fila) return;
-      const celda = fila[nx];
+      const celda = celdaEn(nx, ny);
       if (!celda || celda === "#") {
         sonido.tic();
+        return;
+      }
+      const llave = `${nx},${ny}`;
+      const peligro = PELIGROS.includes(celda);
+
+      // el peligro tapa el paso: no se avanza, solo se paga el choque una vez
+      if (peligro && juego.peligrosBloquean) {
+        if (visitados.includes(llave)) sonido.tic();
+        else golpe(celda, llave);
         return;
       }
 
       posRef.current = { x: nx, y: ny };
       setPos(posRef.current);
+      alumbrar(posRef.current);
       pasosRef.current += 1;
-      const llave = `${nx},${ny}`;
 
       if (celda === "S") {
         if (juego.recolectarTodo && recogidos.length < porRecoger) {
@@ -172,27 +296,10 @@ export default function Ruta({ juego, personaje, dif, onTerminar, onSalir }) {
         return;
       }
 
-      if ((celda === "X" || celda === "T") && !visitados.includes(llave)) {
-        erroresRef.current += 1;
-        vidasRef.current -= 1;
-        setVidas(vidasRef.current);
-        setVisitados((v) => [...v, llave]);
-        sonido.mal();
-
-        const opciones = LECCIONES_RUTA[celda] || [];
-        const leccion = opciones[Math.floor(Math.random() * opciones.length)];
-
-        if (vidasRef.current <= 0) {
-          setActivo(false);
-          enTiempo(() => cerrar(false), 900);
-          mostrarAviso("Se acabaron las vidas", "mal");
-        } else if (leccion) {
-          setRetro(leccion);
-        }
-      }
+      if (peligro && !visitados.includes(llave)) golpe(celda, llave);
     },
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [activo, retro, nivel, recogidos, visitados, porRecoger]
+    [activo, retro, mapa, recogidos, visitados, porRecoger]
   );
 
   /* teclado: se quita solo al desmontar */
@@ -209,8 +316,9 @@ export default function Ruta({ juego, personaje, dif, onTerminar, onSalir }) {
 
   if (!nivel) return null;
 
-  const columnas = nivel.mapa[0].length;
-  const filas = nivel.mapa.length;
+  const columnas = mapa[0].length;
+  const filas = mapa.length;
+  const vision = nivel.vision;
 
   return (
     <div className="mini mini--ruta">
@@ -235,27 +343,44 @@ export default function Ruta({ juego, personaje, dif, onTerminar, onSalir }) {
         )}
       </p>
 
-      <div className="tablero-zona">
+      <div className={`tablero-zona ${temblando ? "tiembla" : ""}`}>
         <div
-          className="mapa tablero-ajustable"
+          className={`mapa tablero-ajustable ${vision ? "mapa--oscuro" : ""}`}
           style={{ "--columnas": columnas, "--filas": filas }}
           role="img"
           aria-label={`Mapa de evacuación, estás en la fila ${pos.y}, columna ${pos.x}`}
         >
-        {nivel.mapa.map((fila, y) =>
-          [...fila].map((celda, x) => {
+        {mapa.map((fila, y) =>
+          [...fila].map((_, x) => {
             const llave = `${x},${y}`;
-            const usado = recogidos.includes(llave) || visitados.includes(llave);
+            const celda = escombros.includes(llave) ? "R" : fila[x];
+            const golpeado = visitados.includes(llave);
+            const usado = recogidos.includes(llave) || (golpeado && !juego.peligrosBloquean);
             const aqui = pos.x === x && pos.y === y;
-            const base = celda === "#" ? "muro" : "piso";
+
+            // fuera del alcance de la linterna: oscuro, salvo lo ya visto y
+            // la salida, que es fotoluminiscente
+            const lejos = vision && lejania({ x, y }, pos) > vision;
+            const oculta = lejos && celda !== "S" && !vistasRef.current.has(llave);
+            const base = oculta ? "oscura" : celda === "#" ? "muro" : "piso";
+            const extra = [
+              aqui && "celda--yo",
+              lejos && !oculta && (celda === "S" ? "celda--luz" : "celda--recuerdo"),
+              golpeado && !usado && "celda--golpe",
+            ]
+              .filter(Boolean)
+              .join(" ");
+
             return (
-              <span key={llave} className={`celda celda--${base} ${aqui ? "celda--yo" : ""}`}>
+              <span key={llave} className={`celda celda--${base} ${extra}`}>
                 {aqui ? (
                   <span className="celda__yo" aria-hidden="true">
                     🧍
                   </span>
-                ) : usado ? (
+                ) : usado || oculta ? (
                   ""
+                ) : celda === "R" ? (
+                  <span className="celda__escombro">{iconos.R}</span>
                 ) : (
                   iconos[celda] || ""
                 )}
@@ -280,7 +405,7 @@ export default function Ruta({ juego, personaje, dif, onTerminar, onSalir }) {
           ▼
         </button>
         <span className="cruceta__centro" aria-hidden="true">
-          🧭
+          {vision ? "🔦" : "🧭"}
         </span>
       </div>
 

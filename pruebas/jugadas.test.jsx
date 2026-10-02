@@ -121,11 +121,14 @@ describe("jugadas completas", () => {
 
   it("ruta de evacuación: el jugador se mueve con el teclado", () => {
     montar("ruta-evacuacion");
-    const antes = document.querySelector(".celda--yo");
-    const idxAntes = [...document.querySelectorAll(".celda")].indexOf(antes);
-    act(() => { fireEvent.keyDown(window, { key: "ArrowDown" }); });
-    const idxDespues = [...document.querySelectorAll(".celda")].indexOf(document.querySelector(".celda--yo"));
-    expect(idxDespues).not.toBe(idxAntes);
+    const indice = () => [...document.querySelectorAll(".celda")].indexOf(document.querySelector(".celda--yo"));
+    const idxAntes = indice();
+    // el mapa sale volteado al azar: se prueba hasta encontrar un lado libre
+    for (const key of ["ArrowDown", "ArrowRight", "ArrowUp", "ArrowLeft"]) {
+      act(() => { fireEvent.keyDown(window, { key }); });
+      if (indice() !== idxAntes) break;
+    }
+    expect(indice()).not.toBe(idxAntes);
   });
 
   it("planta un árbol: la mejor decisión hace crecer la planta", () => {
