@@ -314,7 +314,11 @@ código nuevo: necesita datos y una entrada en `src/juegos/registro.js`.
 
 `Ruta` sirve para dos cosas según los datos: llegar a la salida (ruta de
 evacuación) o visitar todo antes de volver (polinizadores, con
-`recolectarTodo`). `Quiz` y `Atrapa` pueden mezclar varios bancos con `bancos`.
+`recolectarTodo`). En la ruta de evacuación los peligros tapan el paso
+(`peligrosBloquean`), el mapa de fácil sale volteado al azar, medio y difícil
+generan un laberinto nuevo cada partida (`src/lib/laberinto.js`), hay réplicas
+que tiran escombro sin cerrar nunca el último camino y en difícil se va la luz.
+El tiempo se calcula con el largo de la ruta segura más corta. `Quiz` y `Atrapa` pueden mezclar varios bancos con `bancos`.
 
 `Clasicos` no es un motor: es el adaptador que deja jugar Memorama, Simulacro y
 Separa o pierde desde el centro sin haberlos modificado.

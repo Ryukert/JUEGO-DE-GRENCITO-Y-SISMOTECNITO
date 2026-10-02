@@ -159,7 +159,7 @@ describe("la fórmula de ajuste cabe en cualquier pantalla", () => {
   ];
 
   const tableros = [
-    ["mapa difícil", 11, 12, 460],
+    ["mapa difícil", 13, 13, 460],
     ["sopa difícil", 13, 13, 460],
     ["rompecabezas", 4, 4, 400],
     ["terreno solar", 5, 4, 470],
