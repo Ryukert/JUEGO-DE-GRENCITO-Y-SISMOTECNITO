@@ -53,8 +53,8 @@ export const JUEGOS = [
     xp: 0,
     descripcion: "Sal del edificio por la ruta segura antes de que se acabe el tiempo.",
     comoSeJuega:
-      "Muévete con las flechas, WASD o la cruceta. Las zonas de riesgo tapan el paso y chocar cuesta una vida. " +
-      "Cuidado con las réplicas: tiran escombro. En medio el edificio cambia cada vez y en difícil se va la luz.",
+      "Muévete con las flechas, WASD o la cruceta. Cada partida es un edificio distinto. Las zonas de riesgo " +
+      "tapan el paso y chocar cuesta vida y tiempo. Las réplicas tiran escombro y en medio y difícil se va la luz.",
   },
   {
     id: "agachate",

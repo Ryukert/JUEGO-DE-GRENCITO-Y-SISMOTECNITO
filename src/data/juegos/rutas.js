@@ -27,91 +27,47 @@
  *   replicas         { cada, cuantas, enRuta }: cada tantos segundos tiembla
  *                    y cae escombro; con enRuta el primero cae en tu camino
  *   vision           casillas que alumbra la linterna; lo demás está oscuro
+ *   castigo          segundos que se pierden al chocar con un peligro
  */
 
-/* Mapas hechos a mano del nivel fácil. Se voltean al azar para que no se
-   puedan aprender de memoria. */
-const FACIL = { voltear: true, segundosPorPaso: 1.5, replicas: { cada: 15, cuantas: 1 } };
-
 export const RUTAS = {
+  /* Los tres niveles son laberintos nuevos en cada partida: no hay mapa
+     que aprenderse de memoria. */
   "ruta-evacuacion": [
-    /* Fácil: uno de los tres mapas, al azar y volteado. */
-    [
-      {
-        ...FACIL,
-        id: "salon",
-        titulo: "Tu salón de clases",
-        pista: "Sal del salón al patio sin pasar por las zonas de riesgo.",
-        mapa: [
-          "###########",
-          "#J...#....#",
-          "#.##.#.##.#",
-          "#.#X.....E#",
-          "#.#.###.#.#",
-          "#.......#.#",
-          "#T##.##.#.#",
-          "#....#....#",
-          "####.####S#",
-        ],
-      },
-      {
-        ...FACIL,
-        id: "pasillo",
-        titulo: "El pasillo del segundo piso",
-        pista: "El elevador no es salida. Busca la escalera.",
-        mapa: [
-          "###########",
-          "#J..#....E#",
-          "#.#.#.##..#",
-          "#.#....#X.#",
-          "#.####.#..#",
-          "#....#.#.T#",
-          "#.##.#.#..#",
-          "#..X.....P#",
-          "#####.###S#",
-        ],
-      },
-      {
-        ...FACIL,
-        id: "edificio",
-        titulo: "Todo el edificio",
-        pista: "Recoge el extintor, evita el ventanal y llega al punto de reunión.",
-        mapa: [
-          "###########",
-          "#J..#..X..#",
-          "#.#.#.###.#",
-          "#.#.....#E#",
-          "#.###.#.#.#",
-          "#T..#.#...#",
-          "##.##.###.#",
-          "#....X..#.#",
-          "#.####..#.#",
-          "#....##.#P#",
-          "####.....S#",
-        ],
-      },
-    ],
-
-    /* Medio: el edificio cambia cada partida y las réplicas tiran escombro
-       justo por donde ibas. */
+    /* Fácil: se ve todo, pero las réplicas tapan tu camino seguido. */
     {
       id: "pasillos-revueltos",
       titulo: "Pasillos después del sismo",
       pista: "Cada vez es un edificio distinto. Las réplicas tiran escombro: busca otra ruta.",
-      generar: { columnas: 11, filas: 11, peligros: 3, elevadores: 1, extintores: 2, atajos: 0.15 },
-      segundosPorPaso: 0.85,
-      replicas: { cada: 9, cuantas: 1, enRuta: true },
+      generar: { columnas: 11, filas: 11, peligros: 4, elevadores: 1, extintores: 2, atajos: 0.15 },
+      segundosPorPaso: 0.8,
+      castigo: 2,
+      replicas: { cada: 10, cuantas: 1, enRuta: true },
     },
 
-    /* Difícil: laberinto más grande, sin luz y con réplicas seguidas. */
+    /* Medio: edificio más grande y sin luz; la linterna alumbra poco. */
     {
       id: "edificio-sin-luz",
       titulo: "Se fue la luz",
       pista: "Solo ves lo que alumbra tu linterna. Las señales de salida brillan en la oscuridad.",
-      generar: { columnas: 13, filas: 13, peligros: 5, elevadores: 2, extintores: 3, atajos: 0.12 },
-      segundosPorPaso: 1.2,
+      generar: { columnas: 13, filas: 13, peligros: 6, elevadores: 2, extintores: 3, atajos: 0.12 },
+      segundosPorPaso: 0.9,
+      castigo: 3,
       vision: 2,
       replicas: { cada: 7, cuantas: 2, enRuta: true },
+    },
+
+    /* Difícil: casi a ciegas, réplicas sin descanso y cada choque cuesta
+       vida y tiempo. */
+    {
+      id: "edificio-a-ciegas",
+      titulo: "A oscuras y temblando",
+      pista: "Tu linterna apenas alumbra. Réplicas cada pocos segundos y cada choque te quita tiempo.",
+      generar: { columnas: 13, filas: 15, peligros: 8, elevadores: 2, extintores: 3, atajos: 0.1 },
+      segundosPorPaso: 1.1,
+      castigo: 5,
+      vision: 1,
+      replicas: { cada: 5, cuantas: 2, enRuta: true },
     },
   ],
 

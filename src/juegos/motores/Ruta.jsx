@@ -105,6 +105,7 @@ export default function Ruta({ juego, personaje, dif, onTerminar, onSalir }) {
   const [visitados, setVisitados] = useState([]);
   const [escombros, setEscombros] = useState([]);
   const [temblando, setTemblando] = useState(false);
+  const [castigado, setCastigado] = useState(0); // segundos perdidos por choques
   const [retro, setRetro] = useState(null);
   const [aviso, setAviso] = useState(null);
   const [activo, setActivo] = useState(true);
@@ -136,7 +137,14 @@ export default function Ruta({ juego, personaje, dif, onTerminar, onSalir }) {
     segundos: totalSegundos,
     alTerminar: () => cerrar(false),
   });
-  tiempoRef.current = tiempo;
+  const restante = Math.max(0, +(tiempo - castigado).toFixed(1));
+  tiempoRef.current = restante;
+
+  // los choques también se comen el reloj: se acaba antes que el cronómetro
+  useEffect(() => {
+    if (castigado > 0 && restante <= 0 && activo) cerrar(false);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [restante]);
 
   const cerrar = useCallback(
     (completado) => {
@@ -223,13 +231,18 @@ export default function Ruta({ juego, personaje, dif, onTerminar, onSalir }) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [tiempo]);
 
-  /* Chocar con un peligro: cuesta una vida y explica por qué. */
+  /* Chocar con un peligro: cuesta una vida (y segundos, si el nivel lo
+     pide) y explica por qué. */
   function golpe(celda, llave) {
     erroresRef.current += 1;
     vidasRef.current -= 1;
     setVidas(vidasRef.current);
     setVisitados((v) => [...v, llave]);
     sonido.mal();
+    if (nivel.castigo) {
+      setCastigado((c) => c + nivel.castigo);
+      mostrarAviso(`⏱️ −${nivel.castigo} s`, "mal");
+    }
 
     const opciones = LECCIONES_RUTA[celda] || [];
     const leccion = opciones[Math.floor(Math.random() * opciones.length)];
@@ -331,7 +344,7 @@ export default function Ruta({ juego, personaje, dif, onTerminar, onSalir }) {
         onSalir={onSalir}
       />
 
-      <Cronometro tiempo={tiempo} total={totalSegundos} />
+      <Cronometro tiempo={restante} total={totalSegundos} />
 
       <p className="busca__pista">
         <strong>{nivel.titulo}.</strong> {nivel.pista}
