@@ -131,6 +131,36 @@ la tome.
 
 ---
 
+## Seguridad del chat
+
+La llave de Anthropic solo vive en el servidor (`api/chat.js`) y el chat está pensado
+para que nadie pueda usarlo para otra cosa a costa de tu cuenta:
+
+- **El navegador no manda instrucciones para la IA.** Solo dice qué se juega
+  (personaje, grado, misión) y qué respondió o preguntó el jugador. Las
+  instrucciones se arman en el servidor con `construirSistema` y el contenido de
+  `src/data/personajes.js`. Un personaje, grado, misión o respuesta que no exista
+  se rechaza sin llamar a la IA, y si la respuesta es correcta lo decide el servidor.
+- **Cuidado de quien juega:** el personaje nunca pide datos personales, no repite
+  los que alguien comparta, no cambia de papel aunque se lo pidan y, si alguien
+  cuenta que está en peligro, le dice que avise a un adulto o llame al 911.
+- **Topes de uso** (`api/_limites.js`): por persona, 12 mensajes por minuto y 150
+  por día; del juego completo, 3,000 al día. Se cambian con `CHAT_LIMITE_MINUTO`,
+  `CHAT_LIMITE_IP_DIA` y `CHAT_LIMITE_DIARIO`. Sin más configuración, cada copia del
+  servidor cuenta en su memoria; con `UPSTASH_REDIS_REST_URL` y
+  `UPSTASH_REDIS_REST_TOKEN` (Upstash o Vercel KV) la cuenta es una sola para todas.
+  Al llegar al tope el juego sigue: solo el chat descansa.
+- **Errores sin detalles:** si Anthropic falla (sin crédito, llave inválida…), el
+  jugador ve «El personaje no puede contestar ahorita» y el detalle queda en el
+  registro de Vercel (Logs).
+- **Tope de gasto en Anthropic:** además, pon un límite mensual en
+  console.anthropic.com → Settings → Limits. Es la última barrera si algo falla.
+
+Las variables están explicadas en `.env.example`. `.env` y `.env.local` están en
+`.gitignore`: la llave no se sube a GitHub.
+
+---
+
 ## Diseño adaptativo
 
 - **Teléfono vertical:** `100dvh` con el chat al centro y los controles fijos
@@ -200,7 +230,8 @@ segundos, vidas y el tono con que la IA le habla a cada edad.
 ## Estructura
 
 ```
-api/chat.js                    función serverless: habla con Anthropic
+api/chat.js                    función serverless: arma la consulta y habla con Anthropic
+api/_limites.js                topes de uso del chat (por persona y diario)
 public/                        imágenes: personajes y logos institucionales
 
 src/App.jsx                    estado de la partida y ruteo de pantallas
