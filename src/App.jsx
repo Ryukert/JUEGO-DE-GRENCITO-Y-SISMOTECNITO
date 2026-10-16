@@ -9,13 +9,15 @@ import { POR_ID } from "./juegos/registro.js";
 import { sonido, sonidoActivo, alternarSonido } from "./lib/sonido.js";
 import { leerProgreso, guardarGrado, registrarPartida } from "./lib/progreso.js";
 
+/* Sin personaje elegido, el juego se ve con los colores de la UABC:
+   verde institucional y dorado. */
 const TEMA_NEUTRO = {
-  fondo: "#dbe9f8",
-  fondo2: "#e8f3d6",
-  tinta: "#10304f",
-  acento: "#0f6fc4",
-  acento2: "#f4691f",
-  linea: "#8fb6dd",
+  fondo: "#EAF3EA",
+  fondo2: "#F7F0DA",
+  tinta: "#123B24",
+  acento: "#007336",
+  acento2: "#8A6608",
+  linea: "#AFCDBB",
 };
 
 export default function App() {
