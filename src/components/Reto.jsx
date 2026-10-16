@@ -3,6 +3,7 @@ import { GRADOS } from "../data/personajes.js";
 import { sonido } from "../lib/sonido.js";
 import { confeti } from "../lib/confeti.js";
 import { revolver } from "../lib/azar.js";
+import Icono from "./Icono.jsx";
 
 export default function Reto({
   personaje: p,
@@ -94,8 +95,9 @@ export default function Reto({
     const doble = enBono ? 2 : 1;
 
     let ganados = 0;
+    let multiplicador = 1;
     if (correcto) {
-      const multiplicador = racha >= 4 ? 3 : racha >= 2 ? 2 : 1;
+      multiplicador = racha >= 4 ? 3 : racha >= 2 ? 2 : 1;
       ganados = Math.round((15 + tiempo) * multiplicador * doble);
       sonido.bien();
       confeti({ colores: p.colores, cantidad: multiplicador > 1 ? 70 : 45 });
@@ -112,6 +114,7 @@ export default function Reto({
         veredicto: correcto ? "¡Correcto!" : opcion ? "Casi" : "Tiempo",
         correcto,
         ganados,
+        multi: multiplicador,
       },
     ]);
 
@@ -173,9 +176,9 @@ export default function Reto({
           <img src={p.cuerpo} alt="" />
           {animo === "feliz" && <span className="mision-escena__globo">¡Bien!</span>}
           {animo === "triste" && <span className="mision-escena__globo">¡Casi!</span>}
-          {animo === "tiempo" && <span className="mision-escena__globo">⏰</span>}
+          {animo === "tiempo" && <span className="mision-escena__globo"><Icono nombre="reloj" /></span>}
         </div>
-        {mision.lugar && <span className="mision-escena__lugar">📍 {mision.lugar}</span>}
+        {mision.lugar && <span className="mision-escena__lugar"><Icono nombre="lugar" /> {mision.lugar}</span>}
 
       <div className="chat" role="log" aria-live="polite">
         {mensajes.map((m, i) =>
@@ -191,8 +194,13 @@ export default function Reto({
               >
                 {m.veredicto && (
                   <span className={`veredicto ${m.correcto ? "veredicto--bien" : "veredicto--mal"}`}>
-                    {m.correcto ? "✓" : "✕"} {m.veredicto}
+                    <Icono nombre={m.correcto ? "bien" : "mal"} /> {m.veredicto}
                     {m.ganados > 0 && <b> +{m.ganados}</b>}
+                    {m.multi > 1 && (
+                      <span className="veredicto__racha">
+                        <Icono nombre="fuego" /> racha x{m.multi}
+                      </span>
+                    )}
                   </span>
                 )}
                 <p>{m.texto}</p>
@@ -232,7 +240,11 @@ export default function Reto({
         {!enPregunta && (
           <div className="opciones">
             <button className="boton-grande" onClick={continuar}>
-              {etapa === "resultado" && hayBono ? "Pregunta de bonificación ⭐" : "Siguiente misión →"}
+              {etapa === "resultado" && hayBono ? (
+                <>Pregunta de bonificación <Icono nombre="estrella" /></>
+              ) : (
+                <>Siguiente misión <Icono nombre="siguiente" /></>
+              )}
             </button>
           </div>
         )}

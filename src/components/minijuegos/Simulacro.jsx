@@ -3,6 +3,7 @@ import { ACCIONES_SIMULACRO, TRAMPAS_SIMULACRO } from "../../data/personajes.js"
 import { sonido } from "../../lib/sonido.js";
 import { confeti } from "../../lib/confeti.js";
 import { revolver } from "../../lib/azar.js";
+import Icono, { Vidas, iconoMoneda } from "../Icono.jsx";
 
 const RONDAS = [
   { trampas: 1, segundos: 9 },
@@ -167,14 +168,11 @@ export default function Simulacro({ personaje: p, vidas: vidasIniciales, onTermi
   return (
     <div className={`mini mini--simulacro ${fase === "jugando" ? "sacude" : ""}`}>
       <div className="mini__hud">
-        <span className="vidas" aria-label={`${Math.max(0, vidas)} vidas`}>
-          {"❤️".repeat(Math.max(0, vidas))}
-          {"🖤".repeat(Math.max(0, vidasIniciales - vidas))}
-        </span>
+        <Vidas vidas={vidas} max={vidasIniciales} />
         <span className="mini__ronda">
           Ronda {Math.min(ronda + 1, RONDAS.length)} de {RONDAS.length}
         </span>
-        <span className="marcador">{p.monedaIcono} {puntos}</span>
+        <span className="marcador"><Icono nombre={iconoMoneda(p.moneda)} /> {puntos}</span>
       </div>
 
       <div className="cronometro" aria-hidden="true">

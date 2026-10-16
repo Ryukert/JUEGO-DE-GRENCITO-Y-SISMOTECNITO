@@ -34,7 +34,7 @@ describe("misión", () => {
     montar();
     expect(personaje().querySelector("img").getAttribute("src")).toBe(p.cuerpo);
     expect(personaje().className).toMatch(/--piensa/);
-    expect(screen.getByText("📍 " + mision.lugar)).toBeTruthy();
+    expect(document.querySelector(".mision-escena__lugar").textContent.trim()).toBe(mision.lugar);
   });
 
   it("reacciona: feliz al acertar, triste al fallar", () => {

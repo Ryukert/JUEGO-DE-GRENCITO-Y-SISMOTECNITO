@@ -9,6 +9,7 @@
 
 import { sonido } from "../../lib/sonido.js";
 import { puedeLeer, leer } from "../../lib/voz.js";
+import Icono, { Vidas } from "../../components/Icono.jsx";
 
 /* ------------------------- escuchar en voz alta ------------------------- */
 
@@ -17,7 +18,7 @@ export function Escuchar({ texto, etiqueta = "Escuchar" }) {
   if (!puedeLeer() || !texto) return null;
   return (
     <button type="button" className="escuchar" onClick={() => leer(texto)} aria-label={`${etiqueta} en voz alta`}>
-      <span aria-hidden="true">🔊</span> {etiqueta}
+      <Icono nombre="sonido" /> {etiqueta}
     </button>
   );
 }
@@ -28,7 +29,7 @@ export function MarcoJuego({ juego, dificultad, vidas, vidasMax, puntos, extra, 
   return (
     <header className="jm__hud">
       <button className="jm__salir" onClick={onSalir} aria-label="Salir del minijuego">
-        ←
+        <Icono nombre="volver" />
       </button>
       <div className="jm__id">
         <span className="jm__icono" aria-hidden="true">
@@ -37,14 +38,11 @@ export function MarcoJuego({ juego, dificultad, vidas, vidasMax, puntos, extra, 
         <span className="jm__nombre">{juego.nombre}</span>
       </div>
       {typeof vidas === "number" && (
-        <span className="vidas jm__vidas" aria-label={`${Math.max(0, vidas)} vidas`}>
-          {"❤️".repeat(Math.max(0, vidas))}
-          {"🖤".repeat(Math.max(0, (vidasMax ?? vidas) - vidas))}
-        </span>
+        <Vidas vidas={vidas} max={vidasMax ?? vidas} className="jm__vidas" />
       )}
       {extra}
       <span className="marcador jm__puntos" aria-label={`${puntos} puntos`}>
-        <span aria-hidden="true">{dificultad?.icono}</span> {puntos}
+        {dificultad && <i className={`punto-dif punto-dif--${dificultad.id}`} aria-hidden="true" />} {puntos}
       </span>
     </header>
   );
@@ -109,7 +107,7 @@ export function Retroalimentacion({ correcto, respuestaCorrecta, explicacion, da
       aria-live="polite"
     >
       <p className="retro__titulo">
-        {correcto ? "✅ ¡Correcto!" : "❌ Incorrecto"}
+        <Icono nombre={correcto ? "bien" : "mal"} className="retro__marca" /> {correcto ? "¡Correcto!" : "Incorrecto"}
         {correcto && ganados > 0 && <b className="retro__puntos"> +{ganados}</b>}
       </p>
 
@@ -123,7 +121,7 @@ export function Retroalimentacion({ correcto, respuestaCorrecta, explicacion, da
 
       {dato && (
         <p className="retro__dato">
-          <strong>💡 ¿Sabías que...?</strong> {dato}
+          <strong><Icono nombre="foco" /> ¿Sabías que...?</strong> {dato}
         </p>
       )}
     </div>
@@ -145,7 +143,7 @@ export function Instrucciones({
   return (
     <div className="mini mini--intro jm__intro">
       <button className="volver" onClick={onSalir}>
-        ← Centro de entrenamiento
+        <Icono nombre="volver" /> Centro de entrenamiento
       </button>
 
       {personaje?.cuerpo && <img className="mini__figura flota" src={personaje.cuerpo} alt="" />}
@@ -164,7 +162,7 @@ export function Instrucciones({
         onCambiar={onDificultad}
       />
 
-      {record > 0 && <p className="jm__record">🏆 Tu récord: {record}</p>}
+      {record > 0 && <p className="jm__record"><Icono nombre="trofeo" /> Tu récord: {record}</p>}
 
       <button
         className="boton-grande"
@@ -198,7 +196,7 @@ export function SelectorDificultad({ valor, opciones, onCambiar }) {
             onCambiar(d.id);
           }}
         >
-          <span aria-hidden="true">{d.icono}</span>
+          <i className={`punto-dif punto-dif--${d.id}`} aria-hidden="true" />
           <strong>{d.nombre}</strong>
           <small>{d.para}</small>
         </button>
@@ -215,8 +213,9 @@ export function Resultado({ juego, personaje, resultado, estrellas, nuevoRecord,
       {personaje?.cuerpo && <img className="mini__figura flota" src={personaje.cuerpo} alt="" />}
 
       <p className="jm__estrellas" aria-label={`${estrellas} de 3 estrellas`}>
-        {"⭐".repeat(estrellas)}
-        {"☆".repeat(3 - estrellas)}
+        {[0, 1, 2].map((i) => (
+          <Icono key={i} nombre={i < estrellas ? "estrella" : "estrella-vacia"} className={`jm__estrella ${i < estrellas ? "jm__estrella--ganada" : ""}`} />
+        ))}
       </p>
 
       <h2>{resultado.completed ? "¡Reto superado!" : "Se acabó"}</h2>
@@ -238,13 +237,13 @@ export function Resultado({ juego, personaje, resultado, estrellas, nuevoRecord,
         {resultado.reward.shields > 0 && (
           <li>
             <span>Escudos</span>
-            <b>🛡️ +{resultado.reward.shields}</b>
+            <b><Icono nombre="escudo" /> +{resultado.reward.shields}</b>
           </li>
         )}
         {resultado.reward.seeds > 0 && (
           <li>
             <span>Semillas</span>
-            <b>🌱 +{resultado.reward.seeds}</b>
+            <b><Icono nombre="brote" /> +{resultado.reward.seeds}</b>
           </li>
         )}
         <li>

@@ -3,6 +3,7 @@ import { BOTES, RESIDUOS } from "../../data/personajes.js";
 import { sonido } from "../../lib/sonido.js";
 import { confeti } from "../../lib/confeti.js";
 import { revolver } from "../../lib/azar.js";
+import Icono, { Vidas, iconoMoneda } from "../Icono.jsx";
 
 const TOTAL = 10;
 
@@ -154,15 +155,12 @@ export default function Basura({ personaje: p, grado, vidas: vidasIniciales, onT
   return (
     <div className="mini mini--basura">
       <div className="mini__hud">
-        <span className="vidas" aria-label={`${Math.max(0, vidas)} vidas`}>
-          {"❤️".repeat(Math.max(0, vidas))}
-          {"🖤".repeat(Math.max(0, vidasIniciales - vidas))}
-        </span>
+        <Vidas vidas={vidas} max={vidasIniciales} />
         <span className="mini__ronda">
           {indice + 1} / {TOTAL}
-          {racha >= 2 && <strong className="racha"> 🔥 x{racha}</strong>}
+          {racha >= 2 && <strong className="racha" key={racha}> <Icono nombre="fuego" /> x{racha}</strong>}
         </span>
-        <span className="marcador">{p.monedaIcono} {puntos}</span>
+        <span className="marcador"><Icono nombre={iconoMoneda(p.moneda)} /> {puntos}</span>
       </div>
 
       <div className="cronometro" aria-hidden="true">

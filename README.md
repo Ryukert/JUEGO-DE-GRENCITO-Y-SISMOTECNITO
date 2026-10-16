@@ -177,6 +177,30 @@ sonido se puede silenciar desde el altavoz del HUD y la preferencia se guarda.
 
 ---
 
+## Identidad visual
+
+- **Tipografía:** Nunito (redondeada, muy legible para primaria), dentro del
+  proyecto en `src/fuentes/` con su licencia SIL OFL. No se pide nada a Google
+  Fonts; el archivo pesa 39 KB y solo trae el alfabeto latino (cubre á, ñ, ¿, ¡).
+- **Iconos propios:** `src/components/Icono.jsx` dibuja en SVG los controles y
+  el marcador (volver, sonido, corazones, racha, escudo, semilla, estrella,
+  trofeo, candado, tema…). Toman el color del texto, así que sirven en los dos
+  temas. Los emojis se quedan solo en el contenido de los juegos.
+- **Contraste:** todas las parejas de texto y fondo pasan WCAG AA (4.5:1) en los
+  dos temas. Por eso el verde y los naranjas de los botones son un poco más
+  oscuros que los del dibujo. La prueba `pruebas/diseno.test.jsx` lo revisa.
+- **Tema oscuro:** sigue al sistema hasta que se toca el botón de luna/sol (en
+  la portada y el Centro); desde ahí se recuerda en este navegador. Cada
+  personaje tiene `tema` y `temaOscuro` en `personajes.js`; lo demás son
+  variables en `styles.css` (`--superficie`, `--contorno`, `--texto-suave`…).
+  Los dibujos de los tableros y los logotipos conservan sus colores.
+- **Festejo:** al terminar la partida los puntos cuentan desde cero, salen de una
+  a tres estrellas según el rango, confeti en tres tandas y, con récord nuevo,
+  un listón dorado. En las misiones, la racha salta cada vez que sube y la
+  respuesta muestra el multiplicador.
+
+---
+
 ## Sonido y efectos
 
 No hay archivos de audio: todo se genera con Web Audio (`src/lib/sonido.js`).
@@ -239,8 +263,10 @@ src/components/Portada.jsx     elegir grado y personaje
 src/components/Juego.jsx       HUD y ruteo de misión
 src/components/Reto.jsx        pregunta con cronómetro + chat
 src/components/minijuegos/     Memorama.jsx, Simulacro.jsx, Basura.jsx
-src/components/Final.jsx       rango, récord y medallas
+src/components/Final.jsx       rango, estrellas, récord y festejo
 src/components/Creditos.jsx    logos UABC y FCITEC
+src/components/Icono.jsx       iconos SVG de la interfaz y corazones de vida
+src/components/BotonTema.jsx   botón de tema claro / oscuro
 
 src/pages/Centro.jsx           catálogo de minijuegos por categoría
 src/juegos/registro.js         catálogo: qué juegos hay y con qué se juegan
@@ -260,7 +286,9 @@ src/hooks/useCronometro.js     cronómetro y timeouts que se limpian solos
 src/lib/dificultad.js          fácil / medio / difícil
 src/lib/recompensas.js         score, XP, escudos y semillas
 src/lib/progreso.js            localStorage v2 con migración desde v1
+src/lib/tema.js                tema claro / oscuro (sistema o elección guardada)
 src/lib/                       sonido.js, confeti.js
+src/fuentes/                   Nunito (woff2) y su licencia OFL
 src/styles.css                 estilos del juego original
 src/styles-minijuegos.css      estilos de los minijuegos, del centro y el
                                sistema de tableros que se ajustan a la pantalla
@@ -482,7 +510,7 @@ una pantalla concreta.
 npm test
 ```
 
-131 pruebas. Monta los 46 minijuegos del catálogo, juega hasta el final los seis
+186 pruebas. Monta los 46 minijuegos del catálogo, juega hasta el final los seis
 jefes de simulación, comprueba que los indicadores nunca se salen de 0 a 100,
 que el presupuesto no se va a negativos, que todas las palabras listadas en la
 sopa de letras están de verdad en el tablero, que el rompecabezas siempre
