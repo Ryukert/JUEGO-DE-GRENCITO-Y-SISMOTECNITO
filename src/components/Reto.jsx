@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from "react";
-import { GRADOS, construirSistema } from "../data/personajes.js";
+import { GRADOS } from "../data/personajes.js";
 import { sonido } from "../lib/sonido.js";
 import { confeti } from "../lib/confeti.js";
 import { revolver } from "../lib/azar.js";
@@ -60,16 +60,15 @@ export default function Reto({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [tiempo, etapa]);
 
-  async function comentario(prompt, contexto) {
+  /* El servidor arma lo que se le pide a la IA con el contenido del juego (api/chat.js):
+     aquí solo se dice qué se está jugando y qué respondió o preguntó el jugador. */
+  async function comentario(consulta) {
     setPensando(true);
     try {
       const r = await fetch("/api/chat", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          system: construirSistema(p, grado, contexto),
-          messages: [{ role: "user", content: prompt }],
-        }),
+        body: JSON.stringify({ personaje: p.id, grado, mision: mision.id, ...consulta }),
       });
       if (!r.ok) throw new Error("sin servidor");
       const { texto: t } = await r.json();
@@ -116,10 +115,7 @@ export default function Reto({
     if (correcto) onPuntos(ganados);
     else onFallo();
 
-    comentario(
-      `El jugador respondió: "${elegido}". La respuesta ${correcto ? "es correcta" : "no es correcta"}. Comenta en una o dos frases, ${correcto ? "celebrando" : "corrigiendo con ánimo"}, y cierra con este dato si viene al caso: ${mision.dato || pregunta.explicacion}`,
-      `Misión "${mision.titulo}". Pregunta: ${enBono ? pregunta.pregunta : mision.escenario}`
-    );
+    comentario({ tipo: "respuesta", bono: enBono, eleccion: opcion ? opcion.texto : null });
 
     setEtapa(enBono ? "bonoResultado" : "resultado");
   }
@@ -131,7 +127,7 @@ export default function Reto({
     setTexto("");
     setMensajes((m) => [...m, { de: "yo", texto: q }]);
     sonido.clic();
-    await comentario(q, `Misión "${mision.titulo}": ${mision.escenario}`);
+    await comentario({ tipo: "pregunta", texto: q });
   }
 
   function continuar() {
@@ -224,6 +220,7 @@ export default function Reto({
           <input
             value={texto}
             onChange={(e) => setTexto(e.target.value)}
+            maxLength={300}
             placeholder={`Pregúntale algo a ${p.nombre}...`}
             aria-label={`Escribe tu pregunta para ${p.nombre}`}
             disabled={pensando}

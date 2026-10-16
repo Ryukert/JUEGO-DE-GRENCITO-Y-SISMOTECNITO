@@ -1,0 +1,21 @@
+# Dependencias y compilado
+node_modules/
+dist/
+coverage/
+
+# Claves: nunca se suben (la de Anthropic va en .env.local o en Vercel)
+.env
+.env.*
+!.env.example
+
+# Vercel
+.vercel/
+
+# Sistema y editores
+*.log
+npm-debug.log*
+.DS_Store
+Thumbs.db
+desktop.ini
+.idea/
+*.swp
