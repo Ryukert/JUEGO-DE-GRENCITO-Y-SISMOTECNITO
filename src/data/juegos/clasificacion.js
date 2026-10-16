@@ -47,7 +47,7 @@ export const CLASIFICACIONES = {
       { nombre: "Agua embotellada", icono: "💧", contenedor: "si", explicacion: "Lo primero de todo: 4 litros por persona al día.", dato: "La reserva recomendada es de tres días." },
       { nombre: "Linterna de pilas", icono: "🔦", contenedor: "si", explicacion: "Luz sin flama y sin depender del celular.", dato: "Guarda las pilas aparte para que no se descarguen." },
       { nombre: "Silbato", icono: "📣", contenedor: "si", explicacion: "Pesa casi nada y se oye mucho más lejos que un grito.", dato: "Es lo más subestimado de toda la mochila." },
-      { nombre: "Botiquín", icono: "🩹", contenedor: "si", explicacion: "Gasas, vendas y las medicinas que alguien de la casa necesite.", dato: "Anota también las alergias de cada quien." },
+      { nombre: "Botiquín", icono: "💊", contenedor: "si", explicacion: "Gasas, vendas y las medicinas que alguien de la casa necesite.", dato: "Anota también las alergias de cada quien." },
       { nombre: "Copias de documentos", icono: "📄", contenedor: "si", explicacion: "Actas, identificaciones y cartilla, en una bolsa de plástico.", dato: "Sin documentos es más difícil recibir apoyo después." },
       { nombre: "Radio de pilas", icono: "📻", contenedor: "si", explicacion: "Cuando no hay luz ni señal, el radio sigue informando.", dato: "Los de manivela no necesitan pilas." },
       { nombre: "Velas y cerillos", icono: "🕯️", contenedor: "no", explicacion: "Jamás: si hay fuga de gas, una chispa se vuelve incendio.", dato: "Por eso siempre linterna, nunca vela." },

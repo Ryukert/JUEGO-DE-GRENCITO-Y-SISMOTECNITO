@@ -26,13 +26,13 @@ export const SIMULACIONES = {
       { id: "bosques", nombre: "Bosques", icono: "🌳", inicial: 50, meta: 55 },
       { id: "agua", nombre: "Agua", icono: "💧", inicial: 45, meta: 55 },
       { id: "biodiversidad", nombre: "Biodiversidad", icono: "🐝", inicial: 50, meta: 55 },
-      { id: "gente", nombre: "Bienestar", icono: "🧑‍🤝‍🧑", inicial: 55, meta: 50 },
+      { id: "gente", nombre: "Bienestar", icono: "👫", inicial: 55, meta: 50 },
     ],
     decisiones: [
       { id: "sp1", icono: "🚌", texto: "Transporte público eléctrico en la ciudad", efectos: { emisiones: 18, gente: 10, agua: -2 }, explicacion: "Sacar carros de circulación es la medida urbana que más limpia el aire.", dato: "Un camión lleno saca de circulación hasta 30 automóviles." },
       { id: "sp2", icono: "🏭", texto: "Permitir una fábrica sin filtros a cambio de empleos", efectos: { emisiones: -22, gente: 12, agua: -12 }, explicacion: "Los empleos son reales, pero el costo lo paga el aire y el río de todos.", dato: "Un filtro industrial cuesta una fracción de lo que cuesta limpiar un río después." },
       { id: "sp3", icono: "🌳", texto: "Reforestar las cuencas altas con especies nativas", efectos: { bosques: 20, agua: 14, biodiversidad: 12 }, explicacion: "Reforestar arriba protege el agua y el suelo de todo lo que está abajo.", dato: "Un bosque sano infiltra al subsuelo casi la mitad de la lluvia que recibe." },
-      { id: "sp4", icono: "🪓", texto: "Abrir tierra al cultivo talando bosque", efectos: { bosques: -22, biodiversidad: -16, gente: 10, agua: -8 }, explicacion: "Da comida un par de años; después el suelo sin bosque se agota y se lava.", dato: "La agricultura es la principal causa de deforestación en el mundo." },
+      { id: "sp4", icono: "🚜", texto: "Abrir tierra al cultivo talando bosque", efectos: { bosques: -22, biodiversidad: -16, gente: 10, agua: -8 }, explicacion: "Da comida un par de años; después el suelo sin bosque se agota y se lava.", dato: "La agricultura es la principal causa de deforestación en el mundo." },
       { id: "sp5", icono: "💧", texto: "Reparar la red de agua de la ciudad", efectos: { agua: 20, gente: 8 }, explicacion: "En muchas ciudades mexicanas se pierde en fugas cerca del 40% del agua potable.", dato: "Reparar fugas sale más barato que traer agua de más lejos." },
       { id: "sp6", icono: "☀️", texto: "Instalar generación solar en escuelas y hospitales", efectos: { emisiones: 15, gente: 6 }, explicacion: "Techos que ya existen, energía que no se transporta y ahorro público directo.", dato: "México recibe de las mejores radiaciones solares del planeta." },
       { id: "sp7", icono: "🐝", texto: "Prohibir los plaguicidas que matan polinizadores", efectos: { biodiversidad: 20, gente: -4, bosques: 4 }, explicacion: "Cuesta a corto plazo, pero sin polinizadores no hay fruta ni verdura.", dato: "Uno de cada tres bocados de tu comida depende de un polinizador." },
@@ -77,7 +77,7 @@ export const SIMULACIONES = {
       { id: "ec6", icono: "🌳", texto: "Reforestar la ribera de la laguna", efectos: { plantas: 16, agua: 14, insectos: 6 }, explicacion: "La vegetación de la orilla filtra el agua y da sombra a la laguna.", dato: "Se le llama bosque de galería y es de los hábitats más ricos que hay." },
       { id: "ec7", icono: "🚜", texto: "Permitir ganado suelto en la orilla", efectos: { plantas: -16, agua: -12, herbivoros: 6 }, explicacion: "El ganado se come los brotes, pisa la orilla y ensucia el agua.", dato: "Basta una cerca a 10 metros del agua para que la ribera se recupere sola." },
       { id: "ec8", icono: "🚱", texto: "Extraer agua de la laguna para riego", efectos: { agua: -18, plantas: -6, herbivoros: -6 }, explicacion: "Bajar el nivel de la laguna afecta a todo lo que vive de ella.", dato: "Una laguna somera pierde muchísima agua por evaporación cuando baja." },
-      { id: "ec9", icono: "🪵", texto: "Dejar los troncos caídos en su lugar", efectos: { insectos: 12, depredadores: 8, plantas: 4 }, explicacion: "La madera muerta es casa y comida de insectos, hongos y aves.", dato: "Un bosque 'limpio' de troncos caídos es un bosque más pobre." },
+      { id: "ec9", icono: "🍄", texto: "Dejar los troncos caídos en su lugar", efectos: { insectos: 12, depredadores: 8, plantas: 4 }, explicacion: "La madera muerta es casa y comida de insectos, hongos y aves.", dato: "Un bosque 'limpio' de troncos caídos es un bosque más pobre." },
       { id: "ec10", icono: "🎣", texto: "Abrir la laguna a la pesca sin límite", efectos: { depredadores: -14, insectos: 8, agua: -4 }, explicacion: "Sacar a los depredadores desordena toda la cadena de abajo.", dato: "Las vedas existen para que las poblaciones alcancen a reproducirse." },
       { id: "ec11", icono: "🧹", texto: "Retirar la basura de la laguna con la comunidad", efectos: { agua: 16, insectos: 6, plantas: 4 }, explicacion: "Lo más eficaz y lo más barato: que no llegue basura y sacar la que ya está.", dato: "Las jornadas comunitarias funcionan si además se resuelve de dónde viene la basura." },
       { id: "ec12", icono: "🏞️", texto: "No hacer nada esta temporada y observar", efectos: {}, explicacion: "A veces es la mejor decisión: dejar que el sistema se acomode solo.", dato: "El monitoreo antes de actuar evita 'arreglar' lo que no estaba roto." },
@@ -94,7 +94,7 @@ export const SIMULACIONES = {
     titulo: "Ciudad sostenible",
     escenario: "Administras una ciudad de 200 mil habitantes. Ocho turnos y un presupuesto.",
     turnos: 8,
-    recurso: { nombre: "Presupuesto", icono: "🪙", inicial: 100 },
+    recurso: { nombre: "Presupuesto", icono: "💰", inicial: 100 },
     indicadores: [
       { id: "vivienda", nombre: "Vivienda", icono: "🏘️", inicial: 45, meta: 50 },
       { id: "servicios", nombre: "Escuelas y salud", icono: "🏥", inicial: 45, meta: 50 },
@@ -156,9 +156,9 @@ export const SIMULACIONES = {
         nombre: "2. Protección",
         pregunta: "Ya está temblando fuerte. Los vidrios vibran.",
         decisiones: [
-          { id: "e2a", icono: "🧎", texto: "Agacharse, cubrirse la cabeza y agarrarse lejos de ventanas", efectos: { seguridad: 20, calma: 10 }, explicacion: "Agáchate, cúbrete, agárrate. Lo demás se hace cuando deje de temblar.", dato: "La mayoría de lesiones son por objetos que caen, no por derrumbe." },
+          { id: "e2a", icono: "🙇", texto: "Agacharse, cubrirse la cabeza y agarrarse lejos de ventanas", efectos: { seguridad: 20, calma: 10 }, explicacion: "Agáchate, cúbrete, agárrate. Lo demás se hace cuando deje de temblar.", dato: "La mayoría de lesiones son por objetos que caen, no por derrumbe." },
           { id: "e2b", icono: "🚪", texto: "Pararse bajo el marco de la puerta", efectos: { seguridad: -10, calma: -4 }, explicacion: "Mito viejo: el marco no es más fuerte que el muro y la puerta golpea.", dato: "El consejo viene de casas de adobe de hace un siglo." },
-          { id: "e2c", icono: "🪟", texto: "Asomarse a la ventana a ver el edificio de enfrente", efectos: { seguridad: -20, calma: -10 }, explicacion: "La ventana es exactamente el peor lugar del salón.", dato: "El vidrio se rompe hacia adentro y a la altura de la cara." },
+          { id: "e2c", icono: "🌇", texto: "Asomarse a la ventana a ver el edificio de enfrente", efectos: { seguridad: -20, calma: -10 }, explicacion: "La ventana es exactamente el peor lugar del salón.", dato: "El vidrio se rompe hacia adentro y a la altura de la cara." },
         ],
       },
       {
@@ -166,7 +166,7 @@ export const SIMULACIONES = {
         pregunta: "Dejó de temblar. Hay polvo en el pasillo.",
         decisiones: [
           { id: "e3a", icono: "🚶", texto: "Salir en fila, sin correr, por la ruta marcada", efectos: { seguridad: 16, calma: 10, tiempo: -10 }, explicacion: "En orden se sale más rápido que en desorden, aunque no lo parezca.", dato: "Los simulacros se cronometran justo para descubrir dónde se hace cuello de botella." },
-          { id: "e3b", icono: "🛗", texto: "Bajar por el elevador para ir más rápido", efectos: { seguridad: -22, tiempo: -6 }, explicacion: "Puede irse la luz en cualquier momento y quedarse atorado con la réplica.", dato: "Los elevadores modernos se detienen solos al sentir movimiento." },
+          { id: "e3b", icono: "🔼", texto: "Bajar por el elevador para ir más rápido", efectos: { seguridad: -22, tiempo: -6 }, explicacion: "Puede irse la luz en cualquier momento y quedarse atorado con la réplica.", dato: "Los elevadores modernos se detienen solos al sentir movimiento." },
           { id: "e3c", icono: "🎒", texto: "Regresar por las mochilas del salón", efectos: { seguridad: -16, tiempo: -16 }, explicacion: "No se regresa. Las réplicas empiezan en minutos.", dato: "Un muro cuarteado puede caer con la segunda sacudida." },
         ],
       },
@@ -183,7 +183,7 @@ export const SIMULACIONES = {
         nombre: "5. Punto de reunión",
         pregunta: "Están todos afuera, dispersos por el patio.",
         decisiones: [
-          { id: "e5a", icono: "🪧", texto: "Concentrarse en el punto de reunión y pasar lista", efectos: { seguridad: 14, calma: 14, comunicacion: 10 }, explicacion: "Pasar lista es cómo se sabe, en minutos, si falta alguien adentro.", dato: "El punto de reunión va en zona abierta, lejos de cables y bardas." },
+          { id: "e5a", icono: "🚩", texto: "Concentrarse en el punto de reunión y pasar lista", efectos: { seguridad: 14, calma: 14, comunicacion: 10 }, explicacion: "Pasar lista es cómo se sabe, en minutos, si falta alguien adentro.", dato: "El punto de reunión va en zona abierta, lejos de cables y bardas." },
           { id: "e5b", icono: "🚧", texto: "Esperar pegados a la barda perimetral", efectos: { seguridad: -16, calma: -6 }, explicacion: "Las bardas son de lo primero que se cae con una réplica.", dato: "Por eso el punto de reunión se marca lejos de bardas y postes." },
           { id: "e5c", icono: "🚪", texto: "Que cada quien se vaya a su casa de inmediato", efectos: { seguridad: -12, comunicacion: -16, calma: -8 }, explicacion: "Sin lista nadie sabe quién salió y quién no.", dato: "Los alumnos se entregan a un adulto responsable, no se sueltan a la calle." },
         ],
@@ -205,14 +205,14 @@ export const SIMULACIONES = {
     },
   },
 
-  /* --------------------- 🧑‍🚒 Comandante de emergencias --------------------- */
+  /* --------------------- 🚒 Comandante de emergencias --------------------- */
   "comandante-emergencias": {
     titulo: "Comandante de emergencias",
     escenario: "Centro de mando. Un sismo dejó daños en toda la ciudad y tienes recursos limitados.",
     turnos: 7,
     recurso: { nombre: "Unidades", icono: "🚒", inicial: 12 },
     indicadores: [
-      { id: "rescate", nombre: "Rescate", icono: "🧑‍🚒", inicial: 40, meta: 55 },
+      { id: "rescate", nombre: "Rescate", icono: "🚒", inicial: 40, meta: 55 },
       { id: "salud", nombre: "Atención médica", icono: "🏥", inicial: 45, meta: 55 },
       { id: "refugio", nombre: "Refugios", icono: "⛺", inicial: 35, meta: 50 },
       { id: "info", nombre: "Información", icono: "📻", inicial: 40, meta: 50 },
@@ -248,7 +248,7 @@ export const SIMULACIONES = {
     titulo: "Ciudad 100% segura y sostenible",
     escenario: "El reto final: Tecnito cuida seguridad, emergencias e infraestructura; Greencito cuida agua, residuos, energía y naturaleza. La ciudad necesita las dos cosas.",
     turnos: 10,
-    recurso: { nombre: "Presupuesto", icono: "🪙", inicial: 120 },
+    recurso: { nombre: "Presupuesto", icono: "💰", inicial: 120 },
     indicadores: [
       { id: "seguridad", nombre: "Seguridad", icono: "🛡️", inicial: 45, meta: 55, equipo: "tecnito" },
       { id: "emergencias", nombre: "Emergencias", icono: "🚨", inicial: 40, meta: 55, equipo: "tecnito" },

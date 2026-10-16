@@ -50,7 +50,7 @@ export const PREGUNTAS = {
     },
     {
       id: "ag3",
-      icono: "🛗",
+      icono: "🔼",
       situacion: "Vas en el pasillo del segundo piso y empieza la alerta sísmica.",
       opciones: [
         { texto: "Alejarme de las ventanas y agacharme junto a un muro firme", ok: true },
@@ -188,7 +188,7 @@ export const PREGUNTAS = {
     },
     {
       id: "in5",
-      icono: "🪟",
+      icono: "🌇",
       situacion: "Estás atrapado en un cuarto con humo bajo la puerta y no puedes salir.",
       opciones: [
         { texto: "Tapar la rendija con ropa mojada y hacerme ver desde la ventana", ok: true },
@@ -366,7 +366,7 @@ export const PREGUNTAS = {
     },
     {
       id: "fg4",
-      icono: "🫧",
+      icono: "🧼",
       situacion: "Quieren revisar si una conexión de gas tiene fuga pequeña.",
       opciones: [
         { texto: "Untar agua con jabón: si burbujea, hay fuga", ok: true },
@@ -422,7 +422,7 @@ export const PREGUNTAS = {
     },
     {
       id: "ll3",
-      icono: "🧑‍🤝‍🧑",
+      icono: "👫",
       situacion: "Preguntan cuántas personas están involucradas.",
       opciones: [
         { texto: "El número exacto que veo y si alguna no responde", ok: true },
@@ -589,7 +589,7 @@ export const PREGUNTAS = {
   "ahorra-agua": [
     {
       id: "aa1",
-      icono: "🪥",
+      icono: "🦷",
       situacion: "Te lavas los dientes por dos minutos.",
       opciones: [
         { texto: "Cerrar la llave mientras me cepillo y usar un vaso", ok: true },
@@ -709,7 +709,7 @@ export const PREGUNTAS = {
     },
     {
       id: "tr4",
-      icono: "🛻",
+      icono: "🚚",
       situacion: "Cinco compañeros van al mismo lugar desde la misma colonia.",
       opciones: [
         { texto: "Organizar un solo viaje compartido", ok: true },
@@ -974,7 +974,7 @@ export const PREGUNTAS = {
     },
     {
       id: "vf6",
-      icono: "🛗",
+      icono: "🔼",
       afirmacion: "Está bien usar el elevador si el sismo fue leve.",
       verdadero: false,
       explicacion: "Se puede ir la luz en cualquier momento y quedas atrapado adentro.",

@@ -67,7 +67,9 @@ describe("simulaciones (jefes finales)", () => {
     const recurso = () => Number(document.querySelector(".sim__recurso").textContent.replace(/\D/g, ""));
     const inicial = recurso();
     expect(inicial).toBe(100);
-    act(() => { fireEvent.click(primeraOpcion()); });
+    // una opción que gaste (las de "ahorrar" suben el presupuesto y salen revueltas)
+    const gasta = [...document.querySelectorAll(".opciones button:not(:disabled)")].find((b) => b.querySelector(".sim__costo"));
+    act(() => { fireEvent.click(gasta); });
     expect(recurso()).toBeLessThanOrEqual(inicial);
     expect(recurso()).toBeGreaterThanOrEqual(0);
   });

@@ -185,7 +185,15 @@ sonido se puede silenciar desde el altavoz del HUD y la preferencia se guarda.
 - **Iconos propios:** `src/components/Icono.jsx` dibuja en SVG los controles y
   el marcador (volver, sonido, corazones, racha, escudo, semilla, estrella,
   trofeo, candado, tema…). Toman el color del texto, así que sirven en los dos
-  temas. Los emojis se quedan solo en el contenido de los juegos.
+  temas.
+- **Insignias de los minijuegos:** `src/components/IconoJuego.jsx` tiene un
+  dibujo propio para cada uno de los 46 juegos, sobre el color de su categoría
+  (los jefes finales llevan corona), y medallas para los rangos (Aprendiz a
+  Leyenda). Al agregar un juego nuevo hay que dibujarle su insignia: la prueba
+  `pruebas/iconos.test.jsx` falla si falta o si repite dibujo.
+- **Emojis del contenido:** los objetos, residuos y escenas siguen con emoji, pero
+  solo con los que existen desde antes de 2019, para que no salgan como cuadritos
+  en teléfonos y computadoras viejas de las escuelas (la misma prueba lo revisa).
 - **Contraste:** todas las parejas de texto y fondo pasan WCAG AA (4.5:1) en los
   dos temas. Por eso el verde y los naranjas de los botones son un poco más
   oscuros que los del dibujo. La prueba `pruebas/diseno.test.jsx` lo revisa.
@@ -266,6 +274,7 @@ src/components/minijuegos/     Memorama.jsx, Simulacro.jsx, Basura.jsx
 src/components/Final.jsx       rango, estrellas, récord y festejo
 src/components/Creditos.jsx    logos UABC y FCITEC
 src/components/Icono.jsx       iconos SVG de la interfaz y corazones de vida
+src/components/IconoJuego.jsx  insignias de los 46 juegos y medallas de rango
 src/components/BotonTema.jsx   botón de tema claro / oscuro
 
 src/pages/Centro.jsx           catálogo de minijuegos por categoría
@@ -510,7 +519,7 @@ una pantalla concreta.
 npm test
 ```
 
-186 pruebas. Monta los 46 minijuegos del catálogo, juega hasta el final los seis
+192 pruebas. Monta los 46 minijuegos del catálogo, juega hasta el final los seis
 jefes de simulación, comprueba que los indicadores nunca se salen de 0 a 100,
 que el presupuesto no se va a negativos, que todas las palabras listadas en la
 sopa de letras están de verdad en el tablero, que el rompecabezas siempre

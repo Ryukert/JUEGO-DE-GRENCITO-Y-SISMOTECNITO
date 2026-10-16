@@ -6,6 +6,7 @@ import Creditos from "./Creditos.jsx";
 import { JUEGOS } from "../juegos/registro.js";
 import Icono, { ICONO_GRADO } from "./Icono.jsx";
 import BotonTema from "./BotonTema.jsx";
+import { IconoRango } from "./IconoJuego.jsx";
 
 /* Los números de la portada salen del contenido: si se agrega una misión o un juego, se actualizan solos. */
 const EN_LETRA = ["cero", "una", "dos", "tres", "cuatro", "cinco", "seis", "siete", "ocho", "nueve", "diez"];
@@ -90,9 +91,13 @@ export default function Portada({ progreso, onElegir, onCentro, tema, onTema }) 
               <h2>{p.nombre}</h2>
               <p>{p.resumen}</p>
               <span className="carta__record">
-                {record > 0
-                  ? `${rango.icono} Récord: ${record} ${p.moneda}`
-                  : "Sin récord todavía"}
+                {record > 0 ? (
+                  <>
+                    <IconoRango rango={rango} /> Récord: {record} {p.moneda}
+                  </>
+                ) : (
+                  "Sin récord todavía"
+                )}
               </span>
               <span className="carta__cta">Jugar <Icono nombre="siguiente" /></span>
             </button>

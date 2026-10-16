@@ -10,6 +10,7 @@
 import { sonido } from "../../lib/sonido.js";
 import { puedeLeer, leer } from "../../lib/voz.js";
 import Icono, { Vidas } from "../../components/Icono.jsx";
+import IconoJuego from "../../components/IconoJuego.jsx";
 
 /* ------------------------- escuchar en voz alta ------------------------- */
 
@@ -32,9 +33,7 @@ export function MarcoJuego({ juego, dificultad, vidas, vidasMax, puntos, extra, 
         <Icono nombre="volver" />
       </button>
       <div className="jm__id">
-        <span className="jm__icono" aria-hidden="true">
-          {juego.icono}
-        </span>
+        <IconoJuego juego={juego} className="jm__icono" />
         <span className="jm__nombre">{juego.nombre}</span>
       </div>
       {typeof vidas === "number" && (
@@ -149,7 +148,7 @@ export function Instrucciones({
       {personaje?.cuerpo && <img className="mini__figura flota" src={personaje.cuerpo} alt="" />}
 
       <h2>
-        <span aria-hidden="true">{juego.icono}</span> {juego.nombre}
+        <IconoJuego juego={juego} /> {juego.nombre}
       </h2>
       <p className="mini__texto">{juego.descripcion}</p>
       {juego.comoSeJuega && (

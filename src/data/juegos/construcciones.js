@@ -41,7 +41,7 @@ export const CONSTRUCCIONES = {
         pregunta: "¿Qué cimentación le ponemos?",
         preguntaCorta: "¿Qué ponemos abajo del edificio?",
         opciones: [
-          { texto: "Losa de cimentación amarrada, del ancho del edificio", corto: "Una base grande y unida", forma: "losa", icono: "🟫", solidez: 2, explicacion: "La losa reparte el peso y hace que todo el edificio se mueva como una sola pieza.", explicacionCorta: "¡Bien! La base unida hace que todo se mueva junto.", dato: "Si una parte se hunde más que otra, el edificio se parte solo." },
+          { texto: "Losa de cimentación amarrada, del ancho del edificio", corto: "Una base grande y unida", forma: "losa", icono: "⬛", solidez: 2, explicacion: "La losa reparte el peso y hace que todo el edificio se mueva como una sola pieza.", explicacionCorta: "¡Bien! La base unida hace que todo se mueva junto.", dato: "Si una parte se hunde más que otra, el edificio se parte solo." },
           { texto: "Zapatas sueltas, cada una por su lado", corto: "Bloques sueltos", forma: "zapatas", icono: "🧱", solidez: -1, explicacion: "Sin trabes de liga cada zapata se mueve distinto y agrieta los muros.", explicacionCorta: "Cada bloque se mueve por su lado y el edificio se agrieta.", dato: "Las zapatas van amarradas entre sí, siempre." },
           { texto: "Nada, el edificio es chico", corto: "Nada, es chiquito", forma: "nada", icono: "🚫", solidez: -2, explicacion: "Sin cimentación el edificio se voltea completo, no importa qué tan bueno sea arriba.", explicacionCorta: "Sin base, el edificio se puede voltear.", dato: "En un sismo la falla más común empieza abajo, no arriba." },
         ],
@@ -75,8 +75,8 @@ export const CONSTRUCCIONES = {
         preguntaCorta: "¿Qué paredes le ponemos?",
         opciones: [
           { texto: "Muros de relleno separados de la estructura, con castillos", corto: "Paredes con castillos", forma: "castillos", icono: "🧱", solidez: 2, explicacion: "Bien confinados aportan rigidez sin pelearse con las columnas.", explicacionCorta: "¡Bien! Los castillos hacen las paredes más fuertes.", dato: "Un muro pegado a media columna la parte: se llama columna corta." },
-          { texto: "Muros pesados de piedra en los pisos altos", corto: "Paredes de piedra arriba", forma: "piedra", icono: "🪨", solidez: -2, explicacion: "El peso arriba multiplica la fuerza del sismo. Lo pesado va abajo.", explicacionCorta: "Lo pesado arriba hace que se mueva más. Lo pesado va abajo.", dato: "Un edificio con la cabeza pesada se sacude como un martillo invertido." },
-          { texto: "Tablaroca ligera en todo", corto: "Paredes ligeras", forma: "ligeros", icono: "🪟", solidez: 1, explicacion: "Ligera y segura, aunque no aporta rigidez. Depende toda la estructura.", explicacionCorta: "Ligeras está bien: menos peso, menos fuerza.", dato: "Ligero es bueno en sismo: menos masa, menos fuerza." },
+          { texto: "Muros pesados de piedra en los pisos altos", corto: "Paredes de piedra arriba", forma: "piedra", icono: "🧱", solidez: -2, explicacion: "El peso arriba multiplica la fuerza del sismo. Lo pesado va abajo.", explicacionCorta: "Lo pesado arriba hace que se mueva más. Lo pesado va abajo.", dato: "Un edificio con la cabeza pesada se sacude como un martillo invertido." },
+          { texto: "Tablaroca ligera en todo", corto: "Paredes ligeras", forma: "ligeros", icono: "📄", solidez: 1, explicacion: "Ligera y segura, aunque no aporta rigidez. Depende toda la estructura.", explicacionCorta: "Ligeras está bien: menos peso, menos fuerza.", dato: "Ligero es bueno en sismo: menos masa, menos fuerza." },
         ],
       },
     ],
@@ -104,7 +104,7 @@ export const CONSTRUCCIONES = {
         pregunta: "¿De dónde captamos el agua?",
         opciones: [
           { texto: "Del techo limpio de lámina o losa impermeabilizada", icono: "🏠", solidez: 2, explicacion: "Superficie lisa y limpia: el agua llega con menos tierra y menos hojas.", dato: "Un techo de 100 m² capta unos 80 mil litros en una temporada normal." },
-          { texto: "Del patio de tierra", icono: "🟤", solidez: -2, explicacion: "El agua del suelo trae lodo, animales y contaminación. No sirve ni para regar bien.", dato: "El agua de techo es la más limpia que se puede captar sin planta de tratamiento." },
+          { texto: "Del patio de tierra", icono: "🏜️", solidez: -2, explicacion: "El agua del suelo trae lodo, animales y contaminación. No sirve ni para regar bien.", dato: "El agua de techo es la más limpia que se puede captar sin planta de tratamiento." },
           { texto: "De un techo con teja vieja y musgo", icono: "🍃", solidez: 0, explicacion: "Capta, pero arrastra mucho material orgánico que después tapa el filtro.", dato: "El musgo suelta esporas que echan a perder el agua guardada." },
         ],
       },
@@ -124,7 +124,7 @@ export const CONSTRUCCIONES = {
         pregunta: "La primera lluvia arrastra todo el polvo del techo. ¿Qué hacemos?",
         opciones: [
           { texto: "Poner un separador que deseche los primeros litros", icono: "🚿", solidez: 2, explicacion: "Los primeros minutos lavan el techo. Esa agua se tira y el resto entra limpia.", dato: "Se le llama first flush y es lo que decide si el agua se puede usar o no." },
-          { texto: "Guardarla toda, el filtro se encarga", icono: "🪣", solidez: -1, explicacion: "El filtro se satura en una semana y hay que cambiarlo constantemente.", dato: "Separar primero cuesta menos que filtrar de más." },
+          { texto: "Guardarla toda, el filtro se encarga", icono: "🛢️", solidez: -1, explicacion: "El filtro se satura en una semana y hay que cambiarlo constantemente.", dato: "Separar primero cuesta menos que filtrar de más." },
           { texto: "Barrer el techo antes de cada lluvia", icono: "🧹", solidez: 0, explicacion: "Funciona, pero nadie lo sostiene tres meses seguidos.", dato: "Los sistemas que dependen de disciplina diaria son los que se abandonan." },
         ],
       },
@@ -133,7 +133,7 @@ export const CONSTRUCCIONES = {
         nombre: "Filtrado",
         pregunta: "¿Qué filtro le ponemos?",
         opciones: [
-          { texto: "Filtro de grava, arena y carbón, con acceso para limpiarlo", icono: "🪨", solidez: 2, explicacion: "Sencillo, barato y sobre todo mantenible: si no se puede limpiar, no sirve.", dato: "Un filtro que nadie puede abrir se convierte en tapón en dos meses." },
+          { texto: "Filtro de grava, arena y carbón, con acceso para limpiarlo", icono: "⏳", solidez: 2, explicacion: "Sencillo, barato y sobre todo mantenible: si no se puede limpiar, no sirve.", dato: "Un filtro que nadie puede abrir se convierte en tapón en dos meses." },
           { texto: "Una malla de mosquitero y ya", icono: "🕸️", solidez: 0, explicacion: "Detiene hojas, no partículas. Para riego alcanza; para más, no.", dato: "Para agua de uso doméstico hace falta filtrado y desinfección." },
           { texto: "Sin filtro, se asienta solo en la cisterna", icono: "🚫", solidez: -2, explicacion: "El sedimento se acumula y el agua se echa a perder en semanas.", dato: "Una cisterna sin filtro se limpia a mano cada temporada." },
         ],
@@ -144,7 +144,7 @@ export const CONSTRUCCIONES = {
         pregunta: "¿Dónde guardamos el agua?",
         opciones: [
           { texto: "Cisterna cerrada, oscura y con tapa hermética", icono: "🛢️", solidez: 2, explicacion: "Sin luz no crecen algas y sin acceso no entra el mosquito.", dato: "Una cisterna destapada se vuelve criadero de dengue en una semana." },
-          { texto: "Tambos abiertos en el patio", icono: "🪣", solidez: -2, explicacion: "Luz, mosquitos, hojas y evaporación: se pierde casi todo.", dato: "En zona de dengue, el agua descubierta es un problema de salud pública." },
+          { texto: "Tambos abiertos en el patio", icono: "🛢️", solidez: -2, explicacion: "Luz, mosquitos, hojas y evaporación: se pierde casi todo.", dato: "En zona de dengue, el agua descubierta es un problema de salud pública." },
           { texto: "Tinaco negro en el techo", icono: "⬛", solidez: 1, explicacion: "Funciona y además da presión por gravedad, aunque cabe menos.", dato: "El color negro sí ayuda: bloquea la luz y frena las algas." },
         ],
       },

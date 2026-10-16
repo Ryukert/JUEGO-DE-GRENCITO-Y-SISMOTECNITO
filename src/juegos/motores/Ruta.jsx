@@ -12,11 +12,11 @@ import { MarcoJuego, Cronometro, Retroalimentacion, Aviso } from "../ui/Marco.js
 const ICONOS = {
   "#": "",
   ".": "",
-  S: "🟢",
+  S: "🚪",
   X: "⚠️",
-  T: "🛗",
+  T: "🔼",
   E: "🧯",
-  P: "🪧",
+  P: "🚩",
   R: "🧱",
 };
 
@@ -389,7 +389,7 @@ export default function Ruta({ juego, personaje, dif, onTerminar, onSalir }) {
               <span key={llave} className={`celda celda--${base} ${extra}`}>
                 {aqui ? (
                   <span className="celda__yo" aria-hidden="true">
-                    🧍
+                    🚶
                   </span>
                 ) : usado || oculta ? (
                   ""

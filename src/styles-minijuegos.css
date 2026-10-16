@@ -635,7 +635,6 @@
 
 .tarjeta--bloqueada:hover { transform: none; box-shadow: 0 4px 0 var(--apagado-borde); }
 .tarjeta__icono { position: relative; font-size: 30px; line-height: 1; }
-.tarjeta--bloqueada .tarjeta__emoji { filter: grayscale(1); opacity: 0.5; }
 .tarjeta .tarjeta__candado {
   position: absolute;
   right: -10px;
@@ -1693,3 +1692,39 @@
 @media (prefers-reduced-motion: reduce) {
   .final__estrella--ganada, .final__sello, .final__liston, .insignias li { opacity: 1 !important; transform: none !important; }
 }
+
+/* ---- insignias de los minijuegos y medallas de rango (IconoJuego.jsx) ---- */
+.insignia { display: block; width: 44px; height: 44px; flex-shrink: 0; overflow: visible; }
+.insignia__fondo { fill: var(--c); stroke: var(--contorno); stroke-width: 3; }
+.insignia__brillo { fill: none; stroke: rgba(255, 255, 255, 0.35); stroke-width: 3; stroke-linecap: round; }
+.insignia__dibujo { fill: none; stroke: #fff; stroke-width: 2.8; stroke-linecap: round; stroke-linejoin: round; }
+.insignia__dibujo .f { fill: #fff; }
+.insignia__dibujo .s { fill: rgba(255, 255, 255, 0.22); stroke: none; }
+.insignia__dibujo .a { fill: #ffd23f; }
+.insignia__dibujo .r { fill: #ff6b6b; }
+.insignia__dibujo .v { fill: #b2f2bb; }
+.insignia__dibujo .m { fill: #a0672f; }
+.insignia__dibujo .d { fill: var(--c); stroke: none; }
+.insignia__dibujo .ta { stroke: #ffd23f; }
+.insignia__dibujo .tc { stroke: var(--c); }
+.insignia__dibujo .n { stroke: none; }
+.insignia__corona { fill: #ffd23f; stroke: var(--contorno); stroke-width: 2; stroke-linejoin: round; }
+.insignia--emoji { display: grid; place-items: center; font-size: 30px; line-height: 1; }
+
+.medalla { display: inline-block; width: 1.4em; height: 1.4em; vertical-align: -0.35em; flex-shrink: 0; }
+.medalla__disco { stroke: var(--contorno); stroke-width: 2.5; stroke-linejoin: round; }
+
+/* dónde aparecen */
+.tarjeta .insignia { width: 46px; height: 46px; }
+.tarjeta--bloqueada .insignia { filter: grayscale(1); opacity: 0.45; }
+.tarjeta__icono .tarjeta__candado { right: -8px; bottom: -6px; }
+.jm__hud .insignia { width: 30px; height: 30px; }
+.jm__hud .insignia__fondo { stroke: #fff; }
+.jm__intro h2 { display: flex; align-items: center; justify-content: center; gap: 10px; }
+.jm__intro h2 .insignia { width: 40px; height: 40px; }
+.centro__siguiente .insignia { display: inline-block; width: 20px; height: 20px; vertical-align: -0.3em; }
+.quiz__icono .insignia, .cancha .insignia { width: 1em; height: 1em; }
+.final__sello .medalla { width: 30px; height: 30px; }
+.final__rango { display: flex; align-items: center; justify-content: center; gap: 6px; }
+.cartera .medalla { width: 20px; height: 20px; }
+.carta__record { display: inline-flex; align-items: center; gap: 4px; }

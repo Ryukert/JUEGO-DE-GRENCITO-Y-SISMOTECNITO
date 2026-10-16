@@ -8,6 +8,7 @@ import { sonido } from "../../lib/sonido.js";
 import { confeti } from "../../lib/confeti.js";
 import { MarcoJuego, Cronometro, Progreso, Retroalimentacion } from "../ui/Marco.jsx";
 import { revolver } from "../../lib/azar.js";
+import IconoJuego from "../../components/IconoJuego.jsx";
 
 const azar = (n) => Math.floor(Math.random() * n);
 
@@ -224,7 +225,7 @@ export default function Ruleta({ juego, personaje, dif, onTerminar, onSalir }) {
         <>
           <div className="quiz__escena">
             <span className="quiz__icono" aria-hidden="true">
-              {pregunta.icono || juego.icono}
+              {pregunta.icono || <IconoJuego juego={juego} />}
             </span>
             <p className="quiz__situacion">{pregunta.situacion}</p>
           </div>

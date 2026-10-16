@@ -18,7 +18,7 @@ export const DIFICULTADES = {
   facil: {
     id: "facil",
     nombre: "Fácil",
-    icono: "🟢",
+    icono: "🔵",
     para: "Primaria",
     tiempo: 1.4,
     objetos: 0.7,
@@ -31,7 +31,7 @@ export const DIFICULTADES = {
   medio: {
     id: "medio",
     nombre: "Medio",
-    icono: "🟡",
+    icono: "⚪",
     para: "Ya le sabes",
     tiempo: 1,
     objetos: 1,
