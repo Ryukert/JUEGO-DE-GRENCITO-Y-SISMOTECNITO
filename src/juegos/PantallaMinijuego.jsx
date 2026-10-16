@@ -9,7 +9,7 @@ import { Instrucciones, Resultado } from "./ui/Marco.jsx";
 /**
  * Envoltura común de todos los minijuegos.
  *
- * Se encarga de lo que sería igual en los veinte juegos: elegir dificultad,
+ * Se encarga de lo que sería igual en todos los juegos: elegir dificultad,
  * mostrar instrucciones, montar el motor, guardar el resultado en el
  * progreso y enseñar la pantalla de recompensa. Los motores solo juegan.
  */
