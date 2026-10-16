@@ -142,7 +142,7 @@ describe("ruta de evacuación difícil de verdad", () => {
     const inicio = indiceYo();
     expect(vidas()).toBe(4);
     // 17 pasos × 1 s × 1.4 (fácil) = 23.8 s
-    const reloj = () => document.querySelector(".cronometro__numero").textContent;
+    const reloj = () => document.querySelector(".reloj__numero b").textContent;
     expect(reloj()).toBe("24");
 
     // del inicio (1,1) bajando tres casillas se llega junto al elevador (1,5)

@@ -14,8 +14,33 @@ const enLetra = (n) => EN_LETRA[n] || String(n);
 const MISIONES = PERSONAJES.sismo.misiones.length;
 const VIDAS = GRADOS.primaria.vidas;
 
-export default function Portada({ progreso, onElegir, onCentro, tema, onTema }) {
+/** Arriba de la portada: Mis logros a la izquierda; tema y ajustes a la derecha. */
+function Barra({ onLogros, onAjustes, tema, onTema }) {
+  return (
+    <nav className="portada__barra" aria-label="Opciones">
+      {onLogros ? (
+        <button className="boton-chico" onClick={onLogros}>
+          <Icono nombre="trofeo" /> Mis logros
+        </button>
+      ) : (
+        <span />
+      )}
+      <span className="portada__barra-der">
+        <BotonTema tema={tema} onTema={onTema} />
+        {onAjustes && (
+          <button className="boton-tema" onClick={onAjustes} aria-label="Ajustes" title="Ajustes">
+            <Icono nombre="engrane" />
+          </button>
+        )}
+      </span>
+    </nav>
+  );
+}
+
+export default function Portada({ progreso, ultimo, onElegir, onCentro, onLogros, onAjustes, tema, onTema }) {
   const [grado, setGrado] = useState(progreso.grado || null);
+  const barra = <Barra onLogros={onLogros} onAjustes={onAjustes} tema={tema} onTema={onTema} />;
+  const quienSigue = ultimo && PERSONAJES[ultimo.personaje] && GRADOS[ultimo.grado] ? ultimo : null;
 
   function elegirGrado(id) {
     sonido.despertar();
@@ -26,7 +51,7 @@ export default function Portada({ progreso, onElegir, onCentro, tema, onTema }) 
   if (!grado) {
     return (
       <div className="pantalla portada">
-        <BotonTema tema={tema} onTema={onTema} />
+        {barra}
         <div className="portada__duo" aria-hidden="true">
           <img className="portada__mini flota" src={PERSONAJES.sismo.cuerpo} alt="" />
           <img className="portada__mini flota flota--tarde" src={PERSONAJES.green.cuerpo} alt="" />
@@ -55,9 +80,7 @@ export default function Portada({ progreso, onElegir, onCentro, tema, onTema }) 
         </button>
 
         <p className="portada__pie">
-          Puedes cambiar de grado cuando quieras. Secundaria tiene menos tiempo,
-          un distractor más y retos que valen doble. En el Centro de
-          entrenamiento hay {JUEGOS.length} minijuegos sueltos.
+          Secundaria tiene menos tiempo y retos dobles. En el Centro hay {JUEGOS.length} minijuegos sueltos.
         </p>
 
         <Creditos />
@@ -67,10 +90,28 @@ export default function Portada({ progreso, onElegir, onCentro, tema, onTema }) 
 
   return (
     <div className="pantalla portada">
-      <BotonTema tema={tema} onTema={onTema} />
+      {barra}
+      {quienSigue && (
+        <button
+          className={`seguir seguir--${quienSigue.personaje}`}
+          onClick={() => {
+            sonido.despertar();
+            sonido.clic();
+            onElegir(quienSigue.personaje, quienSigue.grado);
+          }}
+        >
+          <img className="seguir__cara" src={PERSONAJES[quienSigue.personaje].cara} alt="" width="56" height="56" />
+          <span className="seguir__texto">
+            <small>¡Hola de nuevo!</small>
+            <strong>Seguir con {PERSONAJES[quienSigue.personaje].nombre}</strong>
+            <small>{GRADOS[quienSigue.grado].nombre}</small>
+          </span>
+          <Icono nombre="siguiente" className="seguir__flecha" />
+        </button>
+      )}
       <header className="portada__intro">
         <button className="volver" onClick={() => setGrado(null)}><Icono nombre="volver" /> Cambiar grado</button>
-        <h1>¿Con quién juegas?</h1>
+        <h1>{quienSigue ? "O elige otra partida" : "¿Con quién juegas?"}</h1>
         <p>Modo {GRADOS[grado].nombre}. Cada partida son {enLetra(MISIONES)} misiones seguidas.</p>
       </header>
 
@@ -110,8 +151,7 @@ export default function Portada({ progreso, onElegir, onCentro, tema, onTema }) 
       </button>
 
       <p className="portada__pie">
-        Misiones de preguntas contra reloj + un minijuego de acción por
-        personaje. Responde rápido y encadena aciertos para multiplicar puntos.
+        Preguntas contra reloj y minijuegos. Encadena aciertos para multiplicar tus puntos.
       </p>
 
       <Creditos />

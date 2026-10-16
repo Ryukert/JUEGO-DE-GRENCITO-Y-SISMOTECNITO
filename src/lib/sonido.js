@@ -4,6 +4,8 @@
  * el contexto se crea hasta el primer clic.
  */
 
+import { vibrar } from "./preferencias.js";
+
 let ctx = null;
 let activo = true;
 
@@ -76,11 +78,13 @@ export const sonido = {
   despertar: () => contexto(),
   clic: () => tono(520, 0.06, "square", 0.1),
   bien: () => {
+    vibrar([25, 60, 25]);
     tono(660, 0.1, "triangle", 0.16);
     tono(880, 0.1, "triangle", 0.16, 0.09);
     tono(1320, 0.16, "triangle", 0.14, 0.18);
   },
   mal: () => {
+    vibrar(140);
     tono(200, 0.18, "sawtooth", 0.12);
     tono(150, 0.24, "sawtooth", 0.1, 0.12);
   },

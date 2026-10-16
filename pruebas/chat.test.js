@@ -115,7 +115,7 @@ describe("errores sin detalles internos", () => {
     expect(res.cuerpo).not.toMatch(/ECONNRESET|anthropic/i);
   });
   it("solo acepta POST", async () => {
-    expect((await llamar({}, { metodo: "GET" })).statusCode).toBe(405);
+    expect((await llamar({}, { metodo: "PUT" })).statusCode).toBe(405);
   });
 });
 

@@ -4,6 +4,7 @@ import { sonido } from "../../lib/sonido.js";
 import { confeti } from "../../lib/confeti.js";
 import { revolver } from "../../lib/azar.js";
 import Icono, { Vidas, iconoMoneda } from "../Icono.jsx";
+import Reloj from "../Reloj.jsx";
 
 const TOTAL = 10;
 
@@ -150,7 +151,6 @@ export default function Basura({ personaje: p, grado, vidas: vidasIniciales, onT
 
   if (!actual) return null;
 
-  const porcentaje = (tiempo / segundosPorPieza) * 100;
 
   return (
     <div className="mini mini--basura">
@@ -163,12 +163,7 @@ export default function Basura({ personaje: p, grado, vidas: vidasIniciales, onT
         <span className="marcador"><Icono nombre={iconoMoneda(p.moneda)} /> {puntos}</span>
       </div>
 
-      <div className="cronometro" aria-hidden="true">
-        <div
-          className={`cronometro__barra ${porcentaje < 35 ? "cronometro__barra--peligro" : ""}`}
-          style={{ width: `${porcentaje}%` }}
-        />
-      </div>
+      <Reloj tiempo={tiempo} total={segundosPorPieza} />
 
       <div className="residuo" key={indice}>
         <span className="residuo__icono" aria-hidden="true">{actual.icono}</span>

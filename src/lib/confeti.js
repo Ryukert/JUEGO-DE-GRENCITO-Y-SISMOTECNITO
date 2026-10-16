@@ -3,6 +3,8 @@
  * Se crea al vuelo y se destruye cuando termina la animación.
  */
 
+import { menosMovimiento } from "./preferencias.js";
+
 let lienzo = null;
 let piezas = [];
 let corriendo = false;
@@ -25,7 +27,7 @@ function ajustar() {
 }
 
 export function confeti({ colores = ["#f4691f", "#0f6fc4", "#5aa32a", "#ffd23f"], cantidad = 60, desde = 0.5 } = {}) {
-  if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+  if (menosMovimiento()) return;
 
   preparar();
   const dpr = ajustar();

@@ -13,7 +13,9 @@
     />
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <link rel="icon" type="image/webp" href="/greencito-cara.webp" />
-    <link rel="apple-touch-icon" href="/sismo-cara.webp" />
+    <link rel="apple-touch-icon" href="/icono-192.png" />
+    <link rel="manifest" href="/manifest.webmanifest" />
+    <meta name="mobile-web-app-capable" content="yes" />
     <link rel="preload" as="image" href="/sismo.webp" />
     <link rel="preload" as="image" href="/greencito.webp" />
 
@@ -24,6 +26,9 @@
         var t = localStorage.getItem("escuadron-tema");
         if (t !== "claro" && t !== "oscuro") t = matchMedia("(prefers-color-scheme: dark)").matches ? "oscuro" : "claro";
         document.documentElement.dataset.tema = t;
+        var pref = JSON.parse(localStorage.getItem("escuadron-preferencias") || "{}");
+        if (pref.letraGrande) document.documentElement.dataset.letra = "grande";
+        if (pref.menosMovimiento) document.documentElement.dataset.movimiento = "reducido";
       } catch (e) {}
     </script>
   </head>

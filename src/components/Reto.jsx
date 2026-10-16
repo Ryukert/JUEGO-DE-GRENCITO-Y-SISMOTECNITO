@@ -4,6 +4,8 @@ import { sonido } from "../lib/sonido.js";
 import { confeti } from "../lib/confeti.js";
 import { revolver } from "../lib/azar.js";
 import Icono from "./Icono.jsx";
+import Reloj from "./Reloj.jsx";
+import { chatDisponible, marcarChatApagado } from "../lib/chat.js";
 
 export default function Reto({
   personaje: p,
@@ -27,8 +29,11 @@ export default function Reto({
   const [ultimo, setUltimo] = useState(null);
   // cómo reacciona el personaje en escena: piensa (esperando), feliz, triste o tiempo
   const [animo, setAnimo] = useState("piensa");
+  // chat con el personaje: null = preguntando al servidor, true / false = ya se sabe
+  const [chat, setChat] = useState(null);
   const reloj = useRef(null);
   const finRef = useRef(null);
+  const seguirRef = useRef(null);
   const contestado = useRef(false);
 
   const enBono = etapa === "bono";
@@ -44,6 +49,19 @@ export default function Reto({
   useEffect(() => {
     finRef.current?.scrollIntoView({ behavior: "smooth", block: "end" });
   }, [mensajes, pensando, etapa]);
+
+  useEffect(() => {
+    let vivo = true;
+    chatDisponible().then((si) => vivo && setChat(si));
+    return () => {
+      vivo = false;
+    };
+  }, []);
+
+  // al responder, el foco pasa a «Siguiente»: con teclado basta Enter para seguir
+  useEffect(() => {
+    if (etapa === "resultado" || etapa === "bonoResultado") seguirRef.current?.focus({ preventScroll: true });
+  }, [etapa]);
 
   useEffect(() => {
     if (etapa !== "pregunta" && etapa !== "bono") return;
@@ -67,6 +85,7 @@ export default function Reto({
   /* El servidor arma lo que se le pide a la IA con el contenido del juego (api/chat.js):
      aquí solo se dice qué se está jugando y qué respondió o preguntó el jugador. */
   async function comentario(consulta) {
+    if (chat === false) return;
     setPensando(true);
     try {
       const r = await fetch("/api/chat", {
@@ -74,11 +93,18 @@ export default function Reto({
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ personaje: p.id, grado, mision: mision.id, ...consulta }),
       });
+      if (r.status === 503) {
+        marcarChatApagado();
+        setChat(false);
+      }
       if (!r.ok) throw new Error("sin servidor");
       const { texto: t } = await r.json();
       if (t) setMensajes((m) => [...m, { de: "bot", texto: t }]);
     } catch (e) {
-      /* sin conexión: el juego ya mostró la explicación local */
+      // a una respuesta el juego ya le dio su explicación; a una pregunta hay que contestarle algo
+      if (consulta.tipo === "pregunta") {
+        setMensajes((m) => [...m, { de: "bot", texto: "Ahorita no puedo platicar, pero sigue jugando: cada respuesta trae su explicación." }]);
+      }
     } finally {
       setPensando(false);
     }
@@ -152,23 +178,10 @@ export default function Reto({
   }
 
   const enPregunta = etapa === "pregunta" || etapa === "bono";
-  const porcentaje = (tiempo / cfg.segundos) * 100;
-  const nivelTiempo = tiempo <= 5 ? "rojo" : porcentaje <= 50 ? "amarillo" : "verde";
-  const segundos = Math.ceil(tiempo);
 
   return (
     <>
-      {enPregunta && (
-        <div className={`reloj reloj--${nivelTiempo}`} role="timer" aria-label={`Quedan ${segundos} segundos`}>
-          <div className="reloj__pista" aria-hidden="true">
-            <div className="reloj__barra" style={{ width: `${porcentaje}%` }} />
-          </div>
-          <span className="reloj__numero" aria-hidden="true">
-            <b>{segundos}</b>
-            <small>s</small>
-          </span>
-        </div>
-      )}
+      {enPregunta && <Reloj tiempo={tiempo} total={cfg.segundos} />}
 
       <div className="mision-escena">
         {/* el personaje en grande, detrás de la conversación; reacciona a cada respuesta */}
@@ -239,7 +252,7 @@ export default function Reto({
 
         {!enPregunta && (
           <div className="opciones">
-            <button className="boton-grande" onClick={continuar}>
+            <button className="boton-grande" onClick={continuar} ref={seguirRef}>
               {etapa === "resultado" && hayBono ? (
                 <>Pregunta de bonificación <Icono nombre="estrella" /></>
               ) : (
@@ -249,6 +262,12 @@ export default function Reto({
           </div>
         )}
 
+        {chat === false && (
+          <p className="sin-chat">
+            {p.nombre} no puede platicar ahorita. Las explicaciones de cada respuesta sí salen.
+          </p>
+        )}
+        {chat && (
         <form className="escribe" onSubmit={preguntarLibre}>
           <input
             value={texto}
@@ -264,6 +283,7 @@ export default function Reto({
             Enviar
           </button>
         </form>
+        )}
       </div>
     </>
   );

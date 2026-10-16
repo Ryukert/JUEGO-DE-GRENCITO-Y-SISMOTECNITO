@@ -22,7 +22,7 @@ import IconoJuego, { IconoRango } from "../components/IconoJuego.jsx";
  * y récord) para que una pestaña quepa en pocas pantallas; la descripción y
  * el cómo se juega están en la pantalla de inicio de cada juego.
  */
-export default function Centro({ progreso, onJugar, onSalir, tema, onTema }) {
+export default function Centro({ progreso, onJugar, onSalir, onLogros, onAjustes, tema, onTema }) {
   const [familia, setFamilia] = useState("tecnito");
 
   const rango = rangoPara(progreso.xp || 0);
@@ -38,7 +38,19 @@ export default function Centro({ progreso, onJugar, onSalir, tema, onTema }) {
           <button className="volver" onClick={onSalir}>
             <Icono nombre="volver" /> Inicio
           </button>
-          <BotonTema tema={tema} onTema={onTema} />
+          <span className="centro__barra-der">
+            {onLogros && (
+              <button className="boton-chico" onClick={onLogros}>
+                <Icono nombre="trofeo" /> Mis logros
+              </button>
+            )}
+            <BotonTema tema={tema} onTema={onTema} />
+            {onAjustes && (
+              <button className="boton-tema" onClick={onAjustes} aria-label="Ajustes" title="Ajustes">
+                <Icono nombre="engrane" />
+              </button>
+            )}
+          </span>
         </div>
         <h1>
           <Icono nombre="control" /> Centro de entrenamiento
