@@ -3,6 +3,7 @@ import Simulacro from "./minijuegos/Simulacro.jsx";
 import Basura from "./minijuegos/Basura.jsx";
 import Memorama from "./minijuegos/Memorama.jsx";
 import { GRADOS } from "../data/personajes.js";
+import Icono, { Vidas, iconoMoneda } from "./Icono.jsx";
 
 export default function Juego({
   personaje: p,
@@ -25,14 +26,18 @@ export default function Juego({
   return (
     <div className={`pantalla juego ${temblor ? "tiembla" : ""}`}>
       <header className="hud">
-        <button className="hud__icono" onClick={onSalir} aria-label="Volver al inicio">←</button>
+        <button className="hud__icono" onClick={onSalir} aria-label="Volver al inicio"><Icono nombre="volver" /></button>
         <img className="cara" src={p.cara} alt="" width="44" height="44" />
         <div className="hud__texto">
           <h1>{p.nombre}</h1>
-          <p className="vidas" aria-label={`${vidas} vidas`}>
-            {"❤️".repeat(Math.max(0, vidas))}
-            {"🖤".repeat(Math.max(0, vidasMax - vidas))}
-            {racha >= 2 && <strong className="racha"> 🔥 racha x{racha}</strong>}
+          <p className="hud__estado">
+            <Vidas vidas={vidas} max={vidasMax} />
+            {/* key: la etiqueta vuelve a saltar cada vez que la racha sube */}
+            {racha >= 2 && (
+              <strong className="racha" key={racha}>
+                <Icono nombre="fuego" /> racha x{racha}
+              </strong>
+            )}
           </p>
         </div>
         <button
@@ -40,10 +45,10 @@ export default function Juego({
           onClick={onSonido}
           aria-label={sonidoOn ? "Apagar sonido" : "Encender sonido"}
         >
-          {sonidoOn ? "🔊" : "🔇"}
+          <Icono nombre={sonidoOn ? "sonido" : "silencio"} />
         </button>
         <div className="marcador">
-          <span aria-hidden="true">{p.monedaIcono}</span> {puntos}
+          <Icono nombre={iconoMoneda(p.moneda)} /> {puntos}
         </div>
       </header>
 
@@ -57,7 +62,7 @@ export default function Juego({
           ))}
         </div>
         <span className="barra__texto">
-          {mision.tipo === "minijuego" ? "⚡ " : ""}
+          {mision.tipo === "minijuego" && <Icono nombre="rayo" />}
           {nivel + 1}/{p.misiones.length} · {mision.titulo}
         </span>
       </div>

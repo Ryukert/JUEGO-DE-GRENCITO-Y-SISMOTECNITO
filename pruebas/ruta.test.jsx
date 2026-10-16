@@ -70,7 +70,7 @@ const buscar = (mapa, letra) => {
 
 const tecla = (key) => act(() => { fireEvent.keyDown(window, { key }); });
 const indiceYo = () => [...document.querySelectorAll(".celda")].indexOf(document.querySelector(".celda--yo"));
-const vidas = () => document.querySelector(".jm__vidas").textContent.split("❤️").length - 1;
+const vidas = () => document.querySelectorAll(".jm__vidas .vida--llena").length;
 
 /** Reconstruye el mapa a partir de lo que se ve en pantalla. */
 function mapaEnPantalla() {

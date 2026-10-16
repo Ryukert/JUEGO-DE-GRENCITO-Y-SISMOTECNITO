@@ -18,6 +18,14 @@
     <link rel="preload" as="image" href="/greencito.webp" />
 
     <title>Escuadrón Tecnito y Greencito</title>
+    <script>
+      // tema antes de pintar, para que el modo oscuro no parpadee en blanco al abrir
+      try {
+        var t = localStorage.getItem("escuadron-tema");
+        if (t !== "claro" && t !== "oscuro") t = matchMedia("(prefers-color-scheme: dark)").matches ? "oscuro" : "claro";
+        document.documentElement.dataset.tema = t;
+      } catch (e) {}
+    </script>
   </head>
   <body>
     <div id="root"></div>

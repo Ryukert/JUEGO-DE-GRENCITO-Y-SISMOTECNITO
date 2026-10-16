@@ -8,14 +8,28 @@ import PantallaMinijuego from "./juegos/PantallaMinijuego.jsx";
 import { POR_ID } from "./juegos/registro.js";
 import { sonido, sonidoActivo, alternarSonido } from "./lib/sonido.js";
 import { leerProgreso, guardarGrado, registrarPartida } from "./lib/progreso.js";
+import { temaInicial, temaGuardado, guardarTema } from "./lib/tema.js";
 
 const TEMA_NEUTRO = {
   fondo: "#dbe9f8",
   fondo2: "#e8f3d6",
   tinta: "#10304f",
   acento: "#0f6fc4",
-  acento2: "#f4691f",
+  acento2: "#c4500e",
   linea: "#8fb6dd",
+  "acento-texto": "#0f6fc4",
+  "acento2-texto": "#b0470c",
+};
+
+const TEMA_NEUTRO_OSCURO = {
+  fondo: "#0b1828",
+  fondo2: "#122318",
+  tinta: "#e8f1fa",
+  acento: "#0f6fc4",
+  acento2: "#c4500e",
+  linea: "#2f4c6b",
+  "acento-texto": "#7cc0ff",
+  "acento2-texto": "#ffa36b",
 };
 
 export default function App() {
@@ -32,6 +46,7 @@ export default function App() {
   const [sonidoOn, setSonidoOn] = useState(sonidoActivo());
   const [record, setRecord] = useState({ nuevoRecord: false, recordAnterior: 0 });
   const [minijuego, setMinijuego] = useState(null);
+  const [tema, setTema] = useState(temaInicial);
   const reloj = useRef(null);
 
   const juegoLibre = minijuego ? POR_ID[minijuego] : null;
@@ -42,13 +57,32 @@ export default function App() {
       : null;
   const mision = p ? p.misiones[Math.min(nivel, p.misiones.length - 1)] : null;
 
+  const oscuro = tema === "oscuro";
+
   useEffect(() => {
-    const t = p ? p.tema : TEMA_NEUTRO;
+    const t = p ? (oscuro ? p.temaOscuro : p.tema) : oscuro ? TEMA_NEUTRO_OSCURO : TEMA_NEUTRO;
     const raiz = document.documentElement;
+    raiz.dataset.tema = tema;
     Object.entries(t).forEach(([k, v]) => raiz.style.setProperty(`--${k}`, v));
     const meta = document.querySelector('meta[name="theme-color"]');
-    if (meta) meta.setAttribute("content", t.acento);
-  }, [p]);
+    if (meta) meta.setAttribute("content", oscuro ? t.fondo : t.acento);
+  }, [p, tema, oscuro]);
+
+  // sin elección guardada, el tema sigue al del sistema aunque cambie con la página abierta
+  useEffect(() => {
+    const mq = window.matchMedia?.("(prefers-color-scheme: dark)");
+    if (!mq?.addEventListener) return;
+    const cambiar = (e) => { if (!temaGuardado()) setTema(e.matches ? "oscuro" : "claro"); };
+    mq.addEventListener("change", cambiar);
+    return () => mq.removeEventListener("change", cambiar);
+  }, []);
+
+  function alternarTema() {
+    const nuevo = oscuro ? "claro" : "oscuro";
+    guardarTema(nuevo);
+    setTema(nuevo);
+    sonido.clic();
+  }
 
   useEffect(() => () => clearTimeout(reloj.current), []);
 
@@ -149,11 +183,11 @@ export default function App() {
   }
 
   if (pantalla === "inicio") {
-    return <Portada progreso={progreso} onElegir={iniciar} onCentro={alCentro} />;
+    return <Portada progreso={progreso} onElegir={iniciar} onCentro={alCentro} tema={tema} onTema={alternarTema} />;
   }
 
   if (pantalla === "centro") {
-    return <Centro progreso={progreso} onJugar={abrirMinijuego} onSalir={alInicio} />;
+    return <Centro progreso={progreso} onJugar={abrirMinijuego} onSalir={alInicio} tema={tema} onTema={alternarTema} />;
   }
 
   if (pantalla === "minijuego" && juegoLibre) {

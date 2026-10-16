@@ -4,6 +4,8 @@ import { rangoPara } from "../lib/progreso.js";
 import { sonido } from "../lib/sonido.js";
 import Creditos from "./Creditos.jsx";
 import { JUEGOS } from "../juegos/registro.js";
+import Icono, { ICONO_GRADO } from "./Icono.jsx";
+import BotonTema from "./BotonTema.jsx";
 
 /* Los números de la portada salen del contenido: si se agrega una misión o un juego, se actualizan solos. */
 const EN_LETRA = ["cero", "una", "dos", "tres", "cuatro", "cinco", "seis", "siete", "ocho", "nueve", "diez"];
@@ -11,7 +13,7 @@ const enLetra = (n) => EN_LETRA[n] || String(n);
 const MISIONES = PERSONAJES.sismo.misiones.length;
 const VIDAS = GRADOS.primaria.vidas;
 
-export default function Portada({ progreso, onElegir, onCentro }) {
+export default function Portada({ progreso, onElegir, onCentro, tema, onTema }) {
   const [grado, setGrado] = useState(progreso.grado || null);
 
   function elegirGrado(id) {
@@ -23,6 +25,7 @@ export default function Portada({ progreso, onElegir, onCentro }) {
   if (!grado) {
     return (
       <div className="pantalla portada">
+        <BotonTema tema={tema} onTema={onTema} />
         <div className="portada__duo" aria-hidden="true">
           <img className="portada__mini flota" src={PERSONAJES.sismo.cuerpo} alt="" />
           <img className="portada__mini flota flota--tarde" src={PERSONAJES.green.cuerpo} alt="" />
@@ -35,7 +38,7 @@ export default function Portada({ progreso, onElegir, onCentro }) {
         <div className="grados">
           {Object.values(GRADOS).map((g) => (
             <button key={g.id} className="grado" onClick={() => elegirGrado(g.id)}>
-              <span className="grado__icono" aria-hidden="true">{g.icono}</span>
+              <span className="grado__icono" aria-hidden="true"><Icono nombre={ICONO_GRADO[g.id]} /></span>
               <strong>{g.nombre}</strong>
               <span className="grado__edades">{g.edades}</span>
               <span className="grado__detalle">
@@ -47,7 +50,7 @@ export default function Portada({ progreso, onElegir, onCentro }) {
         </div>
 
         <button className="boton-centro" onClick={onCentro}>
-          🎮 Centro de entrenamiento
+          <Icono nombre="control" /> Centro de entrenamiento
         </button>
 
         <p className="portada__pie">
@@ -63,8 +66,9 @@ export default function Portada({ progreso, onElegir, onCentro }) {
 
   return (
     <div className="pantalla portada">
+      <BotonTema tema={tema} onTema={onTema} />
       <header className="portada__intro">
-        <button className="volver" onClick={() => setGrado(null)}>← Cambiar grado</button>
+        <button className="volver" onClick={() => setGrado(null)}><Icono nombre="volver" /> Cambiar grado</button>
         <h1>¿Con quién juegas?</h1>
         <p>Modo {GRADOS[grado].nombre}. Cada partida son {enLetra(MISIONES)} misiones seguidas.</p>
       </header>
@@ -90,14 +94,14 @@ export default function Portada({ progreso, onElegir, onCentro }) {
                   ? `${rango.icono} Récord: ${record} ${p.moneda}`
                   : "Sin récord todavía"}
               </span>
-              <span className="carta__cta">Jugar</span>
+              <span className="carta__cta">Jugar <Icono nombre="siguiente" /></span>
             </button>
           );
         })}
       </div>
 
       <button className="boton-centro" onClick={onCentro}>
-        🎮 Centro de entrenamiento
+        <Icono nombre="control" /> Centro de entrenamiento
       </button>
 
       <p className="portada__pie">
