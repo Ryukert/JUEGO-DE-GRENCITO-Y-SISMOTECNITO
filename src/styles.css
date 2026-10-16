@@ -72,7 +72,7 @@
   --bien: #4fc775;
   --mal: #ff8a73;
 
-  --contorno: #03080e;
+  --contorno: #35526f; /* trazo claro sobre fondo oscuro, como una caricatura */
   --superficie: #1a2735;
   --velo: rgba(17, 31, 47, 0.86);
   --velo-suave: rgba(17, 31, 47, 0.5);
@@ -450,8 +450,10 @@ button, input { font: inherit; color: inherit; }
 .mision-escena__personaje--tiempo { transform: rotate(-6deg); filter: saturate(0.7); }
 .mision-escena__globo {
   position: absolute;
-  top: 2%;
-  left: -14%;
+  /* sobre la cabeza del personaje: así ningún mensaje del chat lo tapa */
+  top: -9%;
+  left: 18%;
+  white-space: nowrap;
   padding: 4px 10px;
   border: var(--borde) solid var(--contorno);
   border-radius: 999px;

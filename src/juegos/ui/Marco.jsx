@@ -11,6 +11,9 @@ import { sonido } from "../../lib/sonido.js";
 import { puedeLeer, leer } from "../../lib/voz.js";
 import Icono, { Vidas } from "../../components/Icono.jsx";
 import IconoJuego from "../../components/IconoJuego.jsx";
+import Reloj from "../../components/Reloj.jsx";
+// moneda de cada familia (sin importar registro.js: los motores ya lo importan a él)
+const MONEDA = { tecnito: "escudo", greencito: "brote", general: "estrella" };
 
 /* ------------------------- escuchar en voz alta ------------------------- */
 
@@ -41,7 +44,8 @@ export function MarcoJuego({ juego, dificultad, vidas, vidasMax, puntos, extra, 
       )}
       {extra}
       <span className="marcador jm__puntos" aria-label={`${puntos} puntos`}>
-        {dificultad && <i className={`punto-dif punto-dif--${dificultad.id}`} aria-hidden="true" />} {puntos}
+        <Icono nombre={MONEDA[juego.familia] || "estrella"} /> {puntos}
+        <small className="jm__pts" aria-hidden="true">pts</small>
       </span>
     </header>
   );
@@ -49,21 +53,9 @@ export function MarcoJuego({ juego, dificultad, vidas, vidasMax, puntos, extra, 
 
 /* ------------------------------ cronómetro ------------------------------ */
 
-export function Cronometro({ tiempo, total, etiqueta = true }) {
-  const porcentaje = total > 0 ? Math.max(0, Math.min(100, (tiempo / total) * 100)) : 0;
-  return (
-    <div
-      className="cronometro"
-      role="timer"
-      aria-label={`Quedan ${Math.ceil(tiempo)} segundos`}
-    >
-      <div
-        className={`cronometro__barra ${porcentaje < 35 ? "cronometro__barra--peligro" : ""}`}
-        style={{ width: `${porcentaje}%` }}
-      />
-      {etiqueta && <span className="cronometro__numero">{Math.ceil(tiempo)}</span>}
-    </div>
-  );
+/** Mismo reloj que las misiones (components/Reloj.jsx). */
+export function Cronometro(props) {
+  return <Reloj {...props} />;
 }
 
 /* ----------------------------- progreso ------------------------------ */

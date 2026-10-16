@@ -4,6 +4,7 @@ import { sonido } from "../../lib/sonido.js";
 import { confeti } from "../../lib/confeti.js";
 import { revolver } from "../../lib/azar.js";
 import Icono, { Vidas, iconoMoneda } from "../Icono.jsx";
+import Reloj from "../Reloj.jsx";
 
 const RONDAS = [
   { trampas: 1, segundos: 9 },
@@ -163,7 +164,6 @@ export default function Simulacro({ personaje: p, vidas: vidasIniciales, onTermi
     );
   }
 
-  const porcentaje = (tiempo / config.segundos) * 100;
 
   return (
     <div className={`mini mini--simulacro ${fase === "jugando" ? "sacude" : ""}`}>
@@ -175,12 +175,7 @@ export default function Simulacro({ personaje: p, vidas: vidasIniciales, onTermi
         <span className="marcador"><Icono nombre={iconoMoneda(p.moneda)} /> {puntos}</span>
       </div>
 
-      <div className="cronometro" aria-hidden="true">
-        <div
-          className={`cronometro__barra ${porcentaje < 35 ? "cronometro__barra--peligro" : ""}`}
-          style={{ width: `${porcentaje}%` }}
-        />
-      </div>
+      <Reloj tiempo={tiempo} total={config.segundos} />
 
       <p className="mini__pista">
         Ahora toca: <strong>{ACCIONES_SIMULACRO[paso].texto}</strong> ({paso + 1} de 3)

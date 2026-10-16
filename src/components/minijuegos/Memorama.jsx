@@ -4,6 +4,7 @@ import { sonido } from "../../lib/sonido.js";
 import { confeti } from "../../lib/confeti.js";
 import { revolver } from "../../lib/azar.js";
 import Icono, { Vidas, iconoMoneda } from "../Icono.jsx";
+import Reloj from "../Reloj.jsx";
 
 const PARES = 6;
 
@@ -196,7 +197,6 @@ export default function Memorama({ personaje: p, grado, vidas: vidasIniciales, o
     );
   }
 
-  const porcentaje = (tiempo / segundosTotales) * 100;
 
   return (
     <div className="mini mini--memorama">
@@ -209,13 +209,7 @@ export default function Memorama({ personaje: p, grado, vidas: vidasIniciales, o
         <span className="marcador"><Icono nombre={iconoMoneda(p.moneda)} /> {puntos}</span>
       </div>
 
-      <div className="cronometro" aria-hidden="true">
-        <div
-          className={`cronometro__barra ${porcentaje < 25 ? "cronometro__barra--peligro" : ""}`}
-          style={{ width: `${porcentaje}%` }}
-        />
-        <span className="cronometro__numero">{Math.ceil(tiempo)} s</span>
-      </div>
+      <Reloj tiempo={tiempo} total={segundosTotales} />
 
       <div className="tablero">
         {cartas.map((carta) => {

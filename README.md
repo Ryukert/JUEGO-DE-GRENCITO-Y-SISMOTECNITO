@@ -209,6 +209,25 @@ sonido se puede silenciar desde el altavoz del HUD y la preferencia se guarda.
 
 ---
 
+## Interfaz
+
+- **Botón «atrás»** del navegador o del teléfono: sube un nivel (minijuego →
+  Centro → portada) en vez de salirse de la página. Con Ajustes abiertos, los cierra.
+- **Chat:** el juego pregunta al servidor (`GET /api/chat`, no gasta) si el chat
+  está encendido. Si no lo está, o no hay internet, esconde «Pregúntale algo» y lo explica.
+- **Un solo reloj** (`src/components/Reloj.jsx`) en misiones y minijuegos.
+- **Teclado:** 1-4 o A-D para responder, Enter para seguir (`src/lib/atajos.js`).
+- **Ajustes** (engrane en la portada y el Centro): sonido, tema, letra grande,
+  menos animaciones, vibración, volver a ver la explicación, instalar y borrar el progreso.
+- **Tutorial** de 3 pasos antes de la primera partida; **«Seguir con…»** en la
+  portada para quien regresa; **Mis logros** con medallas, insignias y los 46 juegos.
+- **Escritorio ancho** (1200 px o más): panel «Tu partida» a un lado de la consola.
+- **Sin internet:** se puede instalar como app (`public/manifest.webmanifest`) y,
+  después de la primera visita, funciona sin conexión (`public/sw.js`). Solo el
+  chat necesita internet. El service worker solo se registra en la versión publicada.
+
+---
+
 ## Sonido y efectos
 
 No hay archivos de audio: todo se genera con Web Audio (`src/lib/sonido.js`).
@@ -275,6 +294,15 @@ src/components/Final.jsx       rango, estrellas, récord y festejo
 src/components/Creditos.jsx    logos UABC y FCITEC
 src/components/Icono.jsx       iconos SVG de la interfaz y corazones de vida
 src/components/IconoJuego.jsx  insignias de los 46 juegos y medallas de rango
+src/components/Reloj.jsx       el reloj de todo el juego
+src/components/Ajustes.jsx     ventana de ajustes
+src/components/Tutorial.jsx    explicación de 3 pasos
+src/pages/Logros.jsx           Mis logros
+src/lib/preferencias.js        letra grande, menos animaciones, vibración, tutorial, último personaje
+src/lib/atajos.js              atajos de teclado
+src/lib/chat.js                ¿está encendido el chat?
+public/sw.js                   funciona sin internet
+public/manifest.webmanifest    instalar como app (iconos icono-*.png)
 src/components/BotonTema.jsx   botón de tema claro / oscuro
 
 src/pages/Centro.jsx           catálogo de minijuegos por categoría
@@ -519,7 +547,7 @@ una pantalla concreta.
 npm test
 ```
 
-192 pruebas. Monta los 46 minijuegos del catálogo, juega hasta el final los seis
+211 pruebas. Monta los 46 minijuegos del catálogo, juega hasta el final los seis
 jefes de simulación, comprueba que los indicadores nunca se salen de 0 a 100,
 que el presupuesto no se va a negativos, que todas las palabras listadas en la
 sopa de letras están de verdad en el tablero, que el rompecabezas siempre

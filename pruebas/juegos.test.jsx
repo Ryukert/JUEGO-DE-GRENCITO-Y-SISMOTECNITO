@@ -49,7 +49,9 @@ describe("flujo original", () => {
     render(<App />);
     fireEvent.click(screen.getByText("Primaria"));
     fireEvent.click(screen.getByText("Sismo Tecnito"));
-    expect(screen.getByText(/El salón se mueve/)).toBeTruthy();
+    // la primera vez sale la explicación de 3 pasos; se puede saltar
+    fireEvent.click(screen.getByText("Saltar"));
+    expect(document.querySelector(".barra__texto").textContent).toMatch(/El salón se mueve/);
   });
 
   it("se llega al Centro de entrenamiento desde la portada", () => {

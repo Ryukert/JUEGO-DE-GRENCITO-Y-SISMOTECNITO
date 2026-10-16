@@ -5,19 +5,14 @@ import { sonido } from "../lib/sonido.js";
 import Creditos from "./Creditos.jsx";
 import Icono, { iconoMoneda } from "./Icono.jsx";
 import { IconoRango } from "./IconoJuego.jsx";
+import { menosMovimiento } from "../lib/preferencias.js";
 
 /** Estrellas de la partida según el rango alcanzado: Vigilante 1, Guardián 2, Capitán o más 3. */
 export function estrellasPara(puntos) {
   return Math.min(3, RANGOS.indexOf(rangoPara(puntos)));
 }
 
-function sinMovimiento() {
-  try {
-    return window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-  } catch (e) {
-    return false;
-  }
-}
+const sinMovimiento = menosMovimiento;
 
 /** Cuenta de 0 al total en ~1.2 s; sin animación si el sistema pide menos movimiento. */
 function useCuenta(total, ms = 1200) {

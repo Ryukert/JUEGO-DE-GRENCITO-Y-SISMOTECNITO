@@ -1728,3 +1728,408 @@
 .final__rango { display: flex; align-items: center; justify-content: center; gap: 6px; }
 .cartera .medalla { width: 20px; height: 20px; }
 .carta__record { display: inline-flex; align-items: center; gap: 4px; }
+
+/* ==================================================================
+   INTERFAZ: transiciones, ajustes, tutorial, logros, panel lateral,
+   portada para quien regresa, letra grande y menos animaciones
+================================================================== */
+
+.visualmente-oculto {
+  position: absolute !important;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+kbd {
+  display: inline-block;
+  min-width: 1.6em;
+  padding: 0 5px;
+  border: 2px solid var(--contorno);
+  border-bottom-width: 3px;
+  border-radius: 6px;
+  background: var(--superficie);
+  color: var(--tinta);
+  font: inherit;
+  font-size: 0.85em;
+  font-weight: 800;
+  line-height: 1.4;
+  text-align: center;
+}
+
+/* ---- transición al cambiar de pantalla ---- */
+#root > .pantalla:not(.tiembla),
+#root > .mesa,
+.mesa > .pantalla:not(.tiembla) {
+  animation: pantalla-entra 0.28s ease-out;
+}
+@keyframes pantalla-entra {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: none; }
+}
+
+/* ---- reloj sin tiempo corriendo (entre preguntas) ---- */
+.reloj--fin { --color-tiempo: var(--apagado-borde); }
+
+/* ---- chat apagado ---- */
+.sin-chat {
+  margin: 4px clamp(12px, 3vw, 18px) 10px;
+  font-size: 12.5px;
+  line-height: 1.4;
+  color: var(--texto-tenue);
+  text-align: center;
+}
+
+/* ---- marcador de los minijuegos ---- */
+.jm__pts { font-size: 11px; font-weight: 700; color: var(--texto-tenue); margin-left: 1px; }
+
+/* ---- botones chicos de barra ---- */
+.boton-chico {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 44px;
+  padding: 6px 14px;
+  cursor: pointer;
+  border-radius: 999px;
+  background: var(--superficie);
+  color: var(--tinta);
+  border: 3px solid var(--contorno);
+  box-shadow: 0 3px 0 var(--contorno);
+  font-weight: 800;
+  font-size: 14px;
+}
+.boton-chico:active { transform: translateY(3px); box-shadow: 0 0 0 var(--contorno); }
+.boton-chico .icono--trofeo { color: #e0a100; }
+.boton-tema .icono--engrane { color: var(--tinta); }
+
+/* ---- portada: barra de arriba y «seguir jugando» ---- */
+.portada > .boton-tema { position: static; }
+.portada__barra {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  width: 100%;
+  max-width: 700px;
+  margin: 0 auto -6px;
+}
+.portada__barra-der, .centro__barra-der { display: inline-flex; align-items: center; gap: 8px; }
+
+.seguir {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  max-width: 560px;
+  margin-inline: auto;
+  padding: 12px 16px;
+  cursor: pointer;
+  text-align: left;
+  border-radius: 20px;
+  background: var(--acento);
+  color: #fff;
+  border: 4px solid var(--contorno);
+  box-shadow: 0 7px 0 var(--contorno);
+  animation: pantalla-entra 0.35s ease-out;
+}
+.seguir--green { background: #3d7d1e; }
+.seguir:active { transform: translateY(4px); box-shadow: 0 3px 0 var(--contorno); }
+.seguir__cara { width: 56px; height: 56px; border-radius: 50%; background: #fff; border: 3px solid #fff; flex-shrink: 0; object-fit: cover; }
+.seguir__texto { display: grid; flex: 1; line-height: 1.2; }
+.seguir__texto strong { font-size: 19px; }
+.seguir__texto small { font-size: 13px; opacity: 0.92; }
+.seguir__flecha { width: 28px; height: 28px; }
+
+/* logos más chicos en la portada del celular */
+@media (max-width: 480px) {
+  .portada .creditos__marca { height: 28px; }
+  .portada .creditos__marca--bcia { height: 34px; }
+  .portada .creditos__texto { font-size: 11px; }
+  .portada__barra .boton-chico { padding: 6px 12px; font-size: 13px; }
+}
+
+/* ---- tutorial ---- */
+.tutorial {
+  align-items: center;
+  justify-content: center;
+  gap: 14px;
+  padding: 24px 16px;
+  text-align: center;
+}
+.tutorial__figura { height: min(30dvh, 220px); width: auto; }
+.tutorial__globo {
+  width: min(100%, 440px);
+  padding: 18px 20px;
+  border-radius: 22px;
+  background: var(--superficie);
+  border: 4px solid var(--contorno);
+  box-shadow: 0 7px 0 var(--contorno);
+  animation: pantalla-entra 0.3s ease-out;
+}
+.tutorial__globo h2 { margin: 6px 0 6px; font-size: clamp(19px, 5vw, 23px); line-height: 1.2; }
+.tutorial__globo p { margin: 0; line-height: 1.45; }
+.tutorial__icono { width: 44px; height: 44px; }
+.tutorial__icono--reloj { color: var(--acento-texto); }
+.tutorial__icono--corazon { color: #ff4d6d; }
+.tutorial__atajos { margin-top: 12px !important; font-size: 13px; color: var(--texto-tenue); }
+.tutorial__puntos { display: flex; gap: 8px; }
+.tutorial__puntos span { width: 10px; height: 10px; border-radius: 50%; background: var(--linea); }
+.tutorial__puntos span.on { background: var(--acento); width: 26px; border-radius: 6px; }
+.tutorial__botones { display: flex; align-items: center; gap: 12px; }
+.tutorial__botones .boton-grande { display: inline-flex; align-items: center; gap: 8px; }
+.tutorial__saltar {
+  min-height: 44px;
+  padding: 8px 14px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: var(--texto-suave);
+  text-decoration: underline;
+  font-weight: 700;
+}
+@media (pointer: coarse) { .tutorial__atajos { display: none; } }
+
+/* ---- ajustes ---- */
+.ajustes-fondo {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  display: grid;
+  place-items: center;
+  padding: 16px;
+  background: rgba(4, 12, 22, 0.55);
+  animation: aparece-fondo 0.2s ease-out;
+}
+@keyframes aparece-fondo { from { opacity: 0; } to { opacity: 1; } }
+.ajustes {
+  width: min(100%, 420px);
+  max-height: calc(100dvh - 32px);
+  overflow-y: auto;
+  padding: 16px 18px 18px;
+  border-radius: 22px;
+  background: var(--superficie);
+  color: var(--tinta);
+  border: 4px solid var(--contorno);
+  box-shadow: 0 8px 0 var(--contorno);
+  animation: pantalla-entra 0.25s ease-out;
+}
+.ajustes__cabeza { display: flex; align-items: center; justify-content: space-between; margin-bottom: 6px; }
+.ajustes__cabeza h2 { display: flex; align-items: center; gap: 8px; margin: 0; font-size: 21px; }
+.ajustes__cerrar {
+  display: grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  cursor: pointer;
+  background: var(--apagado);
+  color: var(--tinta);
+  border: 2px solid var(--apagado-borde);
+}
+.ajuste {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 10px 0;
+  border-bottom: 2px dashed var(--linea);
+}
+.ajuste__texto { display: grid; gap: 1px; font-weight: 800; }
+.ajuste__texto small { font-weight: 400; font-size: 12.5px; color: var(--texto-tenue); }
+
+.interruptor {
+  position: relative;
+  flex-shrink: 0;
+  width: 58px;
+  height: 34px;
+  cursor: pointer;
+  border-radius: 999px;
+  background: var(--apagado-borde);
+  border: 3px solid var(--contorno);
+  transition: background 0.15s ease;
+}
+.interruptor__bolita {
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: #fff;
+  border: 2px solid var(--contorno);
+  transition: transform 0.15s ease;
+}
+.interruptor--on { background: var(--bien); }
+.interruptor--on .interruptor__bolita { transform: translateX(24px); }
+
+.ajustes__acciones { display: grid; gap: 8px; margin-top: 14px; }
+.ajustes__acciones button, .ajustes__peligro button {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 46px;
+  padding: 8px 14px;
+  cursor: pointer;
+  border-radius: 14px;
+  background: var(--superficie);
+  color: var(--tinta);
+  border: 3px solid var(--contorno);
+  box-shadow: 0 3px 0 var(--contorno);
+  font-weight: 700;
+  text-align: left;
+}
+.ajustes__peligro { margin-top: 16px; padding-top: 12px; border-top: 2px dashed var(--linea); }
+.ajustes__peligro p { margin: 0 0 8px; font-size: 14px; }
+.ajustes__fila { display: flex; gap: 8px; flex-wrap: wrap; }
+.ajustes__peligro .ajustes__borrar-1 { color: var(--mal); border-color: var(--mal); box-shadow: 0 3px 0 var(--mal); }
+.ajustes__peligro .ajustes__borrar { background: var(--mal); color: var(--sobre-estado); }
+
+/* ---- mis logros ---- */
+.logros {
+  gap: 12px;
+  padding: clamp(14px, 4vw, 26px) clamp(12px, 4vw, 26px) 30px;
+  background:
+    repeating-linear-gradient(0deg, transparent 0 39px, var(--cuadricula) 39px 40px),
+    repeating-linear-gradient(90deg, transparent 0 39px, var(--cuadricula) 39px 40px),
+    linear-gradient(165deg, var(--fondo) 0%, var(--fondo2) 100%);
+}
+.logros__cabeza, .logros__seccion { width: 100%; max-width: 900px; margin-inline: auto; }
+.logros__cabeza { text-align: center; }
+.logros__cabeza .volver { float: left; }
+.logros h1 { display: flex; align-items: center; justify-content: center; gap: 8px; clear: both; margin: 4px 0 10px; font-size: clamp(22px, 6vw, 32px); }
+.logros h1 .icono { color: #e0a100; }
+.logros__cifras { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin: 0; }
+.logros__cifras div {
+  padding: 8px 4px;
+  border-radius: 14px;
+  background: var(--superficie);
+  border: 3px solid var(--contorno);
+  box-shadow: 0 3px 0 var(--contorno);
+}
+.logros__cifras dt { display: flex; align-items: center; justify-content: center; gap: 3px; font-size: 12px; color: var(--texto-tenue); }
+.logros__cifras dd { margin: 2px 0 0; font-size: 22px; font-weight: 900; }
+.logros__seccion h2 { display: flex; align-items: baseline; gap: 8px; margin: 10px 0 6px; font-size: 18px; border-bottom: 2px dashed var(--linea); padding-bottom: 4px; }
+.logros__seccion h2 small { font-size: 13px; font-weight: 700; color: var(--texto-tenue); }
+.logros__nota { margin: 0 0 8px; font-size: 13.5px; color: var(--texto-suave); }
+.logros__medallas, .logros__insignias, .logros__juegos { list-style: none; margin: 0; padding: 0; }
+.logros__medallas { display: grid; grid-template-columns: repeat(5, 1fr); gap: 6px; text-align: center; }
+.logros__medallas li { display: grid; justify-items: center; gap: 1px; font-size: 13px; font-weight: 800; }
+.logros__medallas .medalla { width: 52px; height: 52px; }
+.logros__medallas small { font-weight: 400; color: var(--texto-tenue); font-size: 11.5px; }
+.logros__medallas li:not(.ganada) .medalla { filter: grayscale(1); opacity: 0.35; }
+.logros__insignias { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 200px), 1fr)); gap: 6px; }
+.logros__insignias li {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 7px 10px;
+  border-radius: 12px;
+  font-size: 13.5px;
+  background: var(--apagado);
+  color: var(--texto-tenue);
+  border: 2px dashed var(--apagado-borde);
+}
+.logros__insignias li:not(.ganada) .icono { filter: grayscale(1); opacity: 0.5; }
+.logros__insignias li.ganada { background: var(--superficie); color: var(--tinta); border: 3px solid var(--contorno); font-weight: 700; }
+.logros__familia h3 { display: flex; align-items: center; gap: 6px; margin: 10px 0 6px; font-size: 15px; }
+.logros__juegos { display: grid; grid-template-columns: repeat(auto-fill, minmax(84px, 1fr)); gap: 8px; }
+.logros__juegos li { display: grid; justify-items: center; gap: 3px; text-align: center; font-size: 11.5px; line-height: 1.15; }
+.logros__juegos .insignia { width: 50px; height: 50px; }
+.logros__juegos li:not(.jugado) .insignia { filter: grayscale(1); opacity: 0.4; }
+.logros__juegos li:not(.jugado) { color: var(--texto-tenue); }
+.logros__dif { display: inline-flex; gap: 2px; font-size: 11px; }
+.logros__dif .punto-dif { opacity: 0.25; }
+.logros__dif .punto-dif.hecha { opacity: 1; }
+@media (max-width: 420px) {
+  .logros__cifras dd { font-size: 18px; }
+  .logros__medallas .medalla { width: 42px; height: 42px; }
+  .logros__medallas li { font-size: 11px; }
+}
+@media (min-width: 900px) {
+  .logros { min-height: auto; width: min(1000px, 100%); margin-inline: auto; }
+}
+
+/* ---- panel lateral de la partida (pantallas anchas) ---- */
+.mesa { display: contents; }
+.mesa__lado { display: none; }
+@media (min-width: 1200px) and (min-height: 640px) {
+  .mesa {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 26px;
+    width: 100%;
+  }
+  .mesa > .juego { margin-inline: 0; }
+  .mesa__lado {
+    display: block;
+    width: 270px;
+    flex-shrink: 0;
+    padding: 18px;
+    border-radius: 22px;
+    background: var(--velo);
+    border: 4px solid var(--contorno);
+    box-shadow: 0 10px 0 rgba(0, 0, 0, 0.14);
+  }
+  .mesa__lado h2 { margin: 0; font-size: 20px; }
+  .mesa__grado { margin: 2px 0 12px; font-size: 13px; color: var(--texto-tenue); }
+  .mesa__misiones { list-style: none; margin: 0 0 14px; padding: 0; display: grid; gap: 6px; }
+  .mesa__misiones li { display: flex; align-items: center; gap: 8px; font-size: 14px; line-height: 1.25; color: var(--texto-tenue); }
+  .mesa__misiones li.actual { color: var(--tinta); font-weight: 800; }
+  .mesa__misiones li.hecha { color: var(--tinta); }
+  .mesa__marca {
+    display: grid;
+    place-items: center;
+    flex-shrink: 0;
+    width: 26px;
+    height: 26px;
+    border-radius: 50%;
+    font-size: 12px;
+    font-weight: 800;
+    background: var(--superficie);
+    border: 2px solid var(--apagado-borde);
+  }
+  .mesa__misiones li.actual .mesa__marca { background: var(--acento); color: #fff; border-color: var(--contorno); }
+  .mesa__misiones li.hecha .mesa__marca { background: var(--bien); color: var(--sobre-estado); border-color: var(--contorno); }
+  .mesa__marca .icono { width: 15px; height: 15px; }
+  .mesa__datos { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; margin: 0 0 14px; text-align: center; }
+  .mesa__datos div { padding: 6px 2px; border-radius: 12px; background: var(--superficie); border: 2px solid var(--linea); }
+  .mesa__datos dt { font-size: 11px; color: var(--texto-tenue); }
+  .mesa__datos dd { margin: 0; display: flex; align-items: center; justify-content: center; gap: 3px; font-weight: 900; font-size: 17px; }
+  .mesa__atajos { margin: 0; font-size: 12.5px; line-height: 1.9; color: var(--texto-suave); }
+}
+
+/* ---- letra grande (Ajustes) ---- */
+:root[data-letra="grande"] { --texto: clamp(18px, 1.2rem + 0.3vw, 21px); }
+:root[data-letra="grande"] .globo,
+:root[data-letra="grande"] .opciones button,
+:root[data-letra="grande"] .quiz__situacion,
+:root[data-letra="grande"] .retro__texto,
+:root[data-letra="grande"] .mini__texto,
+:root[data-letra="grande"] .tutorial__globo p { font-size: 19px; }
+:root[data-letra="grande"] .barra__texto,
+:root[data-letra="grande"] .tarjeta__nombre,
+:root[data-letra="grande"] .retro__dato,
+:root[data-letra="grande"] .mini__pista,
+:root[data-letra="grande"] .busca__pista,
+:root[data-letra="grande"] .clasifica__pista { font-size: 16px; }
+:root[data-letra="grande"] .portada__pie,
+:root[data-letra="grande"] .carta p,
+:root[data-letra="grande"] .mini__texto--chico { font-size: 16px; }
+
+/* ---- menos animaciones (Ajustes): lo mismo que pide el sistema ---- */
+:root[data-movimiento="reducido"] *,
+:root[data-movimiento="reducido"] *::before,
+:root[data-movimiento="reducido"] *::after {
+  animation: none !important;
+  transition: none !important;
+}
+
+/* ---- tema oscuro: contorno claro, como el trazo de una caricatura sobre fondo oscuro ---- */
+:root[data-tema="oscuro"] .ajustes-fondo { background: rgba(0, 0, 0, 0.6); }

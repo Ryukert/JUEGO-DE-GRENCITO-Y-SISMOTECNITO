@@ -87,7 +87,9 @@ export function armarConsulta(datos) {
 }
 
 export default async function handler(req, res) {
-  if (req.method !== "POST") return responderJson(res, 405, { error: "Usa POST" }, { Allow: "POST" });
+  // GET solo dice si el chat está encendido, para que el juego no muestre un campo que nadie contesta
+  if (req.method === "GET") return responderJson(res, 200, { disponible: !!process.env.ANTHROPIC_API_KEY });
+  if (req.method !== "POST") return responderJson(res, 405, { error: "Usa POST" }, { Allow: "GET, POST" });
 
   const llave = process.env.ANTHROPIC_API_KEY;
   if (!llave) {
