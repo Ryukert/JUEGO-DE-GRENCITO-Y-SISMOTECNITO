@@ -86,7 +86,7 @@ function mapaEnPantalla() {
     if (c.classList.contains("celda--yo")) yo = { x, y };
     const t = c.textContent;
     const letra = c.classList.contains("celda--muro") ? "#"
-      : t.includes("🧱") ? "R" : t.includes("⚠️") ? "X" : t.includes("🛗") ? "T" : t.includes("🟢") ? "S" : ".";
+      : t.includes("🧱") ? "R" : t.includes("⚠️") ? "X" : t.includes("🔼") ? "T" : t.includes("🚪") ? "S" : ".";
     filas[y] += letra;
   });
   return { mapa: filas, yo };
@@ -188,7 +188,7 @@ describe("ruta de evacuación difícil de verdad", () => {
     // la linterna alumbra 3×3 alrededor del jugador; lo demás, oscuro (salvo la salida)
     const visibles = total - document.querySelectorAll(".celda--oscura").length;
     expect(visibles).toBeLessThanOrEqual(10);
-    expect(document.querySelector(".mapa").textContent).toContain("🟢");
+    expect(document.querySelector(".mapa").textContent).toContain("🚪");
   });
 
   it("fácil: las réplicas tiran escombro sin cerrar el último camino", () => {

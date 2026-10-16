@@ -120,7 +120,7 @@ export default function Cultiva({ juego, personaje, dif, onTerminar, onSalir }) 
         </div>
         <div className="cultivo__tierra">
           <span className="cultivo__salud" aria-label={`Salud ${etapa} de 5`}>
-            {"🟩".repeat(etapa)}
+            {"💚".repeat(etapa)}
             {"⬜".repeat(Math.max(0, 5 - etapa))}
           </span>
           <span className="cultivo__lugar">{datos.escenario}</span>

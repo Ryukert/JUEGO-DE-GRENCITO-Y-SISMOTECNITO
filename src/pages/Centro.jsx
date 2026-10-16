@@ -12,6 +12,7 @@ import { sonido } from "../lib/sonido.js";
 import Creditos from "../components/Creditos.jsx";
 import Icono, { ICONO_FAMILIA, iconoMoneda } from "../components/Icono.jsx";
 import BotonTema from "../components/BotonTema.jsx";
+import IconoJuego, { IconoRango } from "../components/IconoJuego.jsx";
 
 /**
  * Centro de entrenamiento: el mapa de minijuegos.
@@ -48,7 +49,7 @@ export default function Centro({ progreso, onJugar, onSalir, tema, onTema }) {
 
         <div className="cartera" aria-label="Tu progreso">
           <span className="cartera__dato">
-            <b aria-hidden="true">{rango.icono}</b> {rango.nombre}
+            <IconoRango rango={rango} /> {rango.nombre}
           </span>
           <span className="cartera__dato">
             <Icono nombre="estrella" /> {progreso.xp || 0} XP
@@ -65,7 +66,7 @@ export default function Centro({ progreso, onJugar, onSalir, tema, onTema }) {
           <p className="centro__siguiente">
             <Icono nombre="candado" /> Te faltan {siguiente.xp - (progreso.xp || 0)} XP para{" "}
             <strong>
-              {siguiente.icono} {siguiente.nombre}
+              <IconoJuego juego={siguiente} /> {siguiente.nombre}
             </strong>
           </p>
         )}
@@ -140,7 +141,7 @@ function TarjetaJuego({ juego, progreso, onJugar }) {
       }
     >
       <span className="tarjeta__icono" aria-hidden="true">
-        <span className="tarjeta__emoji">{juego.icono}</span>
+        <IconoJuego juego={juego} />
         {!abierto && <Icono nombre="candado" className="tarjeta__candado" />}
       </span>
 

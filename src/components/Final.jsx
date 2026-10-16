@@ -4,6 +4,7 @@ import { confeti } from "../lib/confeti.js";
 import { sonido } from "../lib/sonido.js";
 import Creditos from "./Creditos.jsx";
 import Icono, { iconoMoneda } from "./Icono.jsx";
+import { IconoRango } from "./IconoJuego.jsx";
 
 /** Estrellas de la partida según el rango alcanzado: Vigilante 1, Guardián 2, Capitán o más 3. */
 export function estrellasPara(puntos) {
@@ -80,7 +81,7 @@ export default function Final({ personaje: p, puntos, insignias, record, onRepet
       </p>
 
       <p className="final__rango">
-        <span className="final__sello" aria-hidden="true">{rango.icono}</span> {rango.nombre}
+        <span className="final__sello"><IconoRango rango={rango} /></span> {rango.nombre}
       </p>
       <h2 aria-label={`${puntos} ${p.moneda}`}>
         <span aria-hidden="true">{cuenta} {p.moneda}</span>
@@ -99,7 +100,7 @@ export default function Final({ personaje: p, puntos, insignias, record, onRepet
 
       {siguiente && (
         <p className="final__meta">
-          Te faltan {siguiente.min - puntos} para llegar a {siguiente.nombre} {siguiente.icono}
+          Te faltan {siguiente.min - puntos} para llegar a {siguiente.nombre} <IconoRango rango={siguiente} />
         </p>
       )}
 

@@ -9,7 +9,7 @@
  *   efecto  < 0 → se marchita
  */
 
-export const ETAPAS = ["🌰", "🌱", "🌿", "🪴", "🌳", "🌳"];
+export const ETAPAS = ["🌰", "🌱", "🌿", "🌲", "🌳", "🌳"];
 
 export const CULTIVOS = {
   /* -------------------------- 🌱 Planta un árbol -------------------------- */
@@ -40,7 +40,7 @@ export const CULTIVOS = {
         pregunta: "¿Cómo preparamos el hoyo?",
         opciones: [
           { texto: "Del doble de ancho que el cepellón, con tierra suelta", icono: "🕳️", efecto: 2, explicacion: "La tierra suelta alrededor deja que la raíz se expanda desde el primer mes.", dato: "Un hoyo apretado hace que la raíz dé vueltas y estrangule al árbol." },
-          { texto: "Justo del tamaño de la bolsa, bien apretado", icono: "🪣", efecto: -1, explicacion: "La raíz no puede salir y el árbol se queda enano.", dato: "Se le llama raíz espiralada y es la causa más común de fracaso." },
+          { texto: "Justo del tamaño de la bolsa, bien apretado", icono: "🛍️", efecto: -1, explicacion: "La raíz no puede salir y el árbol se queda enano.", dato: "Se le llama raíz espiralada y es la causa más común de fracaso." },
           { texto: "Nada más quito el pasto y lo pongo encima", icono: "🌾", efecto: -2, explicacion: "Sin hoyo la raíz queda expuesta y se seca en días.", dato: "El cepellón debe quedar completo bajo tierra, al ras del suelo." },
         ],
       },
@@ -58,7 +58,7 @@ export const CULTIVOS = {
         pregunta: "El arbolito ya prendió. ¿Qué le ponemos?",
         opciones: [
           { texto: "Acolchado de hojas secas y un tutor de madera", icono: "🍂", efecto: 2, explicacion: "El acolchado conserva humedad y el tutor lo endereza contra el viento.", dato: "El acolchado puede reducir a la mitad el agua que necesita." },
-          { texto: "Una llanta pintada alrededor", icono: "🛞", efecto: -1, explicacion: "Junta agua estancada y calienta la tierra de más.", dato: "Además cría mosquito de dengue." },
+          { texto: "Una llanta pintada alrededor", icono: "⭕", efecto: -1, explicacion: "Junta agua estancada y calienta la tierra de más.", dato: "Además cría mosquito de dengue." },
           { texto: "Nada, que se defienda solo", icono: "🤷", efecto: 0, explicacion: "Puede que sobreviva, pero los primeros dos años son los críticos.", dato: "Los programas serios de reforestación dan seguimiento por tres años." },
         ],
       },

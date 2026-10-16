@@ -307,7 +307,7 @@ export const JUEGOS = [
   {
     id: "comandante-emergencias",
     nombre: "Comandante de emergencias",
-    icono: "🧑‍🚒",
+    icono: "🚒",
     familia: "tecnito",
     categoria: "Jefes finales",
     personaje: "sismo",
