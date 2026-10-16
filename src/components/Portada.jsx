@@ -3,6 +3,13 @@ import { PERSONAJES, GRADOS } from "../data/personajes.js";
 import { rangoPara } from "../lib/progreso.js";
 import { sonido } from "../lib/sonido.js";
 import Creditos from "./Creditos.jsx";
+import { JUEGOS } from "../juegos/registro.js";
+
+/* Los números de la portada salen del contenido: si se agrega una misión o un juego, se actualizan solos. */
+const EN_LETRA = ["cero", "una", "dos", "tres", "cuatro", "cinco", "seis", "siete", "ocho", "nueve", "diez"];
+const enLetra = (n) => EN_LETRA[n] || String(n);
+const MISIONES = PERSONAJES.sismo.misiones.length;
+const VIDAS = GRADOS.primaria.vidas;
 
 export default function Portada({ progreso, onElegir, onCentro }) {
   const [grado, setGrado] = useState(progreso.grado || null);
@@ -22,7 +29,7 @@ export default function Portada({ progreso, onElegir, onCentro }) {
         </div>
         <header className="portada__intro">
           <h1>Escuadrón Tecnito y Greencito</h1>
-          <p>Cuatro misiones, tres vidas y un cronómetro. ¿En qué grado vas?</p>
+          <p>{enLetra(MISIONES).replace(/^./, (c) => c.toUpperCase())} misiones, {enLetra(VIDAS)} vidas y un cronómetro. ¿En qué grado vas?</p>
         </header>
 
         <div className="grados">
@@ -46,7 +53,7 @@ export default function Portada({ progreso, onElegir, onCentro }) {
         <p className="portada__pie">
           Puedes cambiar de grado cuando quieras. Secundaria tiene menos tiempo,
           un distractor más y retos que valen doble. En el Centro de
-          entrenamiento hay más de veinte minijuegos sueltos.
+          entrenamiento hay {JUEGOS.length} minijuegos sueltos.
         </p>
 
         <Creditos />
@@ -59,7 +66,7 @@ export default function Portada({ progreso, onElegir, onCentro }) {
       <header className="portada__intro">
         <button className="volver" onClick={() => setGrado(null)}>← Cambiar grado</button>
         <h1>¿Con quién juegas?</h1>
-        <p>Modo {GRADOS[grado].nombre}. Cada partida son cuatro misiones seguidas.</p>
+        <p>Modo {GRADOS[grado].nombre}. Cada partida son {enLetra(MISIONES)} misiones seguidas.</p>
       </header>
 
       <div className="cartas">

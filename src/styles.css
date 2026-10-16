@@ -283,6 +283,145 @@ button, input { font: inherit; color: inherit; }
   color: var(--tinta);
 }
 
+/* reloj de las preguntas (Reto): barra gruesa y número grande que cambia de color */
+.reloj {
+  --color-tiempo: #2e9b4f;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 7px clamp(12px, 3vw, 18px);
+  background: rgba(255, 255, 255, 0.85);
+  border-bottom: 2px solid var(--tinta);
+  flex-shrink: 0;
+}
+.reloj--amarillo { --color-tiempo: #e0a100; }
+.reloj--rojo { --color-tiempo: var(--mal); }
+
+.reloj__pista {
+  flex: 1;
+  height: 14px;
+  border: 2px solid var(--tinta);
+  border-radius: 999px;
+  background: #fff;
+  overflow: hidden;
+}
+
+.reloj__barra {
+  height: 100%;
+  background: var(--color-tiempo);
+  transition: width 0.1s linear, background-color 0.3s;
+}
+
+/* el número: grande, en un círculo del color del tiempo que queda */
+.reloj__numero {
+  flex: none;
+  display: inline-flex;
+  align-items: baseline;
+  justify-content: center;
+  min-width: 52px;
+  height: 40px;
+  padding: 0 8px;
+  border: var(--borde) solid var(--tinta);
+  border-radius: 999px;
+  background: var(--color-tiempo);
+  color: #fff;
+  box-shadow: 0 3px 0 var(--tinta);
+  font-variant-numeric: tabular-nums;
+  line-height: 36px;
+}
+.reloj__numero b { font-size: 22px; }
+.reloj__numero small { font-size: 12px; margin-left: 1px; opacity: 0.9; }
+.reloj--amarillo .reloj__numero { color: var(--tinta); }
+.reloj--rojo .reloj__numero { animation: vibra 0.45s infinite; }
+.reloj--rojo .reloj__barra { animation: parpadeo 0.5s infinite; }
+
+@keyframes vibra {
+  0%, 100% { transform: translateX(0) scale(1.06); }
+  25% { transform: translateX(-2px) rotate(-3deg) scale(1.06); }
+  75% { transform: translateX(2px) rotate(3deg) scale(1.06); }
+}
+
+/* escena de la misión: el personaje en grande detrás de la conversación, con cielo y piso
+   en los colores del personaje (no confundir con .escena del juego «Busca») */
+.mision-escena {
+  position: relative;
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  /* cielo transparente y piso beige, igual para los dos personajes */
+  background: linear-gradient(to bottom, transparent 0 70%, rgba(214, 196, 160, 0.42) 70% 100%);
+}
+.mision-escena .chat { position: relative; z-index: 1; }
+.mision-escena__personaje {
+  position: absolute;
+  right: clamp(4px, 3vw, 28px);
+  bottom: 6px;
+  height: min(58%, 340px);
+  z-index: 0;
+  pointer-events: none;
+  transform-origin: 50% 100%;
+}
+.mision-escena__personaje img {
+  height: 100%;
+  width: auto;
+  filter: drop-shadow(0 8px 0 rgba(16, 48, 79, 0.14));
+}
+.mision-escena__personaje--piensa { animation: respira 3.2s ease-in-out infinite; }
+.mision-escena__personaje--feliz { animation: brinca 0.55s ease-out 2; }
+.mision-escena__personaje--triste { animation: niega 0.5s ease-in-out 2; filter: saturate(0.75); }
+.mision-escena__personaje--tiempo { transform: rotate(-6deg); filter: saturate(0.7); }
+.mision-escena__globo {
+  position: absolute;
+  top: 2%;
+  left: -14%;
+  padding: 4px 10px;
+  border: var(--borde) solid var(--tinta);
+  border-radius: 999px;
+  background: #fff;
+  color: var(--tinta);
+  font-weight: bold;
+  font-size: 15px;
+  box-shadow: 0 3px 0 var(--tinta);
+  animation: aparece 0.25s ease-out;
+}
+.mision-escena__personaje--feliz .mision-escena__globo { background: #e9f8ec; }
+.mision-escena__personaje--triste .mision-escena__globo { background: #fdecea; }
+.mision-escena__lugar {
+  position: absolute;
+  left: clamp(12px, 3vw, 18px);
+  bottom: 8px;
+  z-index: 0;
+  padding: 3px 10px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.75);
+  border: 2px solid var(--linea);
+  color: var(--tinta);
+  font-size: 12px;
+  pointer-events: none;
+}
+.mision-escena__espacio { flex: none; height: clamp(110px, 24dvh, 210px); }
+/* los globos de la conversación dejan libre el lado del personaje */
+.mision-escena .globo { max-width: min(62%, 460px); }
+.mision-escena .fila--mia .globo { max-width: min(70%, 460px); }
+
+@keyframes respira { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-6px); } }
+@keyframes brinca { 0%, 100% { transform: translateY(0) scale(1); } 40% { transform: translateY(-22px) scale(1.04); } }
+@keyframes niega { 0%, 100% { transform: rotate(0); } 30% { transform: rotate(-7deg); } 70% { transform: rotate(7deg); } }
+@keyframes aparece { from { transform: scale(0.6); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+
+@media (max-width: 480px) {
+  .mision-escena__personaje { height: min(42%, 220px); right: 2px; opacity: 0.95; }
+  .mision-escena .globo { max-width: 74%; }
+}
+@media (max-height: 560px) {
+  .mision-escena__personaje { height: 55%; }
+  .mision-escena__lugar { display: none; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .mision-escena__personaje, .mision-escena__globo, .reloj--rojo .reloj__numero, .reloj--rojo .reloj__barra { animation: none !important; }
+}
+
 @keyframes parpadeo { 50% { opacity: 0.45; } }
 
 /* chat */
@@ -793,7 +932,8 @@ button, input { font: inherit; color: inherit; }
 
   .juego {
     width: min(760px, 100%);
-    height: min(86dvh, 840px);
+    height: min(calc(100dvh - 48px), 840px);
+    min-height: 0;
     margin-inline: auto;
     border: 4px solid var(--tinta);
     border-radius: 24px;

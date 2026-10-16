@@ -24,6 +24,8 @@ export default function Reto({
   const [pensando, setPensando] = useState(false);
   const [texto, setTexto] = useState("");
   const [ultimo, setUltimo] = useState(null);
+  // cómo reacciona el personaje en escena: piensa (esperando), feliz, triste o tiempo
+  const [animo, setAnimo] = useState("piensa");
   const reloj = useRef(null);
   const finRef = useRef(null);
   const contestado = useRef(false);
@@ -44,6 +46,7 @@ export default function Reto({
 
   useEffect(() => {
     if (etapa !== "pregunta" && etapa !== "bono") return;
+    setAnimo("piensa");
     contestado.current = false;
     setTiempo(cfg.segundos);
     reloj.current = setInterval(() => {
@@ -86,6 +89,7 @@ export default function Reto({
     clearInterval(reloj.current);
 
     const correcto = !!opcion?.ok;
+    setAnimo(correcto ? "feliz" : opcion ? "triste" : "tiempo");
     const elegido = opcion ? opcion.texto : "Se acabó el tiempo";
     const doble = enBono ? 2 : 1;
 
@@ -146,18 +150,32 @@ export default function Reto({
 
   const enPregunta = etapa === "pregunta" || etapa === "bono";
   const porcentaje = (tiempo / cfg.segundos) * 100;
+  const nivelTiempo = tiempo <= 5 ? "rojo" : porcentaje <= 50 ? "amarillo" : "verde";
+  const segundos = Math.ceil(tiempo);
 
   return (
     <>
       {enPregunta && (
-        <div className="cronometro" aria-label={`Quedan ${Math.ceil(tiempo)} segundos`}>
-          <div
-            className={`cronometro__barra ${porcentaje < 35 ? "cronometro__barra--peligro" : ""}`}
-            style={{ width: `${porcentaje}%` }}
-          />
-          <span className="cronometro__numero">{Math.ceil(tiempo)}</span>
+        <div className={`reloj reloj--${nivelTiempo}`} role="timer" aria-label={`Quedan ${segundos} segundos`}>
+          <div className="reloj__pista" aria-hidden="true">
+            <div className="reloj__barra" style={{ width: `${porcentaje}%` }} />
+          </div>
+          <span className="reloj__numero" aria-hidden="true">
+            <b>{segundos}</b>
+            <small>s</small>
+          </span>
         </div>
       )}
+
+      <div className="mision-escena">
+        {/* el personaje en grande, detrás de la conversación; reacciona a cada respuesta */}
+        <div className={`mision-escena__personaje mision-escena__personaje--${animo}`} aria-hidden="true">
+          <img src={p.cuerpo} alt="" />
+          {animo === "feliz" && <span className="mision-escena__globo">¡Bien!</span>}
+          {animo === "triste" && <span className="mision-escena__globo">¡Casi!</span>}
+          {animo === "tiempo" && <span className="mision-escena__globo">⏰</span>}
+        </div>
+        {mision.lugar && <span className="mision-escena__lugar">📍 {mision.lugar}</span>}
 
       <div className="chat" role="log" aria-live="polite">
         {mensajes.map((m, i) =>
@@ -191,7 +209,10 @@ export default function Reto({
             </div>
           </div>
         )}
+        {/* espacio al final: la conversación no tapa la reacción del personaje */}
+        <div className="mision-escena__espacio" aria-hidden="true" />
         <div ref={finRef} />
+      </div>
       </div>
 
       <div className="pie">
