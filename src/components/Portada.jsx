@@ -15,10 +15,26 @@ const MISIONES = PERSONAJES.sismo.misiones.length;
 const VIDAS = GRADOS.primaria.vidas;
 
 /** Arriba de la portada: Mis logros y Mi grupo a la izquierda; tema y ajustes a la derecha. */
-function Barra({ onLogros, onAjustes, onGrupo, cuenta, tema, onTema }) {
+function Barra({ onLogros, onAjustes, onGrupo, cuenta, jugador, onQuien, tema, onTema }) {
   return (
     <nav className="portada__barra" aria-label="Opciones">
       <span className="portada__barra-izq">
+        {onQuien && (
+          <button
+            className="boton-chico portada__quien"
+            onClick={onQuien}
+            aria-label={jugador ? `Juega ${jugador.nombre}, ID ${jugador.id}. Cambiar de jugador` : "¿Quién juega? Escribe tu nombre"}
+          >
+            <Icono nombre="grupo" />
+            {jugador ? (
+              <>
+                {jugador.nombre} <small className="quien__id">{jugador.id}</small>
+              </>
+            ) : (
+              "¿Quién juega?"
+            )}
+          </button>
+        )}
         {onLogros && (
           <button className="boton-chico" onClick={onLogros}>
             <Icono nombre="trofeo" /> Mis logros
@@ -42,9 +58,14 @@ function Barra({ onLogros, onAjustes, onGrupo, cuenta, tema, onTema }) {
   );
 }
 
-export default function Portada({ progreso, ultimo, onElegir, onCentro, onLogros, onAjustes, onGrupo, cuenta, tema, onTema }) {
+export default function Portada({ progreso, ultimo, onElegir, onCentro, onLogros, onAjustes, onGrupo, cuenta, jugador, onQuien, tema, onTema }) {
   const [grado, setGrado] = useState(progreso.grado || null);
-  const barra = <Barra onLogros={onLogros} onAjustes={onAjustes} onGrupo={onGrupo} cuenta={cuenta} tema={tema} onTema={onTema} />;
+  const barra = (
+    <Barra
+      onLogros={onLogros} onAjustes={onAjustes} onGrupo={onGrupo} cuenta={cuenta}
+      jugador={jugador} onQuien={onQuien} tema={tema} onTema={onTema}
+    />
+  );
   const quienSigue = ultimo && PERSONAJES[ultimo.personaje] && GRADOS[ultimo.grado] ? ultimo : null;
 
   function elegirGrado(id) {

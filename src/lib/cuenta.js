@@ -10,6 +10,7 @@
  *   maestro → sessionStorage «escuadron-maestro»   (se cierra al cerrar el navegador)
  */
 import { leerProgreso, usarCuenta, mezclarDesdeServidor, alCambiar } from "./progreso.js";
+import { restaurarJugador } from "./jugadores.js";
 
 const LLAVE_CUENTA = "escuadron-cuenta";
 const LLAVE_MAESTRO = "escuadron-maestro";
@@ -119,7 +120,7 @@ export async function salirAlumno() {
   clearTimeout(temporizador);
   cuenta = null;
   escribir(local(), LLAVE_CUENTA, null);
-  usarCuenta(null);
+  restaurarJugador();   // vuelve al jugador elegido en esta computadora (o a «sin nombre»)
   estado = "listo";
   avisar();
 }
@@ -185,7 +186,7 @@ export async function sincronizar({ keepalive = false } = {}) {
         // el maestro lo quitó o el pase venció: se vuelve a modo sin cuenta, sin borrar nada local
         cuenta = null;
         escribir(local(), LLAVE_CUENTA, null);
-        usarCuenta(null);
+        restaurarJugador();
         estado = "listo";
         avisar();
         return;
@@ -211,6 +212,8 @@ export function restaurarCuenta() {
   if (guardada?.pase && guardada?.alumno?.id) {
     cuenta = guardada;
     usarCuenta(cuenta.alumno.id);
+  } else {
+    restaurarJugador();   // sin cuenta de grupo: el jugador elegido en esta computadora
   }
   return cuenta;
 }
@@ -234,7 +237,7 @@ export function iniciarCuenta() {
         if (e.estado === 401 && cuenta === guardada) {
           cuenta = null;
           escribir(local(), LLAVE_CUENTA, null);
-          usarCuenta(null);
+          restaurarJugador();
           avisar();
         }
       });

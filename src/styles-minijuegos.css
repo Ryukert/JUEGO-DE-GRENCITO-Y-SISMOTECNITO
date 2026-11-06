@@ -2282,3 +2282,44 @@ kbd {
   .encuestas-panel li { grid-template-columns: auto 1fr; }
   .encuestas-panel__dif { grid-column: 1 / -1; justify-content: flex-end; }
 }
+
+/* ---- ¿quién juega? (computadora compartida, sin cuenta) ---- */
+.quien__id {
+  font-family: ui-monospace, "Cascadia Mono", Consolas, monospace; font-weight: 800; letter-spacing: 0.08em;
+  padding: 0 5px; border-radius: 6px; background: var(--apagado); border: 1px solid var(--apagado-borde);
+}
+.portada__quien small.quien__id { font-size: 12px; }
+.logros__jugador { margin: 0 0 10px; text-align: center; font-size: 15px; }
+.quien__lista { list-style: none; margin: 4px 0 10px; padding: 0; display: grid; gap: 6px; max-height: 46dvh; overflow-y: auto; }
+.quien__lista li { display: flex; gap: 6px; align-items: center; }
+.quien__jugador {
+  flex: 1; display: flex; align-items: center; gap: 10px; min-height: 52px; padding: 6px 10px; cursor: pointer; text-align: left;
+  border-radius: 14px; background: var(--superficie); color: var(--tinta); border: 3px solid var(--contorno); box-shadow: 0 3px 0 var(--contorno);
+}
+.quien__jugador img { border-radius: 50%; flex-shrink: 0; }
+.quien__jugador--actual { outline: 3px solid var(--bien); outline-offset: 1px; }
+.quien__nombre { display: grid; }
+.quien__nombre small { font-size: 12.5px; color: var(--texto-tenue); letter-spacing: 0.06em; }
+.quien__borrar {
+  display: grid; place-items: center; width: 44px; height: 44px; flex-shrink: 0; cursor: pointer; border-radius: 50%;
+  color: var(--mal); background: var(--superficie); border: 2px solid var(--mal);
+}
+.quien__confirmar { flex: 1; display: flex; flex-wrap: wrap; align-items: center; gap: 6px; font-weight: 700; font-size: 14px; }
+.quien__confirmar button {
+  min-height: 44px; padding: 4px 12px; cursor: pointer; font-weight: 700; border-radius: 12px;
+  background: var(--superficie); color: var(--tinta); border: 2px solid var(--contorno);
+}
+.quien__confirmar .maestro__peligro { background: var(--mal); color: var(--sobre-estado); border-color: var(--mal); }
+.quien__nuevo { width: 100%; justify-content: center; }
+.quien__pie { display: flex; justify-content: space-between; gap: 8px; margin-top: 12px; flex-wrap: wrap; }
+.quien__sin {
+  min-height: 44px; padding: 4px 10px; cursor: pointer; font-weight: 700; font-size: 14px;
+  background: none; border: 0; color: var(--texto-suave); text-decoration: underline; text-underline-offset: 3px;
+}
+.quien__creado { display: grid; justify-items: center; gap: 4px; text-align: center; }
+.quien__creado p { margin: 0; }
+.quien__creado img { border-radius: 50%; border: 3px solid var(--contorno); }
+.quien__id-grande {
+  font-family: ui-monospace, "Cascadia Mono", Consolas, monospace; font-size: 36px !important; font-weight: 900; letter-spacing: 0.2em;
+  padding: 4px 16px; margin: 4px 0 !important; border-radius: 14px; background: var(--superficie); border: 3px solid var(--contorno);
+}

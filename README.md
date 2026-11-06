@@ -131,6 +131,22 @@ la tome.
 
 ---
 
+## ¿Quién juega? (computadora del salón)
+
+En la escuela el juego suele estar en una sola computadora y los niños no tienen
+cuenta. Con el botón **¿Quién juega?** de la portada cada niño escribe su nombre
+y elige a Tecnito o a Greencito; el juego le da un **ID de jugador** de 6 letras y
+números (por ejemplo `K7P2QX`, sin 0/O ni 1/I para dictarlo sin confusión).
+
+- Cada jugador guarda **sus propios** récords, XP y medallas en esa computadora.
+- Al volver a abrir el juego pregunta quién juega (si ya hay nombres guardados);
+  el siguiente niño toca su nombre o se agrega. También se puede jugar sin nombre.
+- El nombre y el ID aparecen en la portada, en *Mis logros* y al terminar la partida.
+- *Borrar jugadores* (abajo en la ventana) quita a quien ya no juega, con su progreso.
+- Todo se queda en esa computadora: no se manda a ningún servidor.
+
+---
+
 ## Grupos, maestros y evaluación (base de datos)
 
 Opcional. Sin base de datos todo funciona como antes y el botón **Mi grupo** no

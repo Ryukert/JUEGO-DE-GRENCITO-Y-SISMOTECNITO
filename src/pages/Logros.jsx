@@ -11,7 +11,7 @@ import IconoJuego, { IconoRango } from "../components/IconoJuego.jsx";
  * Medallas de rango, insignias de las misiones, los 46 juegos con sus
  * dificultades superadas y los números de la cartera.
  */
-export default function Logros({ progreso, onSalir }) {
+export default function Logros({ progreso, jugador, onSalir }) {
   const mejor = Math.max(0, ...Object.values(progreso.records || {}));
   const rango = rangoPara(mejor);
   const indiceRango = RANGOS.indexOf(rango);
@@ -37,6 +37,12 @@ export default function Logros({ progreso, onSalir }) {
         <h1>
           <Icono nombre="trofeo" /> Mis logros
         </h1>
+        {jugador && (
+          <p className="logros__jugador">
+            <strong>{jugador.nombre}</strong>
+            {jugador.id && <> · ID de jugador <span className="quien__id">{jugador.id}</span></>}
+          </p>
+        )}
         <dl className="logros__cifras">
           <div>
             <dt>Partidas</dt>

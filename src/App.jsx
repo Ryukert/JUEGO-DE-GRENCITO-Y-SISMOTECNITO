@@ -16,6 +16,10 @@ import { leerPreferencias, guardarPreferencia, aplicarPreferencias } from "./lib
 import { usarAtajos } from "./lib/atajos.js";
 import Cuenta from "./components/Cuenta.jsx";
 import Maestro from "./pages/Maestro.jsx";
+import QuienJuega from "./components/QuienJuega.jsx";
+import {
+  jugadorActual, listarJugadores, alCambiarJugador, yaSePregunto, marcarPreguntado as marcarQuienPreguntado,
+} from "./lib/jugadores.js";
 import {
   restaurarCuenta, iniciarCuenta, suscribirCuenta, gruposDisponibles, leerMaestro, estadoGuardado,
 } from "./lib/cuenta.js";
@@ -51,6 +55,10 @@ export default function App() {
   const [estadoCuenta, setEstadoCuenta] = useState(() => estadoGuardado());
   const [gruposOn, setGruposOn] = useState(() => !!cuenta || !!leerMaestro());
   const [verCuenta, setVerCuenta] = useState(false);
+  // «¿Quién juega?» (computadora compartida): ya quedó restaurado junto con la cuenta
+  const [jugador, setJugador] = useState(() => jugadorActual());
+  // al abrir el juego se pregunta quién juega si ya hay nombres guardados en esta computadora
+  const [verQuien, setVerQuien] = useState(() => !cuenta && !yaSePregunto() && listarJugadores().length > 0);
   const [progreso, setProgreso] = useState(() => leerProgreso());
   const [pantalla, setPantalla] = useState("inicio");
   const [quien, setQuien] = useState(null);
@@ -107,11 +115,16 @@ export default function App() {
       antes = c;
     });
     const terminar = iniciarCuenta();
+    const dejarJugador = alCambiarJugador((j) => {
+      setJugador(j);
+      setProgreso(leerProgreso());
+    });
     let vivo = true;
     gruposDisponibles().then((si) => vivo && si && setGruposOn(true));
     return () => {
       vivo = false;
       dejar();
+      dejarJugador();
       terminar();
     };
   }, []);
@@ -178,7 +191,7 @@ export default function App() {
   const origenRef = useRef(origenLogros);
   origenRef.current = origenLogros;
 
-  usarAtajos(!ajustes && !verCuenta);
+  usarAtajos(!ajustes && !verCuenta && !verQuien);
 
   function alternarTema() {
     const nuevo = oscuro ? "claro" : "oscuro";
@@ -316,6 +329,17 @@ export default function App() {
 
   const cerrarAjustes = useCallback(() => setAjustes(false), []);
   const cerrarCuenta = useCallback(() => setVerCuenta(false), []);
+  const cerrarQuien = useCallback(() => {
+    marcarQuienPreguntado();
+    setVerQuien(false);
+    setJugador(jugadorActual());
+    setProgreso(leerProgreso());
+  }, []);
+
+  function abrirQuien() {
+    sonido.clic();
+    setVerQuien(true);
+  }
 
   function abrirCuenta() {
     sonido.clic();
@@ -341,6 +365,8 @@ export default function App() {
         onAjustes={abrirAjustes}
         onGrupo={gruposOn ? abrirCuenta : null}
         cuenta={cuenta}
+        jugador={cuenta ? null : jugador}
+        onQuien={cuenta ? null : abrirQuien}
         tema={tema}
         onTema={alternarTema}
       />
@@ -360,7 +386,13 @@ export default function App() {
       />
     );
   } else if (pantalla === "logros") {
-    vista = <Logros progreso={progreso} onSalir={origenLogros === "centro" ? alCentro : alInicio} />;
+    vista = (
+      <Logros
+        progreso={progreso}
+        jugador={cuenta ? { nombre: cuenta.alumno.apodo, id: null } : jugador}
+        onSalir={origenLogros === "centro" ? alCentro : alInicio}
+      />
+    );
   } else if (pantalla === "tutorial" && p) {
     vista = <Tutorial personaje={p} onFin={terminarTutorial} />;
   } else if (pantalla === "minijuego" && juegoLibre) {
@@ -395,6 +427,7 @@ export default function App() {
       <Final
         personaje={p}
         grado={grado}
+        jugador={cuenta ? null : jugador}
         puntos={puntos}
         insignias={insignias}
         record={record}
@@ -459,6 +492,7 @@ export default function App() {
           onCerrar={cerrarAjustes}
         />
       )}
+      {verQuien && <QuienJuega onListo={cerrarQuien} />}
       {verCuenta && <Cuenta cuenta={cuenta} estado={estadoCuenta} onPanel={abrirMaestro} onCerrar={cerrarCuenta} />}
     </>
   );
