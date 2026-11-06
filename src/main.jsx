@@ -9,8 +9,18 @@ if (import.meta.env.PROD && "serviceWorker" in navigator) {
   window.addEventListener("load", () => navigator.serviceWorker.register("/sw.js").catch(() => {}));
 }
 
+// /editores: resultados de las encuestas para quienes hacen el juego (se carga aparte)
+const Editores = React.lazy(() => import("./pages/Editores.jsx"));
+const esEditores = /^\/editores\/?$/.test(window.location.pathname);
+
 createRoot(document.getElementById("root")).render(
   <React.StrictMode>
-    <App />
+    {esEditores ? (
+      <React.Suspense fallback={<p style={{ padding: 24 }}>Cargando…</p>}>
+        <Editores />
+      </React.Suspense>
+    ) : (
+      <App />
+    )}
   </React.StrictMode>
 );

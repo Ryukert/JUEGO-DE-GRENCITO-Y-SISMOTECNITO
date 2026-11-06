@@ -11,36 +11,18 @@ import PantallaMinijuego from "./juegos/PantallaMinijuego.jsx";
 import { POR_ID } from "./juegos/registro.js";
 import { sonido, sonidoActivo, alternarSonido } from "./lib/sonido.js";
 import { leerProgreso, guardarGrado, registrarPartida, borrarProgreso } from "./lib/progreso.js";
-import { temaInicial, temaGuardado, guardarTema } from "./lib/tema.js";
+import { temaInicial, temaGuardado, guardarTema, TEMA_NEUTRO, TEMA_NEUTRO_OSCURO } from "./lib/tema.js";
 import { leerPreferencias, guardarPreferencia, aplicarPreferencias } from "./lib/preferencias.js";
 import { usarAtajos } from "./lib/atajos.js";
 import Cuenta from "./components/Cuenta.jsx";
 import Maestro from "./pages/Maestro.jsx";
+import QuienJuega from "./components/QuienJuega.jsx";
+import {
+  jugadorActual, listarJugadores, alCambiarJugador, yaSePregunto, marcarPreguntado as marcarQuienPreguntado,
+} from "./lib/jugadores.js";
 import {
   restaurarCuenta, iniciarCuenta, suscribirCuenta, gruposDisponibles, leerMaestro, estadoGuardado,
 } from "./lib/cuenta.js";
-
-const TEMA_NEUTRO = {
-  fondo: "#dbe9f8",
-  fondo2: "#e8f3d6",
-  tinta: "#10304f",
-  acento: "#0f6fc4",
-  acento2: "#c4500e",
-  linea: "#8fb6dd",
-  "acento-texto": "#0f6fc4",
-  "acento2-texto": "#b0470c",
-};
-
-const TEMA_NEUTRO_OSCURO = {
-  fondo: "#0b1828",
-  fondo2: "#122318",
-  tinta: "#e8f1fa",
-  acento: "#0f6fc4",
-  acento2: "#c4500e",
-  linea: "#2f4c6b",
-  "acento-texto": "#7cc0ff",
-  "acento2-texto": "#ffa36b",
-};
 
 /* Pantalla a la que lleva el botón «atrás» del navegador o del teléfono. */
 const ARRIBA = { minijuego: "centro", centro: "inicio", logros: "inicio", tutorial: "inicio", juego: "inicio", caido: "inicio", fin: "inicio", maestro: "inicio" };
@@ -51,6 +33,10 @@ export default function App() {
   const [estadoCuenta, setEstadoCuenta] = useState(() => estadoGuardado());
   const [gruposOn, setGruposOn] = useState(() => !!cuenta || !!leerMaestro());
   const [verCuenta, setVerCuenta] = useState(false);
+  // «¿Quién juega?» (computadora compartida): ya quedó restaurado junto con la cuenta
+  const [jugador, setJugador] = useState(() => jugadorActual());
+  // al abrir el juego se pregunta quién juega si ya hay nombres guardados en esta computadora
+  const [verQuien, setVerQuien] = useState(() => !cuenta && !yaSePregunto() && listarJugadores().length > 0);
   const [progreso, setProgreso] = useState(() => leerProgreso());
   const [pantalla, setPantalla] = useState("inicio");
   const [quien, setQuien] = useState(null);
@@ -107,11 +93,16 @@ export default function App() {
       antes = c;
     });
     const terminar = iniciarCuenta();
+    const dejarJugador = alCambiarJugador((j) => {
+      setJugador(j);
+      setProgreso(leerProgreso());
+    });
     let vivo = true;
     gruposDisponibles().then((si) => vivo && si && setGruposOn(true));
     return () => {
       vivo = false;
       dejar();
+      dejarJugador();
       terminar();
     };
   }, []);
@@ -178,7 +169,7 @@ export default function App() {
   const origenRef = useRef(origenLogros);
   origenRef.current = origenLogros;
 
-  usarAtajos(!ajustes && !verCuenta);
+  usarAtajos(!ajustes && !verCuenta && !verQuien);
 
   function alternarTema() {
     const nuevo = oscuro ? "claro" : "oscuro";
@@ -316,6 +307,17 @@ export default function App() {
 
   const cerrarAjustes = useCallback(() => setAjustes(false), []);
   const cerrarCuenta = useCallback(() => setVerCuenta(false), []);
+  const cerrarQuien = useCallback(() => {
+    marcarQuienPreguntado();
+    setVerQuien(false);
+    setJugador(jugadorActual());
+    setProgreso(leerProgreso());
+  }, []);
+
+  function abrirQuien() {
+    sonido.clic();
+    setVerQuien(true);
+  }
 
   function abrirCuenta() {
     sonido.clic();
@@ -341,6 +343,8 @@ export default function App() {
         onAjustes={abrirAjustes}
         onGrupo={gruposOn ? abrirCuenta : null}
         cuenta={cuenta}
+        jugador={cuenta ? null : jugador}
+        onQuien={cuenta ? null : abrirQuien}
         tema={tema}
         onTema={alternarTema}
       />
@@ -360,7 +364,13 @@ export default function App() {
       />
     );
   } else if (pantalla === "logros") {
-    vista = <Logros progreso={progreso} onSalir={origenLogros === "centro" ? alCentro : alInicio} />;
+    vista = (
+      <Logros
+        progreso={progreso}
+        jugador={cuenta ? { nombre: cuenta.alumno.apodo, id: null } : jugador}
+        onSalir={origenLogros === "centro" ? alCentro : alInicio}
+      />
+    );
   } else if (pantalla === "tutorial" && p) {
     vista = <Tutorial personaje={p} onFin={terminarTutorial} />;
   } else if (pantalla === "minijuego" && juegoLibre) {
@@ -395,6 +405,7 @@ export default function App() {
       <Final
         personaje={p}
         grado={grado}
+        jugador={cuenta ? null : jugador}
         puntos={puntos}
         insignias={insignias}
         record={record}
@@ -459,6 +470,7 @@ export default function App() {
           onCerrar={cerrarAjustes}
         />
       )}
+      {verQuien && <QuienJuega onListo={cerrarQuien} />}
       {verCuenta && <Cuenta cuenta={cuenta} estado={estadoCuenta} onPanel={abrirMaestro} onCerrar={cerrarCuenta} />}
     </>
   );

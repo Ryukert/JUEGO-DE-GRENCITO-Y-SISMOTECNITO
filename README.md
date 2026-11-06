@@ -129,6 +129,58 @@ vercel --prod
 Si cambias la variable después del primer despliegue, haz **Redeploy** para que
 la tome.
 
+### Publicar con cada commit
+
+Vercel publica solo cada vez que llega algo a GitHub. Para no tener que hacer
+`git push` a mano, el repositorio trae un *hook* que sube la rama después de cada
+commit (y de cada merge). Se activa una vez por computadora:
+
+```bash
+git config core.hooksPath .githooks
+```
+
+- Commit en **`main`** → Vercel actualiza el **sitio publicado** en 1-2 minutos.
+- Commit en otra rama → Vercel hace una **vista previa** con su propio enlace; el
+  sitio publicado no cambia hasta juntar la rama con `main`.
+- Para un commit sin subir: `SIN_SUBIR=1 git commit ...`
+- Sin internet no pasa nada: avisa y se sube después con `git push`.
+
+---
+
+## ¿Quién juega? (computadora del salón)
+
+En la escuela el juego suele estar en una sola computadora y los niños no tienen
+cuenta. Con el botón **¿Quién juega?** de la portada cada niño escribe su nombre
+y elige a Tecnito o a Greencito; el juego le da un **ID de jugador** de 6 letras y
+números (por ejemplo `K7P2QX`, sin 0/O ni 1/I para dictarlo sin confusión).
+
+- Cada jugador guarda **sus propios** récords, XP y medallas en esa computadora.
+- Al volver a abrir el juego pregunta quién juega (si ya hay nombres guardados);
+  el siguiente niño toca su nombre o se agrega. También se puede jugar sin nombre.
+- El nombre y el ID aparecen en la portada, en *Mis logros* y al terminar la partida.
+- *Borrar jugadores* (abajo en la ventana) quita a quien ya no juega, con su progreso.
+- Todo se queda en esa computadora: no se manda a ningún servidor.
+
+---
+
+## Ventana de editores (resultados de las encuestas)
+
+En **`/editores`** (por ejemplo `https://tu-sitio.vercel.app/editores`) quienes
+hacen el juego ven los resultados de las encuestas de satisfacción:
+
+- Cifras: respuestas, promedio de «¿Te gustó?», % que dijo que la dificultad fue
+  «Justo» y juegos evaluados.
+- **¿Les gustó? por juego:** barras al 100 % del favorito al que menos.
+- **¿Qué tan difícil fue? por juego** y **respuestas por día**.
+- Filtros por periodo (7, 30, 90 días o todo), grado y tipo (minijuegos o misiones);
+  pasando el mouse sobre una barra se ven los números, y abajo está la tabla completa.
+- **Descargar PDF** con las mismas gráficas y la tabla.
+
+Se entra con la clave de la variable `EDITORES_CLAVE` (en Vercel). Solo se ven
+números resumidos: nunca quién contestó. En las gráficas la escala va de rojo a
+azul pasando por gris (😡 → 😄), porque el rojo→verde no se distingue con
+daltonismo; cada color va con su emoji y su nombre.
+
 ---
 
 ## Grupos, maestros y evaluación (base de datos)

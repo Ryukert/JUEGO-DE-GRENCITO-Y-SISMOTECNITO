@@ -36,7 +36,7 @@ function useCuenta(total, ms = 1200) {
   return valor;
 }
 
-export default function Final({ personaje: p, grado, puntos, insignias, record, onRepetir, onOtro, onCentro, onInicio }) {
+export default function Final({ personaje: p, grado, jugador, puntos, insignias, record, onRepetir, onOtro, onCentro, onInicio }) {
   const rango = rangoPara(puntos);
   const siguiente = RANGOS.find((r) => r.min > puntos);
   const estrellas = estrellasPara(puntos);
@@ -75,6 +75,12 @@ export default function Final({ personaje: p, grado, puntos, insignias, record, 
           />
         ))}
       </p>
+
+      {jugador && (
+        <p className="logros__jugador">
+          ¡Bien, <strong>{jugador.nombre}</strong>! · ID <span className="quien__id">{jugador.id}</span>
+        </p>
+      )}
 
       <p className="final__rango">
         <span className="final__sello"><IconoRango rango={rango} /></span> {rango.nombre}
