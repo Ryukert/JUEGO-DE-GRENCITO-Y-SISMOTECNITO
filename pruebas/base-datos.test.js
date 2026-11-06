@@ -439,3 +439,28 @@ describe("encuestas de satisfacción de los juegos", () => {
     expect(r).toEqual([{ juego: "a", tipo: "minijuego", total: 2, promedio: 4.5, dificultad: [1, 1, 0] }]);
   });
 });
+
+describe("encuestas sin llave secreta (solo con la publicable)", () => {
+  it("usan la función registrar_encuesta con la llave de la API derivada de JUEGO_SECRETO", async () => {
+    const { llaveApi } = await import("../api/_db.js");
+    delete process.env.SUPABASE_SECRET_KEY;
+    process.env.SUPABASE_PUBLISHABLE_KEY = "sb_publishable_prueba";
+    const llamadas = [];
+    vi.stubGlobal("fetch", vi.fn(async (url, op) => {
+      llamadas.push({ url, op, cuerpo: JSON.parse(op.body) });
+      return { ok: true, status: 200, text: async () => "true" };
+    }));
+    expect((await llamar(encuestaApi, undefined, { metodo: "GET" })).json()).toEqual({ disponible: true });
+    const pase = crearPase({ rol: "alumno", a: "11111111-1111-1111-1111-111111111111", g: "22222222-2222-2222-2222-222222222222" });
+    const r = await llamar(encuestaApi, { juego: "memorama", tipo: "minijuego", gusto: 4, dificultad: 1, grado: "primaria" }, { pase });
+    expect(r.statusCode).toBe(200);
+    expect(llamadas[0].url).toBe("https://falso.supabase.co/rest/v1/rpc/registrar_encuesta");
+    expect(llamadas[0].op.headers.apikey).toBe("sb_publishable_prueba");
+    expect(llamadas[0].cuerpo).toMatchObject({
+      p_llave: llaveApi(ENV.JUEGO_SECRETO), p_juego: "memorama", p_gusto: 4, p_dificultad: 1,
+      p_alumno: "11111111-1111-1111-1111-111111111111", p_grupo: "22222222-2222-2222-2222-222222222222",
+    });
+    expect(llamadas[0].cuerpo.p_llave).not.toContain(ENV.JUEGO_SECRETO);
+    delete process.env.SUPABASE_PUBLISHABLE_KEY;
+  });
+});

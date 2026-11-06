@@ -173,6 +173,20 @@ aparece. Con ella:
      (`node -e "console.log(require('crypto').randomBytes(32).toString('base64url'))"`).
 3. Redeploy.
 
+**Encuestas sin llave secreta.** Si todavía no está `SUPABASE_SECRET_KEY`, las
+encuestas de los juegos funcionan igual con `SUPABASE_PUBLISHABLE_KEY` +
+`JUEGO_SECRETO`: el servidor llama a la función `public.registrar_encuesta`, que
+solo inserta encuestas y exige una «llave de la API» derivada de `JUEGO_SECRETO`
+(en la base solo está su sha256, en el esquema `privado`). Si cambias
+`JUEGO_SECRETO`, actualiza ese resumen:
+
+```bash
+node -e "const c=require('crypto');const k=c.createHmac('sha256',process.argv[1]).update('api-rpc').digest('hex');console.log(c.createHash('sha256').update(k).digest('hex'))" "TU_JUEGO_SECRETO"
+# y en el SQL Editor:  update privado.llaves set hash = '<resultado>' where nombre = 'api';
+```
+
+Grupos, alumnos, evaluación y panel del maestro sí necesitan la llave secreta.
+
 ### Cómo se cuida
 
 - El navegador **nunca** habla con la base de datos: todo pasa por `api/alumno.js`,
