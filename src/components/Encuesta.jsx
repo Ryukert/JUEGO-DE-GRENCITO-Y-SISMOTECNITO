@@ -3,6 +3,7 @@ import { DIFICULTAD } from "../data/evaluacion.js";
 import { encuestasDisponibles, tocaPreguntar, marcarPreguntado, enviarEncuesta } from "../lib/encuestas.js";
 import { sonido } from "../lib/sonido.js";
 import { Caritas } from "./Evaluacion.jsx";
+import { Escuchar } from "../juegos/ui/Marco.jsx";
 
 /**
  * Encuesta de satisfacción al terminar un juego: «¿Te gustó?» con caritas de rojo a verde y
@@ -46,6 +47,10 @@ export default function Encuesta({ juego, grado }) {
     <section className="encuesta" aria-labelledby={`enc-${juego.id}`}>
       <header className="encuesta__cabeza">
         <h3 id={`enc-${juego.id}`}>¿Qué te pareció {juego.nombre}?</h3>
+        <Escuchar
+          etiqueta="Escuchar"
+          texto={`¿Qué te pareció ${juego.nombre}? Primero: ¿te gustó? Toca una carita: la roja es nada, la verde es muy bien. Después: ¿cómo estuvo de difícil? Muy fácil, justo, o muy difícil.`}
+        />
         <button
           type="button"
           className="encuesta__no"

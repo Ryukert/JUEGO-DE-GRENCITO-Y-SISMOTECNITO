@@ -7,6 +7,7 @@ import Icono, { iconoMoneda } from "./Icono.jsx";
 import { IconoRango } from "./IconoJuego.jsx";
 import { menosMovimiento } from "../lib/preferencias.js";
 import Encuesta from "./Encuesta.jsx";
+import BotonConstancia from "./BotonConstancia.jsx";
 
 /** Estrellas de la partida según el rango alcanzado: Vigilante 1, Guardián 2, Capitán o más 3. */
 export function estrellasPara(puntos) {
@@ -36,7 +37,7 @@ function useCuenta(total, ms = 1200) {
   return valor;
 }
 
-export default function Final({ personaje: p, grado, jugador, puntos, insignias, record, onRepetir, onOtro, onCentro, onInicio }) {
+export default function Final({ personaje: p, grado, jugador, progreso, puntos, insignias, record, onRepetir, onOtro, onCentro, onInicio }) {
   const rango = rangoPara(puntos);
   const siguiente = RANGOS.find((r) => r.min > puntos);
   const estrellas = estrellasPara(puntos);
@@ -78,7 +79,7 @@ export default function Final({ personaje: p, grado, jugador, puntos, insignias,
 
       {jugador && (
         <p className="logros__jugador">
-          ¡Bien, <strong>{jugador.nombre}</strong>! · ID <span className="quien__id">{jugador.id}</span>
+          ¡Bien, <strong>{jugador.nombre}</strong>!{jugador.id && <> · ID <span className="quien__id">{jugador.id}</span></>}
         </p>
       )}
 
@@ -115,6 +116,8 @@ export default function Final({ personaje: p, grado, jugador, puntos, insignias,
       </ul>
 
       <Encuesta juego={{ id: `mision-${p.id}`, tipo: "mision", nombre: `las misiones de ${p.nombre}` }} grado={grado} />
+
+      <BotonConstancia progreso={progreso} jugador={jugador} className="final__constancia" />
 
       <div className="opciones opciones--centro">
         <button className="boton-grande" onClick={onRepetir}>Otra vez, más rápido</button>

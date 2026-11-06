@@ -163,6 +163,15 @@ números (por ejemplo `K7P2QX`, sin 0/O ni 1/I para dictarlo sin confusión).
   nombre otra vez (30 segundos antes avisa «¿Sigues jugando?»; tocar la pantalla lo
   quita). El progreso de cada niño se queda guardado. El tiempo se cambia en
   `MINUTOS_INACTIVIDAD` de `src/lib/inactividad.js`. No aplica a alumnos con cuenta de grupo.
+- **Versiones nuevas sin recargar a mano:** cada 10 minutos el juego revisa si se
+  publicó una versión nueva y, si la hay, se recarga solo en el siguiente reinicio
+  por inactividad (cuando nadie está jugando).
+- **Escuchar:** la tarjeta del nombre, las preguntas de las misiones y las encuestas
+  tienen botón 🔊 para que el juego lo lea en voz alta; el aviso «¿Sigues jugando?»
+  se lee solo si el sonido está encendido.
+- **Constancia:** en *Mis logros* y al terminar la partida, *Descargar mi constancia*
+  da un PDF horizontal con el nombre, el ID, el rango, las misiones, la XP y un
+  espacio para la firma del maestro.
 - Todo se queda en esa computadora: no se manda a ningún servidor.
 
 ---
@@ -178,7 +187,7 @@ hacen el juego ven los resultados de las encuestas de satisfacción:
 - **¿Qué tan difícil fue? por juego** y **respuestas por día**.
 - Filtros por periodo (7, 30, 90 días o todo), grado y tipo (minijuegos o misiones);
   pasando el mouse sobre una barra se ven los números, y abajo está la tabla completa.
-- **Descargar PDF** con las mismas gráficas y la tabla.
+- **Descargar PDF** con las mismas gráficas y la tabla, o **Excel (CSV)** con la tabla.
 
 Se entra con la clave de la variable `EDITORES_CLAVE` (en Vercel). Solo se ven
 números resumidos: nunca quién contestó. En las gráficas la escala va de rojo a

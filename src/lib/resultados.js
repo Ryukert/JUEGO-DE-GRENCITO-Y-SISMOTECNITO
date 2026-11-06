@@ -98,3 +98,23 @@ export function rellenarDias(dias) {
 }
 
 export const porcentaje = (n, total) => (total ? Math.round((n / total) * 100) : 0);
+
+/** Tabla de resultados por juego en CSV (abre en Excel con acentos: lleva BOM y CRLF). */
+export function csvResultados(resumen) {
+  const celda = (v) => {
+    const t = String(v ?? "");
+    const seguro = /^[=+\-@]/.test(t) ? "'" + t : t;   // que Excel no lo tome como fórmula
+    return /[",;\n]/.test(seguro) ? `"${seguro.replace(/"/g, '""')}"` : seguro;
+  };
+  const filas = [[
+    "Juego", "Tipo", "Respuestas", "Promedio (1 a 5)",
+    ...ETIQUETAS_GUSTO.map((e) => e.texto), ...ETIQUETAS_DIFICULTAD.map((e) => e.texto), "% Justo",
+  ]];
+  for (const j of resumen.juegos) {
+    filas.push([
+      j.nombre, j.tipo === "mision" ? "Misiones" : "Minijuego", j.total, j.promedio.toFixed(2),
+      ...j.gusto, ...j.dificultad, porcentaje(j.dificultad[1], j.total),
+    ]);
+  }
+  return "﻿" + filas.map((f) => f.map(celda).join(",")).join("\r\n");
+}

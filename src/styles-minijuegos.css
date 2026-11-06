@@ -2472,3 +2472,15 @@ kbd {
 .aviso-inactivo__caja p { margin: 0; font-size: 17px; }
 .aviso-inactivo__reloj { font-size: 52px; line-height: 1; }
 .aviso-inactivo__cuenta { font-size: 22px; color: var(--mal); font-variant-numeric: tabular-nums; }
+
+/* ---- constancia en PDF ---- */
+.boton-constancia {
+  display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+  min-height: 48px; padding: 6px 18px; cursor: pointer; font-weight: 800; font-size: 16px;
+  border-radius: 14px; background: var(--superficie); color: var(--tinta);
+  border: 3px solid var(--contorno); box-shadow: 0 3px 0 var(--contorno);
+}
+.boton-constancia:disabled { opacity: 0.6; cursor: default; }
+.logros__constancia { margin: 0 0 10px; text-align: center; }
+.final__constancia { margin: 4px auto; }
+.ed-acciones button { display: inline-flex; align-items: center; gap: 6px; }
