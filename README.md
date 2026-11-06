@@ -159,6 +159,10 @@ números (por ejemplo `K7P2QX`, sin 0/O ni 1/I para dictarlo sin confusión).
   el siguiente niño toca su nombre o se agrega. También se puede jugar sin nombre.
 - El nombre y el ID aparecen en la portada, en *Mis logros* y al terminar la partida.
 - *Borrar jugadores* (abajo en la ventana) quita a quien ya no juega, con su progreso.
+- **Si nadie toca la pantalla en 5 minutos**, el juego vuelve al inicio y pide el
+  nombre otra vez (30 segundos antes avisa «¿Sigues jugando?»; tocar la pantalla lo
+  quita). El progreso de cada niño se queda guardado. El tiempo se cambia en
+  `MINUTOS_INACTIVIDAD` de `src/lib/inactividad.js`. No aplica a alumnos con cuenta de grupo.
 - Todo se queda en esa computadora: no se manda a ningún servidor.
 
 ---

@@ -19,7 +19,10 @@ import Maestro from "./pages/Maestro.jsx";
 import QuienJuega from "./components/QuienJuega.jsx";
 import {
   jugadorActual, listarJugadores, alCambiarJugador, yaSePregunto, marcarPreguntado as marcarQuienPreguntado,
+  olvidarJugadorActual,
 } from "./lib/jugadores.js";
+import { usarInactividad } from "./lib/inactividad.js";
+import AvisoInactividad from "./components/AvisoInactividad.jsx";
 import {
   restaurarCuenta, iniciarCuenta, suscribirCuenta, gruposDisponibles, leerMaestro, estadoGuardado,
 } from "./lib/cuenta.js";
@@ -37,6 +40,8 @@ export default function App() {
   const [jugador, setJugador] = useState(() => jugadorActual());
   // al abrir el juego se pregunta quién juega si ya hay nombres guardados en esta computadora
   const [verQuien, setVerQuien] = useState(() => !cuenta && !yaSePregunto() && listarJugadores().length > 0);
+  const [avisoInactivo, setAvisoInactivo] = useState(null);   // segundos del aviso, o null
+  const [reinicios, setReinicios] = useState(0);
   const [progreso, setProgreso] = useState(() => leerProgreso());
   const [pantalla, setPantalla] = useState("inicio");
   const [quien, setQuien] = useState(null);
@@ -169,7 +174,28 @@ export default function App() {
   const origenRef = useRef(origenLogros);
   origenRef.current = origenLogros;
 
-  usarAtajos(!ajustes && !verCuenta && !verQuien);
+  usarAtajos(!ajustes && !verCuenta && !verQuien && !avisoInactivo);
+
+  // computadora del salón: tras unos minutos sin que nadie toque, vuelve al inicio y pide el nombre
+  usarInactividad({
+    activo: !cuenta,
+    onAviso: (s) => setAvisoInactivo(s),
+    onActividad: () => setAvisoInactivo(null),
+    onVencer: () => {
+      setAvisoInactivo(null);
+      olvidarJugadorActual();
+      setAjustes(false);
+      setVerCuenta(false);
+      setVerQuien(false);
+      setQuien(null);
+      setMinijuego(null);
+      setJugador(null);
+      setProgreso(leerProgreso());
+      setPantalla("inicio");
+      setReinicios((n) => n + 1);   // la portada se vuelve a armar desde cero
+      window.scrollTo?.(0, 0);
+    },
+  });
 
   function alternarTema() {
     const nuevo = oscuro ? "claro" : "oscuro";
@@ -335,6 +361,7 @@ export default function App() {
   if (pantalla === "inicio") {
     vista = (
       <Portada
+        key={reinicios}
         progreso={progreso}
         ultimo={preferencias.ultimo}
         onElegir={iniciar}
@@ -471,6 +498,7 @@ export default function App() {
         />
       )}
       {verQuien && <QuienJuega onListo={cerrarQuien} />}
+      {avisoInactivo !== null && <AvisoInactividad segundos={avisoInactivo} nombre={jugador?.nombre.split(" ")[0]} />}
       {verCuenta && <Cuenta cuenta={cuenta} estado={estadoCuenta} onPanel={abrirMaestro} onCerrar={cerrarCuenta} />}
     </>
   );

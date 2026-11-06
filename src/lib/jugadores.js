@@ -130,6 +130,20 @@ export function borrarJugador(id) {
 export const yaSePregunto = () => leer(sesion(), "escuadron-quien-preguntado", false) === true;
 export const marcarPreguntado = () => escribir(sesion(), "escuadron-quien-preguntado", true);
 
+/**
+ * Olvida quién estaba jugando (sin borrar su progreso) y vuelve a pedir el nombre:
+ * se usa cuando la computadora se queda sola un rato.
+ */
+export function olvidarJugadorActual() {
+  try {
+    sessionStorage.removeItem(LLAVE_ACTUAL);
+    sessionStorage.removeItem("escuadron-quien-preguntado");
+    sessionStorage.removeItem("escuadron-sin-nombre");   // la tarjeta grande vuelve a salir
+  } catch { /* nada */ }
+  usarCuenta(null);
+  avisar();
+}
+
 /** Solo para pruebas. */
 export function reiniciarJugadores() {
   oyentes.clear();

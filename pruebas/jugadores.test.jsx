@@ -1,7 +1,7 @@
 /* «¿Quién juega?»: varios niños en la computadora del salón, cada uno con su nombre, su ID y su
    propio progreso, sin registrarse. */
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
-import { render, screen, fireEvent, cleanup, within } from "@testing-library/react";
+import { render, screen, fireEvent, cleanup, within, act } from "@testing-library/react";
 import React from "react";
 import App from "../src/App.jsx";
 import {
@@ -181,3 +181,52 @@ describe("tarjeta grande de la portada para escribir el nombre", () => {
 function marcarParaNoPreguntar() {
   sessionStorage.setItem("escuadron-quien-preguntado", "true");
 }
+
+describe("reinicio por inactividad (computadora del salón)", () => {
+  afterEach(() => vi.useRealTimers());
+
+  it("a los 4:30 sin tocar avisa, y a los 5 minutos vuelve al inicio pidiendo el nombre", () => {
+    vi.useFakeTimers();
+    const ana = crearJugador("Ana");
+    marcarParaNoPreguntar();
+    render(<App />);
+    expect(screen.getByRole("region", { name: "Quién está jugando" })).toBeTruthy();
+    // entra al Centro: el reinicio también lo saca de ahí
+    fireEvent.click(screen.getAllByRole("button", { name: /Centro de entrenamiento/ })[0]);
+    act(() => vi.advanceTimersByTime(4 * 60_000 + 31_000));
+    const aviso = screen.getByRole("alertdialog", { name: /Sigues jugando, Ana/ });
+    expect(aviso).toBeTruthy();
+    act(() => vi.advanceTimersByTime(30_000));
+    expect(screen.queryByRole("alertdialog")).toBeNull();
+    expect(jugadorActual()).toBeNull();
+    expect(screen.getByRole("region", { name: /Cómo te llamas/ })).toBeTruthy();
+    // su progreso no se borró: sigue en la lista para tocar su nombre
+    expect(within(screen.getByRole("region", { name: /Cómo te llamas/ })).getByRole("button", { name: /Ana/ })).toBeTruthy();
+    expect(listarJugadores().map((j) => j.id)).toEqual([ana.id]);
+  });
+
+  it("si el niño toca la pantalla durante el aviso, sigue jugando", () => {
+    vi.useFakeTimers();
+    crearJugador("Ana");
+    marcarParaNoPreguntar();
+    render(<App />);
+    act(() => vi.advanceTimersByTime(4 * 60_000 + 31_000));
+    fireEvent.pointerDown(screen.getByRole("button", { name: /Sigo aquí/ }));
+    expect(screen.queryByRole("alertdialog")).toBeNull();
+    act(() => vi.advanceTimersByTime(60_000));
+    expect(jugadorActual()?.nombre).toBe("Ana");
+  });
+
+  it("mientras toca la pantalla no se reinicia", () => {
+    vi.useFakeTimers();
+    crearJugador("Ana");
+    marcarParaNoPreguntar();
+    render(<App />);
+    for (let i = 0; i < 10; i++) {
+      act(() => vi.advanceTimersByTime(60_000));
+      fireEvent.keyDown(window, { key: "x" });
+    }
+    expect(screen.queryByRole("alertdialog")).toBeNull();
+    expect(jugadorActual()?.nombre).toBe("Ana");
+  });
+});
