@@ -2,6 +2,10 @@ import { useState } from "react";
 import { PERSONAJES } from "../data/personajes.js";
 import { crearJugador, elegirJugador, listarJugadores, jugarSinNombre } from "../lib/jugadores.js";
 import { sonido } from "../lib/sonido.js";
+import { Escuchar } from "../juegos/ui/Marco.jsx";
+
+/** «K7P2QX» → «K, 7, P, 2, Q, X» para que la voz lo deletree. */
+const deletrear = (id) => id.split("").join(", ");
 
 /**
  * Tarjeta grande de la portada para escribir el nombre. Es lo primero que ve el niño:
@@ -28,6 +32,7 @@ export default function TarjetaNombre({ jugador, onVerTodos }) {
         <p className="nombre__hola">
           <span>¡Hola, <strong>{jugador.nombre}</strong>!</span>
           <span className="nombre__id">Tu ID: <b className="quien__id">{jugador.id}</b>{nuevoId === jugador.id && " · ¡anótalo!"}</span>
+          <Escuchar texto={`¡Hola, ${jugador.nombre}! Tu número de jugador es: ${deletrear(jugador.id)}.`} />
         </p>
         <button type="button" className="nombre__cambiar" onClick={() => { sonido.clic(); onVerTodos(); }}>
           No soy {jugador.nombre.split(" ")[0]}
@@ -59,6 +64,9 @@ export default function TarjetaNombre({ jugador, onVerTodos }) {
         <h2 id="nombre-titulo" className="nombre__titulo">
           <span aria-hidden="true">✏️</span> ¡Hola! ¿Cómo te llamas?
         </h2>
+        <Escuchar
+          texto={`¡Hola! ¿Cómo te llamas? Escribe tu nombre en el cuadro amarillo y toca el botón verde que dice: ¡Listo!${lista.length ? " Si ya jugaste antes, busca tu nombre abajo y tócalo." : ""}`}
+        />
         <label className="nombre__etiqueta" htmlFor="nombre-campo">
           Escribe tu nombre aquí <span aria-hidden="true">👇</span>
         </label>

@@ -22,6 +22,7 @@ import {
   olvidarJugadorActual,
 } from "./lib/jugadores.js";
 import { usarInactividad } from "./lib/inactividad.js";
+import { iniciarRevisionDeVersion, hayVersionNueva } from "./lib/version.js";
 import AvisoInactividad from "./components/AvisoInactividad.jsx";
 import {
   restaurarCuenta, iniciarCuenta, suscribirCuenta, gruposDisponibles, leerMaestro, estadoGuardado,
@@ -82,6 +83,7 @@ export default function App() {
   }, [p, tema, oscuro]);
 
   useEffect(() => aplicarPreferencias(), []);
+  useEffect(() => iniciarRevisionDeVersion(), []);
 
   // grupos: sincronía con la base de datos y botón «Mi grupo» solo si el servidor la tiene
   useEffect(() => {
@@ -184,6 +186,11 @@ export default function App() {
     onVencer: () => {
       setAvisoInactivo(null);
       olvidarJugadorActual();
+      // nadie está jugando: buen momento para cargar la versión nueva, si se publicó una
+      if (hayVersionNueva()) {
+        window.location.reload();
+        return;
+      }
       setAjustes(false);
       setVerCuenta(false);
       setVerQuien(false);
@@ -432,7 +439,8 @@ export default function App() {
       <Final
         personaje={p}
         grado={grado}
-        jugador={cuenta ? null : jugador}
+        jugador={cuenta ? { nombre: cuenta.alumno.apodo, id: null } : jugador}
+        progreso={progreso}
         puntos={puntos}
         insignias={insignias}
         record={record}

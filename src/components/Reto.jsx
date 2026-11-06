@@ -7,6 +7,7 @@ import Icono from "./Icono.jsx";
 import Reloj from "./Reloj.jsx";
 import { chatDisponible, marcarChatApagado } from "../lib/chat.js";
 import { anotarRespuesta } from "../lib/cuenta.js";
+import { Escuchar } from "../juegos/ui/Marco.jsx";
 
 export default function Reto({
   personaje: p,
@@ -240,6 +241,14 @@ export default function Reto({
       </div>
 
       <div className="pie">
+        {enPregunta && (
+          <Escuchar
+            etiqueta="Escuchar la pregunta"
+            texto={`${enBono ? mision.retoSecundaria.pregunta : mision.escenario}. Las respuestas son: ${opciones
+              .map((o, i) => `${["A", "B", "C", "D"][i]}: ${o.texto}`)
+              .join(". ")}.`}
+          />
+        )}
         {enPregunta && (
           <div className="opciones">
             {opciones.map((o, i) => (

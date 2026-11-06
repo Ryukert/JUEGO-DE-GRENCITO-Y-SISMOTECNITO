@@ -1,6 +1,6 @@
 import { useState, useEffect, useMemo, useCallback } from "react";
 import {
-  resumir, rellenarDias, porcentaje,
+  resumir, rellenarDias, porcentaje, csvResultados,
   ETIQUETAS_GUSTO, ETIQUETAS_DIFICULTAD,
 } from "../lib/resultados.js";
 import { caritaDe } from "../data/evaluacion.js";
@@ -207,6 +207,15 @@ export default function Editores() {
     setTip((t) => ({ x: e.clientX, y: e.clientY, texto: texto ?? t?.texto ?? "" }));
   }
 
+  function descargarCsv() {
+    const url = URL.createObjectURL(new Blob([csvResultados(resumen)], { type: "text/csv;charset=utf-8" }));
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `encuestas-escuadron-${fechaLocal(new Date())}.csv`;
+    a.click();
+    setTimeout(() => URL.revokeObjectURL(url), 1000);
+  }
+
   async function pdf() {
     setHaciendoPdf(true);
     try {
@@ -263,6 +272,9 @@ export default function Editores() {
           <button type="button" onClick={cargar} disabled={cargando}>{cargando ? "Cargando…" : "Actualizar"}</button>
           <button type="button" className="ed-pdf" onClick={pdf} disabled={!resumen || haciendoPdf}>
             <Icono nombre="descargar" /> {haciendoPdf ? "Creando PDF…" : "Descargar PDF"}
+          </button>
+          <button type="button" onClick={descargarCsv} disabled={!resumen?.juegos.length}>
+            <Icono nombre="descargar" /> Excel (CSV)
           </button>
           <button type="button" onClick={() => { guardarPase(null); setPase(null); setFilas(null); }}>Salir</button>
         </span>

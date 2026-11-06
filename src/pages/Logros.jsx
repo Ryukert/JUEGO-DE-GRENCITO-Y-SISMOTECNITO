@@ -5,6 +5,7 @@ import { RANGOS, rangoPara } from "../lib/progreso.js";
 import { LISTA_DIFICULTADES } from "../lib/dificultad.js";
 import Icono, { ICONO_FAMILIA, iconoMoneda } from "../components/Icono.jsx";
 import IconoJuego, { IconoRango } from "../components/IconoJuego.jsx";
+import BotonConstancia from "../components/BotonConstancia.jsx";
 
 /**
  * Mis logros: todo lo que el progreso ya guardaba, a la vista.
@@ -43,6 +44,9 @@ export default function Logros({ progreso, jugador, onSalir }) {
             {jugador.id && <> · ID de jugador <span className="quien__id">{jugador.id}</span></>}
           </p>
         )}
+        <p className="logros__constancia">
+          <BotonConstancia progreso={progreso} jugador={jugador} />
+        </p>
         <dl className="logros__cifras">
           <div>
             <dt>Partidas</dt>

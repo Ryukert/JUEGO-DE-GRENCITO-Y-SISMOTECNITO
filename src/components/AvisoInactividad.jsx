@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { leerSiHaySonido, callar } from "../lib/voz.js";
 
 /**
  * «¿Sigues jugando?»: sale unos segundos antes de que el juego vuelva a pedir el nombre
@@ -6,6 +7,11 @@ import { useState, useEffect } from "react";
  */
 export default function AvisoInactividad({ segundos, nombre }) {
   const [quedan, setQuedan] = useState(segundos);
+  // se lee solo (si el sonido está encendido): el niño puede estar mirando a otro lado
+  useEffect(() => {
+    leerSiHaySonido(`¿Sigues jugando${nombre ? `, ${nombre}` : ""}? Toca la pantalla para seguir.`);
+    return () => callar();
+  }, [nombre]);
   useEffect(() => {
     const id = setInterval(() => setQuedan((s) => Math.max(0, s - 1)), 1000);
     return () => clearInterval(id);
