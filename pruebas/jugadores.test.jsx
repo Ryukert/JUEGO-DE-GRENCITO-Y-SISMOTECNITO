@@ -128,8 +128,56 @@ describe("pantalla «¿Quién juega?»", () => {
     crearJugador("Ana");
     sessionStorage.clear();
     render(<App />);
-    fireEvent.click(screen.getByRole("button", { name: "Jugar sin nombre" }));
+    fireEvent.click(within(screen.getByRole("dialog")).getByRole("button", { name: "Jugar sin nombre" }));
     expect(screen.queryByRole("dialog")).toBeNull();
     expect(jugadorActual()).toBeNull();
   });
 });
+
+describe("tarjeta grande de la portada para escribir el nombre", () => {
+  it("es lo primero que se ve: el niño escribe su nombre ahí mismo y lo saluda con su ID", () => {
+    render(<App />);
+    const tarjeta = screen.getByRole("region", { name: /Cómo te llamas/ });
+    const campo = within(tarjeta).getByLabelText(/Escribe tu nombre aquí/);
+    expect(within(tarjeta).getByRole("button", { name: "¡Listo!" }).disabled).toBe(true);
+    fireEvent.change(campo, { target: { value: "Sofía" } });
+    fireEvent.click(within(tarjeta).getByRole("button", { name: "¡Listo!" }));
+    const hola = screen.getByRole("region", { name: "Quién está jugando" });
+    expect(hola.textContent).toContain("¡Hola, Sofía!");
+    expect(hola.textContent).toContain(jugadorActual().id);
+    expect(hola.textContent).toContain("anótalo");
+  });
+
+  it("muestra los nombres de quienes ya jugaron para tocarlos", () => {
+    const beto = crearJugador("Beto");
+    sessionStorage.clear();
+    restaurarJugador();
+    render(<App />);
+    fireEvent.click(within(screen.getByRole("dialog")).getByRole("button", { name: "Jugar sin nombre" }));
+    // «Jugar sin nombre» en la ventana no esconde la tarjeta: sigue a la vista con los nombres
+    const tarjeta = screen.getByRole("region", { name: /Cómo te llamas/ });
+    fireEvent.click(within(tarjeta).getByRole("button", { name: /Beto/ }));
+    expect(jugadorActual().id).toBe(beto.id);
+    expect(screen.getByRole("region", { name: "Quién está jugando" }).textContent).toContain("Beto");
+  });
+
+  it("«No soy…» abre la lista para cambiar de jugador", () => {
+    crearJugador("Ana");
+    marcarParaNoPreguntar();
+    render(<App />);
+    fireEvent.click(screen.getByRole("button", { name: "No soy Ana" }));
+    expect(screen.getByRole("dialog", { name: /Quién juega/ })).toBeTruthy();
+  });
+
+  it("«Jugar sin nombre» la quita por esta visita", () => {
+    render(<App />);
+    const tarjeta = screen.getByRole("region", { name: /Cómo te llamas/ });
+    fireEvent.click(within(tarjeta).getByRole("button", { name: "Jugar sin nombre" }));
+    expect(screen.queryByRole("region", { name: /Cómo te llamas/ })).toBeNull();
+    expect(screen.getByRole("button", { name: /Quién juega/ })).toBeTruthy();
+  });
+});
+
+function marcarParaNoPreguntar() {
+  sessionStorage.setItem("escuadron-quien-preguntado", "true");
+}

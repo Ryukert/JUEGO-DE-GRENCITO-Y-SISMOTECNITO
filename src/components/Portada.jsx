@@ -7,6 +7,7 @@ import { JUEGOS } from "../juegos/registro.js";
 import Icono, { ICONO_GRADO } from "./Icono.jsx";
 import BotonTema from "./BotonTema.jsx";
 import { IconoRango } from "./IconoJuego.jsx";
+import TarjetaNombre from "./TarjetaNombre.jsx";
 
 /* Los números de la portada salen del contenido: si se agrega una misión o un juego, se actualizan solos. */
 const EN_LETRA = ["cero", "una", "dos", "tres", "cuatro", "cinco", "seis", "siete", "ocho", "nueve", "diez"];
@@ -66,6 +67,8 @@ export default function Portada({ progreso, ultimo, onElegir, onCentro, onLogros
       jugador={jugador} onQuien={onQuien} tema={tema} onTema={onTema}
     />
   );
+  // tarjeta grande para escribir el nombre (no aparece si el alumno entró con cuenta de grupo)
+  const nombre = onQuien ? <TarjetaNombre jugador={jugador} onVerTodos={onQuien} /> : null;
   const quienSigue = ultimo && PERSONAJES[ultimo.personaje] && GRADOS[ultimo.grado] ? ultimo : null;
 
   function elegirGrado(id) {
@@ -78,6 +81,7 @@ export default function Portada({ progreso, ultimo, onElegir, onCentro, onLogros
     return (
       <div className="pantalla portada">
         {barra}
+        {nombre}
         <div className="portada__duo" aria-hidden="true">
           <img className="portada__mini flota" src={PERSONAJES.sismo.cuerpo} alt="" />
           <img className="portada__mini flota flota--tarde" src={PERSONAJES.green.cuerpo} alt="" />
@@ -117,6 +121,7 @@ export default function Portada({ progreso, ultimo, onElegir, onCentro, onLogros
   return (
     <div className="pantalla portada">
       {barra}
+      {nombre}
       {quienSigue && (
         <button
           className={`seguir seguir--${quienSigue.personaje}`}
