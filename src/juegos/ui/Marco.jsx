@@ -198,7 +198,7 @@ export function SelectorDificultad({ valor, opciones, onCambiar }) {
 
 /* --------------------------- resultado final --------------------------- */
 
-export function Resultado({ juego, personaje, resultado, estrellas, nuevoRecord, onOtra, onSalir }) {
+export function Resultado({ juego, personaje, resultado, estrellas, nuevoRecord, onOtra, onSalir, children }) {
   return (
     <div className="mini mini--intro jm__resultado">
       {personaje?.cuerpo && <img className="mini__figura flota" src={personaje.cuerpo} alt="" />}
@@ -242,6 +242,8 @@ export function Resultado({ juego, personaje, resultado, estrellas, nuevoRecord,
           <b>{resultado.livesLost}</b>
         </li>
       </ul>
+
+      {children}
 
       <div className="opciones opciones--centro">
         <button className="boton-grande" onClick={onOtra}>

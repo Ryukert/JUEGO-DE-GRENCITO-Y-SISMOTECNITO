@@ -6,6 +6,7 @@ import { revolver } from "../lib/azar.js";
 import Icono from "./Icono.jsx";
 import Reloj from "./Reloj.jsx";
 import { chatDisponible, marcarChatApagado } from "../lib/chat.js";
+import { anotarRespuesta } from "../lib/cuenta.js";
 
 export default function Reto({
   personaje: p,
@@ -149,6 +150,8 @@ export default function Reto({
     else onFallo();
 
     comentario({ tipo: "respuesta", bono: enBono, eleccion: opcion ? opcion.texto : null });
+    // para el panel del maestro (solo si el alumno entró a un grupo; el servidor califica)
+    anotarRespuesta({ personaje: p.id, grado, mision: mision.id, bono: enBono, eleccion: opcion ? opcion.texto : null });
 
     setEtapa(enBono ? "bonoResultado" : "resultado");
   }

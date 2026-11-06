@@ -131,6 +131,64 @@ la tome.
 
 ---
 
+## Grupos, maestros y evaluación (base de datos)
+
+Opcional. Sin base de datos todo funciona como antes y el botón **Mi grupo** no
+aparece. Con ella:
+
+- **El maestro** crea un grupo desde *Mi grupo → Soy maestro → Crear un grupo*
+  (nombre, grado y una clave suya). Recibe un **código de 6 letras** para dictarlo.
+- **El alumno** entra con *código + apodo + PIN de 4 números* y elige a Tecnito o a
+  Greencito como avatar. **No se pide nombre, correo ni ningún dato personal.**
+- **Progreso en la nube:** récords, XP, medallas y minijuegos se guardan en el grupo.
+  Varios alumnos pueden usar la misma computadora: cada uno tiene su copia aparte.
+  Sin internet se guarda en el navegador y se sube al volver la conexión. Si dos
+  equipos guardan cosas distintas, se combinan quedándose con lo mejor de cada uno.
+- **Panel del maestro:** avance de cada alumno, % de aciertos, última vez que jugó,
+  las preguntas que más se fallan, **PIN nuevo** para quien lo olvidó, quitar
+  alumnos y descarga en CSV.
+- **Evaluación al maestro:** el alumno contesta tres preguntas con cinco caritas
+  de rojo a verde (😡 🙁 😐 🙂 😄): ¿explica claro?, ¿te gustó la clase?,
+  ¿aprendiste algo nuevo? Una por día (si la repite, se actualiza). **Es anónima:**
+  el maestro solo ve promedios y cuántos eligieron cada carita, y nada aparece
+  hasta que haya al menos 3 evaluaciones. No hay texto libre.
+- **Encuestas de satisfacción de los juegos:** al terminar un minijuego o una partida
+  de misiones aparece una tarjeta con «¿Te gustó?» (😡 a 😄, de rojo a verde) y
+  «¿Cómo estuvo de difícil?» (😴 muy fácil · 👌 justo · 😰 muy difícil). Al tocar las
+  dos se manda sola; «Ahora no» la cierra. Sale **una vez al día por juego**, se puede
+  contestar sin cuenta y, sin internet, espera y se manda después. El maestro ve en
+  su panel qué juegos le gustan a su grupo y cuáles se les hacen difíciles; el
+  resumen de todos los grupos está en Supabase en la vista `encuestas_por_juego`.
+
+### Ponerla en marcha
+
+1. Las tablas ya están en el proyecto de Supabase `JUEGO-DE-GRENCITO-Y-SISMOTECNITO`
+   (las migraciones están en `supabase/migrations/`; para otro proyecto, córrelas en
+   el SQL Editor en orden).
+2. En Vercel (y en `.env.local` para probar en tu computadora) agrega:
+   - `SUPABASE_URL` = `https://jnenecohdrvvegukjbxc.supabase.co`
+   - `SUPABASE_SECRET_KEY` = la llave **secreta** `sb_secret_…` de
+     *Project Settings → API Keys*. Va solo en el servidor; nunca con prefijo `VITE_`.
+   - `JUEGO_SECRETO` = 32+ caracteres al azar
+     (`node -e "console.log(require('crypto').randomBytes(32).toString('base64url'))"`).
+3. Redeploy.
+
+### Cómo se cuida
+
+- El navegador **nunca** habla con la base de datos: todo pasa por `api/alumno.js`,
+  `api/progreso.js`, `api/grupo.js`, `api/evaluacion.js` y `api/encuesta.js`. Las tablas tienen RLS
+  activo **sin políticas**, así que con la llave pública no se lee ni escribe nada.
+- PIN y clave del maestro se guardan resumidos (scrypt + sal + `JUEGO_SECRETO`).
+- Después de entrar, cada quien recibe un **pase firmado**: el del alumno dura el
+  ciclo escolar en ese equipo; el del maestro, 12 horas y se borra al cerrar el
+  navegador. Un maestro solo puede ver y cambiar a los alumnos de **su** grupo.
+- **Adivinar un PIN a lo bruto se frena:** 10 intentos por hora por cuenta y 20 cada
+  10 minutos por IP.
+- Si una respuesta fue correcta lo decide el servidor con el contenido del juego,
+  igual que en el chat; el progreso que llega se limpia antes de guardarse.
+
+---
+
 ## Seguridad del chat
 
 La llave de Anthropic solo vive en el servidor (`api/chat.js`) y el chat está pensado

@@ -6,6 +6,7 @@ import Creditos from "./Creditos.jsx";
 import Icono, { iconoMoneda } from "./Icono.jsx";
 import { IconoRango } from "./IconoJuego.jsx";
 import { menosMovimiento } from "../lib/preferencias.js";
+import Encuesta from "./Encuesta.jsx";
 
 /** Estrellas de la partida según el rango alcanzado: Vigilante 1, Guardián 2, Capitán o más 3. */
 export function estrellasPara(puntos) {
@@ -35,7 +36,7 @@ function useCuenta(total, ms = 1200) {
   return valor;
 }
 
-export default function Final({ personaje: p, puntos, insignias, record, onRepetir, onOtro, onCentro, onInicio }) {
+export default function Final({ personaje: p, grado, puntos, insignias, record, onRepetir, onOtro, onCentro, onInicio }) {
   const rango = rangoPara(puntos);
   const siguiente = RANGOS.find((r) => r.min > puntos);
   const estrellas = estrellasPara(puntos);
@@ -106,6 +107,8 @@ export default function Final({ personaje: p, puntos, insignias, record, onRepet
           </li>
         ))}
       </ul>
+
+      <Encuesta juego={{ id: `mision-${p.id}`, tipo: "mision", nombre: `las misiones de ${p.nombre}` }} grado={grado} />
 
       <div className="opciones opciones--centro">
         <button className="boton-grande" onClick={onRepetir}>Otra vez, más rápido</button>
