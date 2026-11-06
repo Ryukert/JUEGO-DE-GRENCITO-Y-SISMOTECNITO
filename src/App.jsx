@@ -11,7 +11,7 @@ import PantallaMinijuego from "./juegos/PantallaMinijuego.jsx";
 import { POR_ID } from "./juegos/registro.js";
 import { sonido, sonidoActivo, alternarSonido } from "./lib/sonido.js";
 import { leerProgreso, guardarGrado, registrarPartida, borrarProgreso } from "./lib/progreso.js";
-import { temaInicial, temaGuardado, guardarTema } from "./lib/tema.js";
+import { temaInicial, temaGuardado, guardarTema, TEMA_NEUTRO, TEMA_NEUTRO_OSCURO } from "./lib/tema.js";
 import { leerPreferencias, guardarPreferencia, aplicarPreferencias } from "./lib/preferencias.js";
 import { usarAtajos } from "./lib/atajos.js";
 import Cuenta from "./components/Cuenta.jsx";
@@ -23,28 +23,6 @@ import {
 import {
   restaurarCuenta, iniciarCuenta, suscribirCuenta, gruposDisponibles, leerMaestro, estadoGuardado,
 } from "./lib/cuenta.js";
-
-const TEMA_NEUTRO = {
-  fondo: "#dbe9f8",
-  fondo2: "#e8f3d6",
-  tinta: "#10304f",
-  acento: "#0f6fc4",
-  acento2: "#c4500e",
-  linea: "#8fb6dd",
-  "acento-texto": "#0f6fc4",
-  "acento2-texto": "#b0470c",
-};
-
-const TEMA_NEUTRO_OSCURO = {
-  fondo: "#0b1828",
-  fondo2: "#122318",
-  tinta: "#e8f1fa",
-  acento: "#0f6fc4",
-  acento2: "#c4500e",
-  linea: "#2f4c6b",
-  "acento-texto": "#7cc0ff",
-  "acento2-texto": "#ffa36b",
-};
 
 /* Pantalla a la que lleva el botón «atrás» del navegador o del teléfono. */
 const ARRIBA = { minijuego: "centro", centro: "inicio", logros: "inicio", tutorial: "inicio", juego: "inicio", caido: "inicio", fin: "inicio", maestro: "inicio" };

@@ -47,7 +47,7 @@ const b64 = (buf) => Buffer.from(buf).toString("base64url");
 const firma = (texto, s) => createHmac("sha256", s).update(texto).digest("base64url");
 
 /** Duración de cada pase: el alumno no vuelve a escribir su PIN en un ciclo escolar; el maestro, cada día. */
-export const DURACION = { alumno: 200 * 86_400_000, maestro: 12 * 3_600_000 };
+export const DURACION = { alumno: 200 * 86_400_000, maestro: 12 * 3_600_000, editor: 8 * 3_600_000 };
 
 export function crearPase(datos, { env = process.env, ahora = Date.now() } = {}) {
   const s = secreto(env);
@@ -68,7 +68,7 @@ export function leerPase(pase, { env = process.env, ahora = Date.now() } = {}) {
   try {
     const d = JSON.parse(Buffer.from(cuerpo, "base64url").toString("utf8"));
     if (!d || typeof d.exp !== "number" || d.exp < ahora) return null;
-    if (d.rol !== "alumno" && d.rol !== "maestro") return null;
+    if (!Object.prototype.hasOwnProperty.call(DURACION, d.rol)) return null;
     return d;
   } catch {
     return null;

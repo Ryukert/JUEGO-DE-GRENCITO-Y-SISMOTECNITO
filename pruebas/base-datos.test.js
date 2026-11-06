@@ -464,3 +464,63 @@ describe("encuestas sin llave secreta (solo con la publicable)", () => {
     delete process.env.SUPABASE_PUBLISHABLE_KEY;
   });
 });
+
+describe("ventana de editores", () => {
+  const CLAVE = "clave-de-editores-123";
+  async function entrarEditor() {
+    process.env.EDITORES_CLAVE = CLAVE;
+    const { default: editoresApi } = await import("../api/editores.js");
+    const r = await llamar(editoresApi, { clave: CLAVE });
+    return { editoresApi, pase: r.json().pase, r };
+  }
+  afterEach(() => { delete process.env.EDITORES_CLAVE; });
+
+  it("pide la clave de editores; con la mala no entra", async () => {
+    const { editoresApi, r } = await entrarEditor();
+    expect(r.statusCode).toBe(200);
+    expect((await llamar(editoresApi, { clave: "otra" })).statusCode).toBe(401);
+    expect((await llamar(editoresApi, undefined, { metodo: "GET" })).statusCode).toBe(401);
+  });
+
+  it("un pase de alumno o de maestro no abre los resultados", async () => {
+    const { editoresApi } = await entrarEditor();
+    const { grupo, pase: paseMaestro } = await grupoNuevo();
+    const { pase: paseAlumno } = (await registrar(grupo.codigo)).json();
+    for (const pase of [paseMaestro, paseAlumno]) {
+      expect((await llamar(editoresApi, undefined, { metodo: "GET", pase })).statusCode).toBe(401);
+    }
+  });
+
+  it("entrega los resultados agrupados por juego, día, carita y dificultad, sin decir quién contestó", async () => {
+    const { editoresApi, pase } = await entrarEditor();
+    const { grupo } = await grupoNuevo();
+    const { pase: paseAna } = (await registrar(grupo.codigo)).json();
+    const OP = { juego: "memorama", tipo: "minijuego", gusto: 5, dificultad: 2, grado: "primaria" };
+    await llamar(encuestaApi, OP, { pase: paseAna });
+    await llamar(encuestaApi, OP);
+    await llamar(encuestaApi, { ...OP, gusto: 1 });
+    const r = await llamar(editoresApi, undefined, { metodo: "GET", pase });
+    expect(r.statusCode).toBe(200);
+    const filas = r.json().filas;
+    expect(filas.find((f) => f.gusto === 5)).toMatchObject({ juego: "memorama", dificultad: 2, respuestas: 2 });
+    expect(filas.find((f) => f.gusto === 1).respuestas).toBe(1);
+    expect(JSON.stringify(filas)).not.toMatch(/alumno|grupo/);
+  });
+});
+
+describe("resumen para las gráficas", () => {
+  it("ordena del favorito al que menos, filtra por grado y aparta lo que no es del catálogo", async () => {
+    const { resumir, rellenarDias } = await import("../src/lib/resultados.js");
+    const filas = [
+      { juego: "memorama", tipo: "minijuego", grado: "primaria", dia: "2026-11-01", gusto: 2, dificultad: 3, respuestas: 4 },
+      { juego: "mision-sismo", tipo: "mision", grado: "secundaria", dia: "2026-11-03", gusto: 5, dificultad: 2, respuestas: 2 },
+      { juego: "prueba-claude", tipo: "minijuego", grado: "primaria", dia: "2026-11-03", gusto: 4, dificultad: 2, respuestas: 1 },
+    ];
+    const r = resumir(filas);
+    expect(r.juegos.map((j) => j.nombre)).toEqual(["Misiones de Sismo Tecnito", expect.any(String)]);
+    expect(r.general).toMatchObject({ total: 6, gusto: [0, 4, 0, 0, 2], dificultad: [0, 2, 4] });
+    expect(r.fueraDeCatalogo).toBe(1);
+    expect(resumir(filas, { grado: "primaria" }).juegos).toHaveLength(1);
+    expect(rellenarDias(r.dias).map((d) => d.total)).toEqual([4, 0, 2]);
+  });
+});

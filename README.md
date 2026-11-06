@@ -163,6 +163,26 @@ números (por ejemplo `K7P2QX`, sin 0/O ni 1/I para dictarlo sin confusión).
 
 ---
 
+## Ventana de editores (resultados de las encuestas)
+
+En **`/editores`** (por ejemplo `https://tu-sitio.vercel.app/editores`) quienes
+hacen el juego ven los resultados de las encuestas de satisfacción:
+
+- Cifras: respuestas, promedio de «¿Te gustó?», % que dijo que la dificultad fue
+  «Justo» y juegos evaluados.
+- **¿Les gustó? por juego:** barras al 100 % del favorito al que menos.
+- **¿Qué tan difícil fue? por juego** y **respuestas por día**.
+- Filtros por periodo (7, 30, 90 días o todo), grado y tipo (minijuegos o misiones);
+  pasando el mouse sobre una barra se ven los números, y abajo está la tabla completa.
+- **Descargar PDF** con las mismas gráficas y la tabla.
+
+Se entra con la clave de la variable `EDITORES_CLAVE` (en Vercel). Solo se ven
+números resumidos: nunca quién contestó. En las gráficas la escala va de rojo a
+azul pasando por gris (😡 → 😄), porque el rojo→verde no se distingue con
+daltonismo; cada color va con su emoji y su nombre.
+
+---
+
 ## Grupos, maestros y evaluación (base de datos)
 
 Opcional. Sin base de datos todo funciona como antes y el botón **Mi grupo** no
