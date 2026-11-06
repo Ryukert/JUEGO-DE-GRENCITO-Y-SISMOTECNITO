@@ -14,6 +14,11 @@ import { leerProgreso, guardarGrado, registrarPartida, borrarProgreso } from "./
 import { temaInicial, temaGuardado, guardarTema } from "./lib/tema.js";
 import { leerPreferencias, guardarPreferencia, aplicarPreferencias } from "./lib/preferencias.js";
 import { usarAtajos } from "./lib/atajos.js";
+import Cuenta from "./components/Cuenta.jsx";
+import Maestro from "./pages/Maestro.jsx";
+import {
+  restaurarCuenta, iniciarCuenta, suscribirCuenta, gruposDisponibles, leerMaestro, estadoGuardado,
+} from "./lib/cuenta.js";
 
 const TEMA_NEUTRO = {
   fondo: "#dbe9f8",
@@ -38,9 +43,14 @@ const TEMA_NEUTRO_OSCURO = {
 };
 
 /* Pantalla a la que lleva el botón «atrás» del navegador o del teléfono. */
-const ARRIBA = { minijuego: "centro", centro: "inicio", logros: "inicio", tutorial: "inicio", juego: "inicio", caido: "inicio", fin: "inicio" };
+const ARRIBA = { minijuego: "centro", centro: "inicio", logros: "inicio", tutorial: "inicio", juego: "inicio", caido: "inicio", fin: "inicio", maestro: "inicio" };
 
 export default function App() {
+  // la cuenta del alumno (si hay) se recupera antes de leer el progreso: así se abre el suyo
+  const [cuenta, setCuenta] = useState(() => restaurarCuenta());
+  const [estadoCuenta, setEstadoCuenta] = useState(() => estadoGuardado());
+  const [gruposOn, setGruposOn] = useState(() => !!cuenta || !!leerMaestro());
+  const [verCuenta, setVerCuenta] = useState(false);
   const [progreso, setProgreso] = useState(() => leerProgreso());
   const [pantalla, setPantalla] = useState("inicio");
   const [quien, setQuien] = useState(null);
@@ -81,6 +91,30 @@ export default function App() {
   }, [p, tema, oscuro]);
 
   useEffect(() => aplicarPreferencias(), []);
+
+  // grupos: sincronía con la base de datos y botón «Mi grupo» solo si el servidor la tiene
+  useEffect(() => {
+    let antes = restaurarCuenta();
+    const dejar = suscribirCuenta(({ cuenta: c, estado: e }) => {
+      setCuenta(c);
+      setEstadoCuenta(e);
+      // cambió quién juega, o llegó lo que ganó en otro equipo: se vuelve a leer su progreso
+      if (c?.alumno?.id !== antes?.alumno?.id || c !== antes) {
+        const p = leerProgreso();
+        setProgreso(p);
+        if (c?.alumno?.id !== antes?.alumno?.id && p.grado) setGrado(p.grado);
+      }
+      antes = c;
+    });
+    const terminar = iniciarCuenta();
+    let vivo = true;
+    gruposDisponibles().then((si) => vivo && si && setGruposOn(true));
+    return () => {
+      vivo = false;
+      dejar();
+      terminar();
+    };
+  }, []);
 
   // sin elección guardada, el tema sigue al del sistema aunque cambie con la página abierta
   useEffect(() => {
@@ -144,7 +178,7 @@ export default function App() {
   const origenRef = useRef(origenLogros);
   origenRef.current = origenLogros;
 
-  usarAtajos(!ajustes);
+  usarAtajos(!ajustes && !verCuenta);
 
   function alternarTema() {
     const nuevo = oscuro ? "claro" : "oscuro";
@@ -281,6 +315,19 @@ export default function App() {
   }
 
   const cerrarAjustes = useCallback(() => setAjustes(false), []);
+  const cerrarCuenta = useCallback(() => setVerCuenta(false), []);
+
+  function abrirCuenta() {
+    sonido.clic();
+    setVerCuenta(true);
+  }
+
+  function abrirMaestro() {
+    setVerCuenta(false);
+    setQuien(null);
+    setMinijuego(null);
+    setPantalla("maestro");
+  }
 
   let vista;
   if (pantalla === "inicio") {
@@ -292,10 +339,14 @@ export default function App() {
         onCentro={alCentro}
         onLogros={abrirLogros}
         onAjustes={abrirAjustes}
+        onGrupo={gruposOn ? abrirCuenta : null}
+        cuenta={cuenta}
         tema={tema}
         onTema={alternarTema}
       />
     );
+  } else if (pantalla === "maestro") {
+    vista = <Maestro onSalir={alInicio} />;
   } else if (pantalla === "centro") {
     vista = (
       <Centro
@@ -343,6 +394,7 @@ export default function App() {
     vista = (
       <Final
         personaje={p}
+        grado={grado}
         puntos={puntos}
         insignias={insignias}
         record={record}
@@ -403,9 +455,11 @@ export default function App() {
                 }
               : null
           }
+          cuenta={cuenta}
           onCerrar={cerrarAjustes}
         />
       )}
+      {verCuenta && <Cuenta cuenta={cuenta} estado={estadoCuenta} onPanel={abrirMaestro} onCerrar={cerrarCuenta} />}
     </>
   );
 }

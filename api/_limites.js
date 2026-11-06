@@ -50,24 +50,57 @@ async function contarEnUpstash({ url, token }, claves) {
   return claves.map((_, i) => Number(datos[i * 2]?.result));
 }
 
-/** Suma una visita y dice si pasa. Devuelve null si pasa, o el motivo si no. */
-export async function revisarLimites(ip, { env = process.env, ahora = Date.now() } = {}) {
+/** Resume un dato (IP, apodo…) para usarlo de clave sin guardarlo tal cual. */
+export function resumen(prefijo, valor) {
+  return createHash("sha256").update(prefijo + "|" + String(valor || "anonimo")).digest("hex").slice(0, 20);
+}
+
+/**
+ * Suma una visita a cada contador y devuelve el motivo del primero que se pasó, o null.
+ * claves: [{ clave, segundos, max, motivo }]
+ */
+export async function contar(claves, { env = process.env, ahora = Date.now() } = {}) {
   const cfg = configuracion(env);
-  const quien = createHash("sha256").update("chat|" + String(ip || "anonimo")).digest("hex").slice(0, 20);
-  const minuto = Math.floor(ahora / 60_000), dia = Math.floor(ahora / 86_400_000);
-  const claves = [
-    { clave: `chat:${quien}:m:${minuto}`, segundos: 120, max: cfg.porMinuto, motivo: "minuto" },
-    { clave: `chat:${quien}:d:${dia}`, segundos: 90_000, max: cfg.porDia, motivo: "dia" },
-    { clave: `chat:total:d:${dia}`, segundos: 90_000, max: cfg.total, motivo: "total" },
-  ];
   let cuentas;
   if (cfg.upstash) {
     try { cuentas = await contarEnUpstash(cfg.upstash, claves); }
-    catch (e) { console.error("[chat] límites compartidos no disponibles, se usan los de memoria:", e.message); }
+    catch (e) { console.error("[límites] contadores compartidos no disponibles, se usan los de memoria:", e.message); }
   }
   if (!cuentas) cuentas = contarEnMemoria(claves, ahora);
   const pasado = claves.find((c, i) => !(cuentas[i] <= c.max));
   return pasado ? pasado.motivo : null;
+}
+
+/** Suma una visita y dice si pasa. Devuelve null si pasa, o el motivo si no. */
+export async function revisarLimites(ip, { env = process.env, ahora = Date.now() } = {}) {
+  const cfg = configuracion(env);
+  const quien = resumen("chat", ip);
+  const minuto = Math.floor(ahora / 60_000), dia = Math.floor(ahora / 86_400_000);
+  return contar([
+    { clave: `chat:${quien}:m:${minuto}`, segundos: 120, max: cfg.porMinuto, motivo: "minuto" },
+    { clave: `chat:${quien}:d:${dia}`, segundos: 90_000, max: cfg.porDia, motivo: "dia" },
+    { clave: `chat:total:d:${dia}`, segundos: 90_000, max: cfg.total, motivo: "total" },
+  ], { env, ahora });
+}
+
+/**
+ * Intentos de entrar (PIN del alumno o clave del maestro). Un PIN de 4 cifras se adivina
+ * a lo bruto si no hay tope, así que se cuenta por IP y por cuenta:
+ *   - por IP: 20 intentos por cada 10 minutos,
+ *   - por cuenta (grupo + apodo, o el grupo para el maestro): 10 intentos por hora.
+ * Se cuenta antes de revisar el PIN, así que adivinar 10,000 PIN tomaría más de un mes.
+ */
+export async function revisarIntentos(ip, cuenta, { env = process.env, ahora = Date.now() } = {}) {
+  const bloque = Math.floor(ahora / 600_000), hora = Math.floor(ahora / 3_600_000);
+  const claves = [{ clave: `entrar:${resumen("ip", ip)}:${bloque}`, segundos: 900, max: 20, motivo: "ip" }];
+  if (cuenta) claves.push({ clave: `cuenta:${resumen("cuenta", cuenta)}:${hora}`, segundos: 4_000, max: 10, motivo: "cuenta" });
+  return contar(claves, { env, ahora });
+}
+
+/** Escrituras de progreso y respuestas: 240 por minuto por IP (un salón entero sale por la misma IP). */
+export async function revisarEscrituras(ip, { env = process.env, ahora = Date.now() } = {}) {
+  const minuto = Math.floor(ahora / 60_000);
+  return contar([{ clave: `escribe:${resumen("ip", ip)}:${minuto}`, segundos: 120, max: 240, motivo: "minuto" }], { env, ahora });
 }
 
 /** Solo para las pruebas */

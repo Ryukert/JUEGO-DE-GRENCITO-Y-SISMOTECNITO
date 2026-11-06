@@ -2133,3 +2133,152 @@ kbd {
 
 /* ---- tema oscuro: contorno claro, como el trazo de una caricatura sobre fondo oscuro ---- */
 :root[data-tema="oscuro"] .ajustes-fondo { background: rgba(0, 0, 0, 0.6); }
+
+/* ---- mi grupo: cuentas de alumno y maestro ---- */
+.solo-lector {
+  position: absolute; width: 1px; height: 1px; overflow: hidden;
+  clip: rect(0 0 0 0); clip-path: inset(50%); white-space: nowrap;
+}
+.cuenta__pestanas { display: flex; gap: 6px; margin: 8px 0 10px; }
+.cuenta__pestanas button {
+  flex: 1; min-height: 44px; padding: 6px 10px; cursor: pointer; font-weight: 800;
+  border-radius: 12px; background: var(--apagado); color: var(--tinta); border: 2px solid var(--apagado-borde);
+}
+.cuenta__pestanas button.activa { background: var(--tinta); color: var(--superficie); border-color: var(--tinta); }
+.cuenta__form { display: grid; gap: 10px; }
+.cuenta__campo { display: grid; gap: 3px; font-weight: 800; }
+.cuenta__campo input {
+  min-height: 46px; padding: 8px 12px; font-size: 16px; border-radius: 12px;
+  background: var(--superficie); color: var(--tinta); border: 3px solid var(--contorno);
+}
+.cuenta__campo input:focus-visible { outline: 3px solid var(--acento-texto); outline-offset: 2px; }
+.cuenta__campo small { font-weight: 400; font-size: 12.5px; color: var(--texto-tenue); }
+.cuenta__avatares, .cuenta__grados { display: flex; gap: 8px; margin: 0; padding: 0; border: 0; }
+.cuenta__avatares legend, .cuenta__grados legend { font-weight: 800; margin-bottom: 4px; }
+.cuenta__avatares label, .cuenta__grados label {
+  flex: 1; display: grid; justify-items: center; gap: 2px; padding: 8px; cursor: pointer; font-weight: 700;
+  border-radius: 14px; border: 3px solid var(--apagado-borde); background: var(--apagado);
+}
+.cuenta__avatares label.elegido, .cuenta__grados label.elegido { border-color: var(--contorno); background: var(--superficie); box-shadow: 0 3px 0 var(--contorno); }
+.cuenta__avatares input, .cuenta__grados input { position: absolute; opacity: 0; pointer-events: none; }
+.cuenta__avatares label:has(input:focus-visible), .cuenta__grados label:has(input:focus-visible) { outline: 3px solid var(--acento-texto); outline-offset: 2px; }
+.cuenta__error { margin: 0; padding: 8px 10px; border-radius: 10px; font-size: 14px; font-weight: 700; color: var(--mal); border: 2px solid var(--mal); }
+.cuenta__dentro { display: grid; justify-items: center; gap: 4px; text-align: center; }
+.cuenta__dentro img { border-radius: 50%; border: 3px solid var(--contorno); }
+.cuenta__dentro p { margin: 0; }
+.cuenta__apodo { font-size: 22px; font-weight: 900; }
+.cuenta__estado { display: flex; align-items: center; gap: 6px; margin-top: 6px !important; font-size: 14px; font-weight: 700; color: var(--texto-suave); }
+.cuenta__nota { font-size: 13.5px; color: var(--texto-suave); margin: 6px 0 !important; }
+.cuenta__salir, .cuenta__panel, .maestro__pie button, .maestro__acciones button {
+  display: inline-flex; align-items: center; justify-content: center; gap: 6px;
+  min-height: 44px; padding: 6px 14px; cursor: pointer; font-weight: 700;
+  border-radius: 14px; background: var(--superficie); color: var(--tinta);
+  border: 3px solid var(--contorno); box-shadow: 0 3px 0 var(--contorno);
+}
+.cuenta__salir:disabled, .maestro__pie button:disabled, .maestro__acciones button:disabled { opacity: 0.6; cursor: default; }
+.portada__barra-izq { display: flex; gap: 6px; flex-wrap: wrap; }
+
+.maestro__codigo { display: grid; justify-items: center; gap: 2px; margin: 0 0 10px; font-weight: 700; }
+.maestro__codigo strong {
+  font-size: clamp(30px, 9vw, 48px); letter-spacing: 0.18em; font-variant-numeric: tabular-nums;
+  padding: 2px 14px; border-radius: 14px; background: var(--superficie); border: 3px solid var(--contorno);
+}
+.maestro__codigo small { font-weight: 400; color: var(--texto-suave); }
+.maestro__cargando { text-align: center; font-weight: 700; }
+.maestro__tabla-caja { overflow-x: auto; border-radius: 14px; border: 3px solid var(--contorno); background: var(--superficie); }
+.maestro__tabla { width: 100%; border-collapse: collapse; font-size: 14px; }
+.maestro__tabla th, .maestro__tabla td { padding: 8px 10px; text-align: left; border-bottom: 2px dashed var(--linea); white-space: nowrap; }
+.maestro__tabla thead th { font-size: 12.5px; color: var(--texto-tenue); }
+.maestro__tabla tbody tr:last-child > * { border-bottom: 0; }
+.maestro__alumno { display: inline-flex; align-items: center; gap: 8px; font-weight: 800; }
+.maestro__alumno img { border-radius: 50%; }
+.maestro__rango { display: inline-flex; align-items: center; gap: 4px; }
+.maestro__rango .medalla { width: 24px; height: 24px; }
+.maestro__acciones { display: flex; gap: 6px; align-items: center; justify-content: flex-end; }
+.maestro__acciones button { min-height: 44px; padding: 4px 10px; font-size: 13px; box-shadow: 0 2px 0 var(--contorno); }
+.maestro__acciones .maestro__peligro { background: var(--mal); color: var(--sobre-estado); border-color: var(--mal); }
+.maestro__aviso { font-weight: 800; font-size: 13px; }
+.maestro__preguntas { margin: 0; padding: 0; list-style: none; display: grid; gap: 8px; }
+.maestro__preguntas li { padding: 10px 12px; border-radius: 14px; background: var(--superficie); border: 3px solid var(--contorno); }
+.maestro__preguntas p { margin: 4px 0; font-size: 14px; color: var(--texto-suave); }
+.maestro__preguntas small { color: var(--texto-tenue); }
+.maestro__fallos { float: right; margin-left: 8px; font-weight: 900; color: var(--mal); }
+.maestro__pie { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; }
+
+/* ---- evaluación al maestro: caritas de rojo a verde ---- */
+.evaluacion { display: grid; gap: 12px; }
+.evaluacion--lista { justify-items: center; text-align: center; }
+.evaluacion__gracias { font-size: 48px; line-height: 1; }
+.cuenta__evaluar { width: 100%; margin-top: 8px; justify-content: center; gap: 8px; }
+.caritas { margin: 0; padding: 0; border: 0; min-width: 0; }
+.caritas legend { padding: 0; margin-bottom: 6px; font-weight: 800; }
+.caritas__fila { display: grid; grid-template-columns: repeat(5, 1fr); gap: 4px; }
+.carita {
+  position: relative; display: grid; justify-items: center; gap: 2px; min-height: 64px; padding: 6px 2px;
+  cursor: pointer; border-radius: 14px; border: 3px solid transparent; text-align: center;
+  transition: transform 0.12s ease, opacity 0.12s ease;
+}
+.carita input { position: absolute; opacity: 0; pointer-events: none; }
+.carita__cara {
+  display: grid; place-items: center; width: 44px; height: 44px; border-radius: 50%;
+  font-size: 26px; line-height: 1;
+  background: var(--carita); border: 3px solid var(--contorno);
+  box-shadow: 0 3px 0 var(--contorno);
+}
+.carita__texto { font-size: 11.5px; font-weight: 700; line-height: 1.15; }
+.carita:hover .carita__cara { transform: translateY(-2px); }
+.carita--elegida { border-color: var(--carita); background: color-mix(in srgb, var(--carita) 18%, transparent); transform: scale(1.06); }
+.carita--elegida .carita__texto { font-weight: 900; }
+.carita--apagada { opacity: 0.55; }
+.carita:has(input:focus-visible) { outline: 3px solid var(--acento-texto); outline-offset: 2px; }
+
+.evaluado { list-style: none; margin: 0; padding: 0; display: grid; gap: 8px; }
+.evaluado__pregunta {
+  display: grid; grid-template-columns: auto 1fr; grid-template-areas: "cara texto" "barra barra" "conteo conteo";
+  align-items: center; gap: 6px 12px; padding: 10px 12px;
+  border-radius: 14px; background: var(--superficie); border: 3px solid var(--contorno);
+}
+.evaluado__promedio {
+  grid-area: cara; display: grid; place-items: center; width: 52px; height: 52px; border-radius: 50%;
+  font-size: 30px; background: var(--carita); border: 3px solid var(--contorno);
+}
+.evaluado__texto { grid-area: texto; display: grid; }
+.evaluado__texto span { font-size: 14px; color: var(--texto-suave); }
+.evaluado__barra {
+  grid-area: barra; display: flex; height: 16px; overflow: hidden;
+  border-radius: 999px; border: 2px solid var(--contorno); background: var(--apagado);
+}
+.evaluado__barra span { height: 100%; }
+.evaluado__conteo { grid-area: conteo; display: flex; justify-content: space-between; gap: 6px; font-size: 13px; font-weight: 700; }
+@media (min-width: 640px) {
+  .evaluado__pregunta { grid-template-columns: auto minmax(160px, 1fr) 2fr; grid-template-areas: "cara texto barra" "cara texto conteo"; }
+}
+
+/* ---- encuesta de satisfacción al terminar un juego ---- */
+.encuesta {
+  display: grid; gap: 10px; width: min(100%, 460px); margin: 6px auto; padding: 12px 14px;
+  border-radius: 18px; background: var(--superficie); color: var(--tinta);
+  border: 3px solid var(--contorno); box-shadow: 0 4px 0 var(--contorno); text-align: left;
+}
+.encuesta--lista { display: flex; align-items: center; justify-content: center; gap: 8px; font-weight: 800; text-align: center; }
+.encuesta__cabeza { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+.encuesta__cabeza h3 { margin: 0; font-size: 16px; }
+.encuesta__no {
+  flex-shrink: 0; min-height: 44px; padding: 4px 12px; cursor: pointer; font-weight: 700; font-size: 13px;
+  border-radius: 12px; background: var(--apagado); color: var(--tinta); border: 2px solid var(--apagado-borde);
+}
+.caritas__fila--tres { grid-template-columns: repeat(3, 1fr); }
+
+.encuestas-panel { list-style: none; margin: 0; padding: 0; display: grid; gap: 6px; }
+.encuestas-panel li {
+  display: grid; grid-template-columns: auto 1fr auto; align-items: center; gap: 10px; padding: 8px 12px;
+  border-radius: 14px; background: var(--superficie); border: 3px solid var(--contorno);
+}
+.encuestas-panel__nombre { display: grid; }
+.encuestas-panel__nombre small { color: var(--texto-suave); }
+.encuestas-panel__dif { display: flex; gap: 8px; font-size: 13px; font-weight: 700; white-space: nowrap; }
+.evaluado__promedio--chico { width: 40px; height: 40px; font-size: 22px; }
+@media (max-width: 480px) {
+  .encuestas-panel li { grid-template-columns: auto 1fr; }
+  .encuestas-panel__dif { grid-column: 1 / -1; justify-content: flex-end; }
+}

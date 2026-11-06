@@ -14,17 +14,22 @@ const enLetra = (n) => EN_LETRA[n] || String(n);
 const MISIONES = PERSONAJES.sismo.misiones.length;
 const VIDAS = GRADOS.primaria.vidas;
 
-/** Arriba de la portada: Mis logros a la izquierda; tema y ajustes a la derecha. */
-function Barra({ onLogros, onAjustes, tema, onTema }) {
+/** Arriba de la portada: Mis logros y Mi grupo a la izquierda; tema y ajustes a la derecha. */
+function Barra({ onLogros, onAjustes, onGrupo, cuenta, tema, onTema }) {
   return (
     <nav className="portada__barra" aria-label="Opciones">
-      {onLogros ? (
-        <button className="boton-chico" onClick={onLogros}>
-          <Icono nombre="trofeo" /> Mis logros
-        </button>
-      ) : (
-        <span />
-      )}
+      <span className="portada__barra-izq">
+        {onLogros && (
+          <button className="boton-chico" onClick={onLogros}>
+            <Icono nombre="trofeo" /> Mis logros
+          </button>
+        )}
+        {onGrupo && (
+          <button className="boton-chico" onClick={onGrupo}>
+            <Icono nombre="grupo" /> {cuenta ? cuenta.alumno.apodo : "Mi grupo"}
+          </button>
+        )}
+      </span>
       <span className="portada__barra-der">
         <BotonTema tema={tema} onTema={onTema} />
         {onAjustes && (
@@ -37,9 +42,9 @@ function Barra({ onLogros, onAjustes, tema, onTema }) {
   );
 }
 
-export default function Portada({ progreso, ultimo, onElegir, onCentro, onLogros, onAjustes, tema, onTema }) {
+export default function Portada({ progreso, ultimo, onElegir, onCentro, onLogros, onAjustes, onGrupo, cuenta, tema, onTema }) {
   const [grado, setGrado] = useState(progreso.grado || null);
-  const barra = <Barra onLogros={onLogros} onAjustes={onAjustes} tema={tema} onTema={onTema} />;
+  const barra = <Barra onLogros={onLogros} onAjustes={onAjustes} onGrupo={onGrupo} cuenta={cuenta} tema={tema} onTema={onTema} />;
   const quienSigue = ultimo && PERSONAJES[ultimo.personaje] && GRADOS[ultimo.grado] ? ultimo : null;
 
   function elegirGrado(id) {

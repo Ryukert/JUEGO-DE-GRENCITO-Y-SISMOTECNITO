@@ -8,13 +8,20 @@
  *   v1 → grado, records por personaje, insignias, partidas
  *   v2 → agrega xp, escudos, semillas, juegos{} y logros[]
  *
- * La migración de v1 a v2 es automática y no pierde nada. Todo el acceso
- * pasa por este archivo, así que el día que haya backend solo hay que
- * cambiar `leerProgreso()` y `guardar()` por llamadas a la API.
+ * La migración de v1 a v2 es automática y no pierde nada.
+ *
+ * Cuentas de alumno (src/lib/cuenta.js): cada alumno que entra a un grupo tiene su
+ * propia copia en este navegador («escuadron-progreso-v2:<id>»), separada de la de
+ * quien juega sin cuenta. Así varios niños pueden usar la misma computadora sin
+ * mezclar récords. Cada vez que algo se guarda se avisa a `alCambiar`, y la cuenta
+ * lo sube a la base de datos.
  */
+import { mezclarProgreso } from "./mezcla.js";
 
-const LLAVE = "escuadron-progreso-v2";
+const LLAVE_INVITADO = "escuadron-progreso-v2";
 const LLAVE_VIEJA = "escuadron-progreso-v1";
+let LLAVE = LLAVE_INVITADO;
+const oyentes = new Set();
 
 const VACIO = {
   version: 2,
@@ -48,7 +55,7 @@ export function leerProgreso() {
     const crudo = localStorage.getItem(LLAVE);
     if (crudo) {
       memoria = normalizar(JSON.parse(crudo));
-    } else {
+    } else if (LLAVE === LLAVE_INVITADO) {
       // primera vez con v2: rescatamos lo que hubiera guardado en v1
       const viejo = localStorage.getItem(LLAVE_VIEJA);
       if (viejo) {
@@ -63,10 +70,33 @@ export function leerProgreso() {
   return instantanea();
 }
 
-function guardar() {
+function guardar({ avisar = true } = {}) {
   try {
     localStorage.setItem(LLAVE, JSON.stringify(memoria));
   } catch (e) {}
+  if (avisar) oyentes.forEach((fn) => fn(instantanea()));
+}
+
+/** Avisa cada vez que el progreso cambia en este navegador. Devuelve cómo dejar de escuchar. */
+export function alCambiar(fn) {
+  oyentes.add(fn);
+  return () => oyentes.delete(fn);
+}
+
+/** Cambia a la copia de un alumno (id) o a la de quien juega sin cuenta (null). */
+export function usarCuenta(id) {
+  LLAVE = id ? `${LLAVE_INVITADO}:${id}` : LLAVE_INVITADO;
+  memoria = { ...VACIO, records: { ...VACIO.records }, juegos: {} };
+  cargado = false;
+  return leerProgreso();
+}
+
+/** Junta lo que llegó de la base de datos con lo de este navegador (el grado local manda). */
+export function mezclarDesdeServidor(datos, { avisar = false } = {}) {
+  leerProgreso();
+  memoria = normalizar(mezclarProgreso(datos, memoria));
+  guardar({ avisar });
+  return instantanea();
 }
 
 /** Copia nueva, para que React note el cambio de estado. */

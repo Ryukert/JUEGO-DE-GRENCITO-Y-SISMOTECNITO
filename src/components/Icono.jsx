@@ -108,6 +108,15 @@ const FORMAS = {
     </>
   ),
   descargar: <path d="M12 3.5v11M7 10l5 5 5-5M4.5 19.5h15" />,
+  grupo: (
+    <>
+      <circle className="r" cx="9" cy="8" r="3.2" />
+      <path className="r" d="M3 19.5c0-3.4 2.7-5.6 6-5.6s6 2.2 6 5.6z" />
+      <circle cx="16.6" cy="8.6" r="2.6" />
+      <path d="M16.4 13.9c2.6 0 4.6 1.9 4.6 4.8" />
+    </>
+  ),
+  nube: <path d="M7 18.5a4 4 0 0 1-.6-8 5.6 5.6 0 0 1 10.9 1.2A3.4 3.4 0 0 1 17 18.5z" />,
   luna: <path className="r" d="M20 14.6A8.2 8.2 0 0 1 9.4 4a8.2 8.2 0 1 0 10.6 10.6z" />,
   sol: (
     <>

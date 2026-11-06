@@ -36,6 +36,7 @@ export default function Ajustes({
   onTutorial,
   onBorrar,
   instalar,
+  cuenta,
   onCerrar,
 }) {
   const [confirmar, setConfirmar] = useState(false);
@@ -100,7 +101,12 @@ export default function Ajustes({
         </div>
 
         <div className="ajustes__peligro">
-          {borrado ? (
+          {cuenta ? (
+            <p>
+              Juegas como <strong>{cuenta.alumno.apodo}</strong>: tu progreso está guardado en tu grupo.
+              Para jugar sin cuenta, sal desde «{cuenta.alumno.apodo}» en la portada.
+            </p>
+          ) : borrado ? (
             <p role="status">Listo: el progreso se borró.</p>
           ) : confirmar ? (
             <>

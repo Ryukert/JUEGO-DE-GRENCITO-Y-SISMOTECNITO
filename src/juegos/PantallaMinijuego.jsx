@@ -5,6 +5,7 @@ import { registrarMinijuego, recordDeJuego } from "../lib/progreso.js";
 import { sonido } from "../lib/sonido.js";
 import { confeti } from "../lib/confeti.js";
 import { Instrucciones, Resultado } from "./ui/Marco.jsx";
+import Encuesta from "../components/Encuesta.jsx";
 
 /**
  * Envoltura común de todos los minijuegos.
@@ -82,7 +83,9 @@ export default function PantallaMinijuego({ juego, personaje, grado, progreso, o
             setFase("intro");
           }}
           onSalir={onSalir}
-        />
+        >
+          <Encuesta juego={{ id: juego.id, tipo: "minijuego", nombre: juego.nombre }} grado={grado} />
+        </Resultado>
       </div>
     );
   }
