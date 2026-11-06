@@ -129,6 +129,22 @@ vercel --prod
 Si cambias la variable después del primer despliegue, haz **Redeploy** para que
 la tome.
 
+### Publicar con cada commit
+
+Vercel publica solo cada vez que llega algo a GitHub. Para no tener que hacer
+`git push` a mano, el repositorio trae un *hook* que sube la rama después de cada
+commit (y de cada merge). Se activa una vez por computadora:
+
+```bash
+git config core.hooksPath .githooks
+```
+
+- Commit en **`main`** → Vercel actualiza el **sitio publicado** en 1-2 minutos.
+- Commit en otra rama → Vercel hace una **vista previa** con su propio enlace; el
+  sitio publicado no cambia hasta juntar la rama con `main`.
+- Para un commit sin subir: `SIN_SUBIR=1 git commit ...`
+- Sin internet no pasa nada: avisa y se sube después con `git push`.
+
 ---
 
 ## ¿Quién juega? (computadora del salón)
