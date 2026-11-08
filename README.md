@@ -2,15 +2,17 @@
 
 Autor: **Marco Antonio Adame Rodriguez**
 
-Juego educativo por turnos con dos mascotas que hablan con Claude. Pensado para
+Juego educativo por turnos con dos mascotas. Pensado para
 que un grupo de primaria o secundaria lo juegue en el salón, en el celular o en
 la computadora.
 
 - **Sismo Tecnito** — protección civil ante sismos.
 - **Greencito** — cuidado del medio ambiente.
 
-Stack: React 18 + Vite. La conversación pasa por una función serverless en
-`/api/chat` para que la API key nunca salga del servidor.
+Stack: React 18 + Vite. No usa inteligencia artificial: todas las preguntas, explicaciones
+y datos están escritos en el proyecto, así que funciona sin internet y sin costo por uso.
+Las funciones del servidor (`/api/`) solo atienden los grupos, las encuestas y la ventana
+de editores.
 
 ---
 
@@ -48,9 +50,6 @@ Ecosistema y Ciudad sostenible por el de Greencito, y el gran desafío
 **Tecnito vs Greencito**, que pide una ciudad segura y sostenible con un solo
 presupuesto.
 
-**El chat sigue vivo.** En cualquier momento se le puede preguntar lo que sea al
-personaje, y contesta en su voz y al nivel del grado elegido.
-
 **Recompensas.** Al final hay rango (Aprendiz → Vigilante → Guardián → Capitán →
 Leyenda), medallas por misión y récord personal guardado en el navegador.
 
@@ -67,7 +66,6 @@ El grado se elige al principio y cambia el juego de verdad, no solo el texto:
 | Preguntas de bonificación | no | sí, valen doble |
 | Tiempo por residuo | 5 s | 3.5 s |
 | Memorama | parejas iguales, 100 s | situación ↔ respuesta, 75 s |
-| Voz del personaje | frases cortas, comparaciones escolares, emojis | sin infantilizar, cifras concretas, humor seco |
 
 En el memorama la diferencia es la más marcada: primaria empareja cartas
 idénticas, mientras que secundaria empareja una situación con su respuesta
@@ -84,15 +82,15 @@ se fuga más agua en una casa.
 
 ```bash
 npm install
-cp .env.example .env.local     # pon tu ANTHROPIC_API_KEY dentro
+cp .env.example .env.local     # opcional: llaves de Supabase para grupos y encuestas
 npm run dev
 ```
 
-Abre http://localhost:5173. El servidor de desarrollo monta `/api/chat` solo.
+Abre http://localhost:5173. El servidor de desarrollo monta las funciones de `/api/` solo.
 
-Sin API key el juego **funciona completo**: las misiones, los minijuegos, los
-puntos y las explicaciones están escritos en el proyecto. Lo único que se pierde
-son los comentarios improvisados del personaje. Sirve para demos sin internet.
+Sin llaves el juego **funciona completo**: las misiones, los minijuegos, los puntos y las
+explicaciones están escritos en el proyecto. Lo único que se apaga es «Mi grupo» y las
+encuestas. Sirve para demos sin internet.
 
 ---
 
@@ -107,7 +105,7 @@ git remote add origin https://github.com/TU_USUARIO/TU_REPO.git
 git push -u origin main
 ```
 
-`.env.local` está en `.gitignore`, así que tu llave no se sube.
+`.env.local` está en `.gitignore`, así que tus llaves no se suben.
 
 ---
 
@@ -115,20 +113,11 @@ git push -u origin main
 
 1. Entra a [vercel.com/new](https://vercel.com/new) e importa el repositorio.
 2. Vercel detecta Vite solo. Build `npm run build`, output `dist`.
-3. Antes de dar Deploy, en **Environment Variables** agrega `ANTHROPIC_API_KEY`
-   con tu llave de console.anthropic.com, marcada para Production, Preview y
-   Development.
+3. Opcional: para grupos, panel del maestro y encuestas, agrega en **Environment
+   Variables** las de Supabase y `JUEGO_SECRETO` (ver «Grupos, maestros y evaluación»).
 4. Deploy.
 
-Desde la terminal:
-
-```bash
-npm i -g vercel
-vercel env add ANTHROPIC_API_KEY
-vercel --prod
-```
-
-Si cambias la variable después del primer despliegue, haz **Redeploy** para que
+Si cambias una variable después del primer despliegue, haz **Redeploy** para que
 la tome.
 
 ### Publicar con cada commit
@@ -272,46 +261,16 @@ Grupos, alumnos, evaluación y panel del maestro sí necesitan la llave secreta.
   **fallidos** cada 10 minutos por IP. Los que entran bien no gastan ese tope: en la escuela
   todo el salón sale por la misma IP, así que 30 niños pueden entrar a la vez (el tope total
   por IP es de 200 cada 10 minutos). Se cambian con `ENTRAR_FALLOS_IP` y `ENTRAR_LIMITE_IP`.
-- Si una respuesta fue correcta lo decide el servidor con el contenido del juego,
-  igual que en el chat; el progreso que llega se limpia antes de guardarse.
-
----
-
-## Seguridad del chat
-
-La llave de Anthropic solo vive en el servidor (`api/chat.js`) y el chat está pensado
-para que nadie pueda usarlo para otra cosa a costa de tu cuenta:
-
-- **El navegador no manda instrucciones para la IA.** Solo dice qué se juega
-  (personaje, grado, misión) y qué respondió o preguntó el jugador. Las
-  instrucciones se arman en el servidor con `construirSistema` y el contenido de
-  `src/data/personajes.js`. Un personaje, grado, misión o respuesta que no exista
-  se rechaza sin llamar a la IA, y si la respuesta es correcta lo decide el servidor.
-- **Cuidado de quien juega:** el personaje nunca pide datos personales, no repite
-  los que alguien comparta, no cambia de papel aunque se lo pidan y, si alguien
-  cuenta que está en peligro, le dice que avise a un adulto o llame al 911.
-- **Topes de uso** (`api/_limites.js`): por persona, 12 mensajes por minuto y 150
-  por día; del juego completo, 3,000 al día. Se cambian con `CHAT_LIMITE_MINUTO`,
-  `CHAT_LIMITE_IP_DIA` y `CHAT_LIMITE_DIARIO`. Sin más configuración, cada copia del
-  servidor cuenta en su memoria; con `UPSTASH_REDIS_REST_URL` y
-  `UPSTASH_REDIS_REST_TOKEN` (Upstash o Vercel KV) la cuenta es una sola para todas.
-  Al llegar al tope el juego sigue: solo el chat descansa.
-- **Errores sin detalles:** si Anthropic falla (sin crédito, llave inválida…), el
-  jugador ve «El personaje no puede contestar ahorita» y el detalle queda en el
-  registro de Vercel (Logs).
-- **Tope de gasto en Anthropic:** además, pon un límite mensual en
-  console.anthropic.com → Settings → Limits. Es la última barrera si algo falla.
-
-Las variables están explicadas en `.env.example`. `.env` y `.env.local` están en
-`.gitignore`: la llave no se sube a GitHub.
+- Si una respuesta fue correcta lo decide el servidor con el contenido del juego;
+  el progreso que llega se limpia antes de guardarse.
 
 ---
 
 ## Diseño adaptativo
 
-- **Teléfono vertical:** `100dvh` con el chat al centro y los controles fijos
-  abajo, respeto por el notch con `safe-area-inset`, botones de 46 px mínimo y
-  campo de texto de 16 px para que iOS no haga zoom.
+- **Teléfono vertical:** `100dvh` con la conversación de la misión al centro y los
+  controles fijos abajo, respeto por el notch con `safe-area-inset`, botones de 46 px
+  mínimo y campos de texto de 16 px para que iOS no haga zoom.
 - **Teléfono acostado:** la portada pasa a dos columnas, el tablero del
   simulacro se acomoda en cuatro y las respuestas se reparten en dos columnas.
 - **Tablet:** fichas y botes más grandes, tarjetas en dos columnas.
@@ -364,8 +323,6 @@ sonido se puede silenciar desde el altavoz del HUD y la preferencia se guarda.
 
 - **Botón «atrás»** del navegador o del teléfono: sube un nivel (minijuego →
   Centro → portada) en vez de salirse de la página. Con Ajustes abiertos, los cierra.
-- **Chat:** el juego pregunta al servidor (`GET /api/chat`, no gasta) si el chat
-  está encendido. Si no lo está, o no hay internet, esconde «Pregúntale algo» y lo explica.
 - **Un solo reloj** (`src/components/Reloj.jsx`) en misiones y minijuegos.
 - **Teclado:** 1-4 o A-D para responder, Enter para seguir (`src/lib/atajos.js`).
 - **Ajustes** (engrane en la portada y el Centro): sonido, tema, letra grande,
@@ -374,8 +331,8 @@ sonido se puede silenciar desde el altavoz del HUD y la preferencia se guarda.
   portada para quien regresa; **Mis logros** con medallas, insignias y los 46 juegos.
 - **Escritorio ancho** (1200 px o más): panel «Tu partida» a un lado de la consola.
 - **Sin internet:** se puede instalar como app (`public/manifest.webmanifest`) y,
-  después de la primera visita, funciona sin conexión (`public/sw.js`). Solo el
-  chat necesita internet. El service worker solo se registra en la versión publicada.
+  después de la primera visita, funciona sin conexión (`public/sw.js`). Solo «Mi grupo»
+  y las encuestas necesitan internet. El service worker solo se registra en la versión publicada.
   Al compilar, `version-sw.js` le pone a `dist/sw.js` la huella de la versión: cada
   publicación abre su propia caché y borra la anterior, así no se acumulan archivos viejos.
 
@@ -427,21 +384,22 @@ que entre más escribas, más varía cada partida.
 
 Para más residuos del minijuego, agrega entradas a `RESIDUOS` con su `bote`.
 Para más trampas del simulacro, a `TRAMPAS_SIMULACRO`. En `GRADOS` se ajustan
-segundos, vidas y el tono con que la IA le habla a cada edad.
+segundos, vidas, opciones y preguntas de bonificación de cada grado.
 
 ---
 
 ## Estructura
 
 ```
-api/chat.js                    función serverless: arma la consulta y habla con Anthropic
-api/_limites.js                topes de uso del chat (por persona y diario)
+api/                           funciones serverless: alumnos, progreso, grupos, evaluación,
+                               encuestas y editores (todas opcionales, con Supabase)
+api/_limites.js                topes de intentos para entrar y de escrituras
 public/                        imágenes: personajes y logos institucionales
 
 src/App.jsx                    estado de la partida y ruteo de pantallas
 src/components/Portada.jsx     elegir grado y personaje
 src/components/Juego.jsx       HUD y ruteo de misión
-src/components/Reto.jsx        pregunta con cronómetro + chat
+src/components/Reto.jsx        pregunta con cronómetro, explicación y bonificación
 src/components/minijuegos/     Memorama.jsx, Simulacro.jsx, Basura.jsx
 src/components/Final.jsx       rango, estrellas, récord y festejo
 src/components/Creditos.jsx    logos UABC y FCITEC
@@ -453,7 +411,6 @@ src/components/Tutorial.jsx    explicación de 3 pasos
 src/pages/Logros.jsx           Mis logros
 src/lib/preferencias.js        letra grande, menos animaciones, vibración, tutorial, último personaje
 src/lib/atajos.js              atajos de teclado
-src/lib/chat.js                ¿está encendido el chat?
 public/sw.js                   funciona sin internet
 public/manifest.webmanifest    instalar como app (iconos icono-*.png)
 src/components/BotonTema.jsx   botón de tema claro / oscuro
@@ -736,7 +693,7 @@ Las dos corren antes de cada publicación (Vercel y GitHub Actions); con un erro
 aviso de ESLint no se publica. Se necesita Node 22.13 o más nuevo; Vercel usa la versión de
 *Project Settings* (24.x) y GitHub Actions la misma.
 
-290 pruebas. Monta los 46 minijuegos del catálogo, juega hasta el final los seis
+283 pruebas. Monta los 46 minijuegos del catálogo, juega hasta el final los seis
 jefes de simulación, comprueba que los indicadores nunca se salen de 0 a 100,
 que el presupuesto no se va a negativos, que todas las palabras listadas en la
 sopa de letras están de verdad en el tablero, que el rompecabezas siempre
@@ -752,14 +709,7 @@ ninguno se sale ni queda tan chico que no se pueda tocar.
 
 ## Costos
 
-Cada comentario del personaje consume tokens de tu cuenta de Anthropic, con
-tope de 700 de salida. El juego es jugable sin la API, así que si abres el sitio
-al público conviene poner un límite de gasto en la consola de Anthropic.
-
-`api/chat.js` limita a 12 peticiones por minuto y por IP, recorta los mensajes
-del jugador a 600 caracteres y descarta los vacíos. El límite vive en memoria de
-la instancia: frena el abuso obvio, pero si el sitio va a recibir mucho tráfico
-conviene moverlo a Redis (Upstash) para que sea un candado real.
-
-Los minijuegos **no** usan la API: todo su contenido educativo está escrito en
-`src/data/juegos/`, así que funcionan sin internet y sin costo.
+El juego no usa servicios de pago por uso: no hay inteligencia artificial y todo el
+contenido educativo está escrito en `src/data/`, así que las misiones y los minijuegos
+funcionan sin internet y sin costo. Lo único externo es Supabase (opcional), para grupos y
+encuestas.

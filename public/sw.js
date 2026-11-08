@@ -4,7 +4,7 @@
  *   que trae los nombres con hash de cada versión), la fuente y las imágenes.
  * - Páginas: primero la red (para recibir versiones nuevas); sin red, la guardada.
  * - Lo demás: lo guardado al instante y se actualiza por detrás.
- * - El chat (/api/) nunca se guarda: sin internet el juego lo esconde.
+ * - Las funciones del servidor (/api/) nunca se guardan: siempre van a la red.
  *
  * El navegador solo reinstala el service worker si ESTE archivo cambia. Por eso, al compilar,
  * version-sw.js (plugin de Vite) cambia __VERSION_BUILD__ por una huella de la versión: cada publicación trae un

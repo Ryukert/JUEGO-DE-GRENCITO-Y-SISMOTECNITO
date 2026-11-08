@@ -575,7 +575,7 @@ describe("resumen para las gráficas", () => {
     const filas = [
       { juego: "memorama", tipo: "minijuego", grado: "primaria", dia: "2026-11-01", gusto: 2, dificultad: 3, respuestas: 4 },
       { juego: "mision-sismo", tipo: "mision", grado: "secundaria", dia: "2026-11-03", gusto: 5, dificultad: 2, respuestas: 2 },
-      { juego: "prueba-claude", tipo: "minijuego", grado: "primaria", dia: "2026-11-03", gusto: 4, dificultad: 2, respuestas: 1 },
+      { juego: "prueba-fuera", tipo: "minijuego", grado: "primaria", dia: "2026-11-03", gusto: 4, dificultad: 2, respuestas: 1 },
     ];
     const r = resumir(filas);
     expect(r.juegos.map((j) => j.nombre)).toEqual(["Misiones de Sismo Tecnito", expect.any(String)]);

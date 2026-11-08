@@ -45,15 +45,6 @@ kbd {
 /* ---- reloj sin tiempo corriendo (entre preguntas) ---- */
 .reloj--fin { --color-tiempo: var(--apagado-borde); }
 
-/* ---- chat apagado ---- */
-.sin-chat {
-  margin: 4px clamp(12px, 3vw, 18px) 10px;
-  font-size: 12.5px;
-  line-height: 1.4;
-  color: var(--texto-tenue);
-  text-align: center;
-}
-
 /* ---- marcador de los minijuegos ---- */
 .jm__pts { font-size: 11px; font-weight: 700; color: var(--texto-tenue); margin-left: 1px; }
 

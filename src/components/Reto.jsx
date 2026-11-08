@@ -5,7 +5,6 @@ import { confeti } from "../lib/confeti.js";
 import { revolver } from "../lib/azar.js";
 import Icono from "./Icono.jsx";
 import Reloj from "./Reloj.jsx";
-import { chatDisponible, marcarChatApagado } from "../lib/chat.js";
 import { anotarRespuesta } from "../lib/cuenta.js";
 import { Escuchar } from "../juegos/ui/Marco.jsx";
 
@@ -24,13 +23,8 @@ export default function Reto({
   const [etapa, setEtapa] = useState("pregunta"); // pregunta | resultado | bono | bonoResultado
   const [tiempo, setTiempo] = useState(cfg.segundos);
   const [mensajes, setMensajes] = useState([{ de: "bot", texto: mision.escenario }]);
-  const [pensando, setPensando] = useState(false);
-  const [texto, setTexto] = useState("");
-  const [, setUltimo] = useState(null);
   // cómo reacciona el personaje en escena: piensa (esperando), feliz, triste o tiempo
   const [animo, setAnimo] = useState("piensa");
-  // chat con el personaje: null = preguntando al servidor, true / false = ya se sabe
-  const [chat, setChat] = useState(null);
   const reloj = useRef(null);
   const finRef = useRef(null);
   const seguirRef = useRef(null);
@@ -48,15 +42,7 @@ export default function Reto({
 
   useEffect(() => {
     finRef.current?.scrollIntoView({ behavior: "smooth", block: "end" });
-  }, [mensajes, pensando, etapa]);
-
-  useEffect(() => {
-    let vivo = true;
-    chatDisponible().then((si) => vivo && setChat(si));
-    return () => {
-      vivo = false;
-    };
-  }, []);
+  }, [mensajes, etapa]);
 
   // al responder, el foco pasa a «Siguiente»: con teclado basta Enter para seguir
   useEffect(() => {
@@ -81,34 +67,6 @@ export default function Reto({
     else if (tiempo <= 3 && Math.abs(tiempo % 1) < 0.05) sonido.tic();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [tiempo, etapa]);
-
-  /* El servidor arma lo que se le pide a la IA con el contenido del juego (api/chat.js):
-     aquí solo se dice qué se está jugando y qué respondió o preguntó el jugador. */
-  async function comentario(consulta) {
-    if (chat === false) return;
-    setPensando(true);
-    try {
-      const r = await fetch("/api/chat", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ personaje: p.id, grado, mision: mision.id, ...consulta }),
-      });
-      if (r.status === 503) {
-        marcarChatApagado();
-        setChat(false);
-      }
-      if (!r.ok) throw new Error("sin servidor");
-      const { texto: t } = await r.json();
-      if (t) setMensajes((m) => [...m, { de: "bot", texto: t }]);
-    } catch (e) {
-      // a una respuesta el juego ya le dio su explicación; a una pregunta hay que contestarle algo
-      if (consulta.tipo === "pregunta") {
-        setMensajes((m) => [...m, { de: "bot", texto: "Ahorita no puedo platicar, pero sigue jugando: cada respuesta trae su explicación." }]);
-      }
-    } finally {
-      setPensando(false);
-    }
-  }
 
   function responder(opcion) {
     if (contestado.current) return;
@@ -144,25 +102,13 @@ export default function Reto({
       },
     ]);
 
-    setUltimo({ correcto, ganados });
     if (correcto) onPuntos(ganados);
     else onFallo();
 
-    comentario({ tipo: "respuesta", bono: enBono, eleccion: opcion ? opcion.texto : null });
     // para el panel del maestro (solo si el alumno entró a un grupo; el servidor califica)
     anotarRespuesta({ personaje: p.id, grado, mision: mision.id, bono: enBono, eleccion: opcion ? opcion.texto : null });
 
     setEtapa(enBono ? "bonoResultado" : "resultado");
-  }
-
-  async function preguntarLibre(e) {
-    e.preventDefault();
-    const q = texto.trim();
-    if (!q || pensando) return;
-    setTexto("");
-    setMensajes((m) => [...m, { de: "yo", texto: q }]);
-    sonido.clic();
-    await comentario({ tipo: "pregunta", texto: q });
   }
 
   function continuar() {
@@ -195,7 +141,7 @@ export default function Reto({
         </div>
         {mision.lugar && <span className="mision-escena__lugar"><Icono nombre="lugar" /> {mision.lugar}</span>}
 
-      <div className="chat" role="log" aria-live="polite">
+      <div className="conversacion" role="log" aria-live="polite">
         {mensajes.map((m, i) =>
           m.de === "sistema" ? (
             <p className="separador" key={i}>{m.texto}</p>
@@ -224,14 +170,6 @@ export default function Reto({
           )
         )}
 
-        {pensando && (
-          <div className="fila">
-            <img className="cara" src={p.cara} alt="" width="44" height="44" />
-            <div className="globo">
-              <span className="puntitos"><i /><i /><i /></span>
-            </div>
-          </div>
-        )}
         {/* espacio al final: la conversación no tapa la reacción del personaje */}
         <div className="mision-escena__espacio" aria-hidden="true" />
         <div ref={finRef} />
@@ -272,28 +210,6 @@ export default function Reto({
           </div>
         )}
 
-        {chat === false && (
-          <p className="sin-chat">
-            {p.nombre} no puede platicar ahorita. Las explicaciones de cada respuesta sí salen.
-          </p>
-        )}
-        {chat && (
-        <form className="escribe" onSubmit={preguntarLibre}>
-          <input
-            value={texto}
-            onChange={(e) => setTexto(e.target.value)}
-            maxLength={300}
-            placeholder={`Pregúntale algo a ${p.nombre}...`}
-            aria-label={`Escribe tu pregunta para ${p.nombre}`}
-            disabled={pensando}
-            enterKeyHint="send"
-            autoComplete="off"
-          />
-          <button type="submit" className="enviar" disabled={pensando || !texto.trim()}>
-            Enviar
-          </button>
-        </form>
-        )}
       </div>
     </>
   );

@@ -3,7 +3,7 @@ node_modules/
 dist/
 coverage/
 
-# Claves: nunca se suben (la de Anthropic va en .env.local o en Vercel)
+# Claves: nunca se suben (van en .env.local o en Vercel)
 .env
 .env.*
 !.env.example
