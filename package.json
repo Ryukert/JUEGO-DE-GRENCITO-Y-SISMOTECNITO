@@ -1,7 +1,7 @@
 {
   "name": "escuadron-tecnito-greencito",
   "private": true,
-  "version": "2.1.0",
+  "version": "2.2.0",
   "type": "module",
   "description": "Juego educativo con Sismo Tecnito (protección civil) y Greencito (medio ambiente)",
   "author": "Marco Antonio Adame Rodriguez",

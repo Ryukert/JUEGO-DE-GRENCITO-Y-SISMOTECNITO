@@ -14,6 +14,8 @@ en **Ajustes**. Cómo sacar una versión nueva: ver «Versiones» en el README.
 
 ## [Sin publicar]
 
+## [2.2.0] - 2026-11-08
+
 ### Agregado
 - **Más retos:** cada uno de los 6 retos de las misiones tiene 2 variantes con otra situación
   del mismo tema (12 retos nuevos, con su pregunta de bonificación). Cada partida elige al azar
@@ -197,6 +199,7 @@ en **Ajustes**. Cómo sacar una versión nueva: ver «Versiones» en el README.
 - Chat con los personajes.
 - Centro de entrenamiento con 46 minijuegos en 13 motores, tres dificultades y jefes finales.
 
+[2.2.0]: https://github.com/Ryukert/JUEGO-DE-GRENCITO-Y-SISMOTECNITO/compare/v2.1.0...v2.2.0
 [2.1.0]: https://github.com/Ryukert/JUEGO-DE-GRENCITO-Y-SISMOTECNITO/compare/v2.0.0...v2.1.0
 [2.0.0]: https://github.com/Ryukert/JUEGO-DE-GRENCITO-Y-SISMOTECNITO/compare/v1.8.0...v2.0.0
 [1.8.0]: https://github.com/Ryukert/JUEGO-DE-GRENCITO-Y-SISMOTECNITO/compare/v1.7.3...v1.8.0
