@@ -21,6 +21,7 @@ beforeEach(() => {
   borrarProgreso();
   reiniciarPreferencias();
   reiniciarChat();
+  window.scrollTo = () => {};   // jsdom no lo trae y avisa «Not implemented»
   window.matchMedia = () => ({ matches: false, addListener() {}, removeListener() {}, addEventListener() {}, removeEventListener() {} });
   window.AudioContext = undefined;
   global.requestAnimationFrame = (cb) => setTimeout(cb, 0);

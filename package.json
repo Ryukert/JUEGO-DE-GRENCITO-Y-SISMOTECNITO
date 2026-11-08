@@ -3,9 +3,6 @@
   "private": true,
   "version": "1.0.0",
   "type": "module",
-  "engines": {
-    "node": "22.x"
-  },
   "description": "Juego-chatbot educativo con Sismo Tecnito (protección civil) y Greencito (medio ambiente)",
   "author": "Marco Antonio Adame Rodriguez",
   "scripts": {
