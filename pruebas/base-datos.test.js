@@ -247,7 +247,7 @@ describe("alumnos", () => {
     // otra IP (otro salón) sigue entrando
     const otro = await llamar(alumnoApi, { accion: "entrar", codigo: grupo.codigo, apodo: "Alumno 21", pin: "1234" }, { ip: "77.7.7.7" });
     expect(otro.statusCode).toBe(200);
-  });
+  }, 30_000);   // 45 PIN con scrypt: es lento a propósito
 
   it("probar códigos de grupo al azar también cuenta como fallo", async () => {
     const ip = "88.8.8.8";

@@ -338,6 +338,17 @@ sonido se puede silenciar desde el altavoz del HUD y la preferencia se guarda.
 
 ---
 
+## Velocidad
+
+- **Minijuegos diferidos.** Cada uno de los 13 motores (con su contenido) viaja en su propio
+  archivo y se descarga la primera vez que alguien abre uno de sus juegos; la descarga
+  empieza desde las instrucciones (`src/juegos/diferido.jsx`). La portada y las misiones
+  cargan sin ellos: el script principal pesa 300 KB (93 KB comprimido).
+- **Sin internet igual.** Al compilar, `version-sw.js` le pasa al service worker la lista de
+  los archivos de los motores y este los guarda al instalarse.
+- **Pruebas** con `pool: "vmThreads"` (un jsdom por proceso): unos 19 s en vez de 28 s.
+  `pruebas/_preparar.js` descarga todos los motores antes de cada archivo de pruebas.
+
 ## Sonido y efectos
 
 No hay archivos de audio: todo se genera con Web Audio (`src/lib/sonido.js`).
@@ -693,7 +704,7 @@ Las dos corren antes de cada publicación (Vercel y GitHub Actions); con un erro
 aviso de ESLint no se publica. Se necesita Node 22.13 o más nuevo; Vercel usa la versión de
 *Project Settings* (24.x) y GitHub Actions la misma.
 
-283 pruebas. Monta los 46 minijuegos del catálogo, juega hasta el final los seis
+291 pruebas. Monta los 46 minijuegos del catálogo, juega hasta el final los seis
 jefes de simulación, comprueba que los indicadores nunca se salen de 0 a 100,
 que el presupuesto no se va a negativos, que todas las palabras listadas en la
 sopa de letras están de verdad en el tablero, que el rompecabezas siempre

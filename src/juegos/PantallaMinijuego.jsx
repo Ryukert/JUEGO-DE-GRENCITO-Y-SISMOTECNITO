@@ -1,4 +1,4 @@
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect } from "react";
 import { LISTA_DIFICULTADES, leerDificultad, dificultadPorGrado } from "../lib/dificultad.js";
 import { estrellas as calcularEstrellas } from "../lib/recompensas.js";
 import { registrarMinijuego, recordDeJuego } from "../lib/progreso.js";
@@ -24,6 +24,10 @@ export default function PantallaMinijuego({ juego, personaje, grado, progreso, o
   const [ronda, setRonda] = useState(0); // fuerza el remontaje del motor
 
   const Motor = juego.motor;
+  // mientras se leen las instrucciones, el motor ya se va descargando
+  useEffect(() => {
+    Motor.precargar?.().catch(() => {});
+  }, [Motor]);
   const dif = leerDificultad(dificultad);
   const record = recordDeJuego(progreso, juego.id);
 

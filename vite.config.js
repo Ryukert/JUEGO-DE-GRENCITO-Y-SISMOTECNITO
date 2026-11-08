@@ -35,4 +35,11 @@ export default defineConfig({
   plugins: [react(), apiLocal(), versionServiceWorker()],
   server: { port: 5173, host: true },
   build: { outDir: "dist", target: "es2020" },
+  test: {
+    environment: "jsdom",                   // las de la base de datos piden «node» en su primera línea
+    include: ["pruebas/**/*.test.{js,jsx}"],
+    setupFiles: ["pruebas/_preparar.js"],   // descarga los motores diferidos antes de cada archivo
+    // un jsdom por proceso en vez de uno por archivo (cada archivo sigue aislado): ~30 % más rápido
+    pool: "vmThreads",
+  },
 });

@@ -14,6 +14,21 @@ en **Ajustes**. Cómo sacar una versión nueva: ver «Versiones» en el README.
 
 ## [Sin publicar]
 
+### Cambiado
+- La portada carga más rápido: el script principal pasa de 489 KB a 300 KB (de 156 a 93 KB
+  comprimido, 40 % menos). Los 13 motores de minijuegos y su contenido se descargan hasta
+  que alguien abre uno, empezando desde la pantalla de instrucciones, así que al tocar
+  «¡Empezar!» normalmente ya llegaron (`src/juegos/diferido.jsx`).
+- Las pruebas corren un 30 % más rápido (de 28 s a 19 s en promedio) con un entorno jsdom por
+  proceso (`pool: "vmThreads"`), y cada publicación tarda menos.
+
+### Agregado
+- El service worker guarda todos los minijuegos al instalarse: funcionan sin internet aunque
+  nunca se hayan abierto (antes solo los que ya se habían jugado). Las librerías de PDF se
+  siguen guardando la primera vez que se usan.
+- Si un minijuego no se puede descargar (sin internet y sin caché), avisa y ofrece
+  «Intentar de nuevo» en vez de quedarse en blanco.
+
 ## [2.0.0] - 2026-11-08
 
 ### Eliminado

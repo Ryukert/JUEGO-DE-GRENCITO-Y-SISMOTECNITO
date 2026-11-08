@@ -1,7 +1,9 @@
 /* Service worker: el juego funciona sin internet después de la primera visita.
  *
  * - Al instalarse guarda la página, sus scripts y estilos (los lee del index.html,
- *   que trae los nombres con hash de cada versión), la fuente y las imágenes.
+ *   que trae los nombres con hash de cada versión), la fuente, las imágenes y los motores
+ *   de los minijuegos, que se cargan diferidos y no salen en el index.html (la lista la
+ *   pone version-sw.js al compilar). Las librerías de PDF se guardan al usarlas.
  * - Páginas: primero la red (para recibir versiones nuevas); sin red, la guardada.
  * - Lo demás: lo guardado al instante y se actualiza por detrás.
  * - Las funciones del servidor (/api/) nunca se guardan: siempre van a la red.
@@ -12,6 +14,8 @@
  * (si no, los scripts viejos con hash se quedaban guardados para siempre).
  */
 const VERSION = "escuadron-__VERSION_BUILD__";
+// archivos de los motores diferidos; sin compilar queda el texto de marca y se ignora
+const DIFERIDOS = "__DIFERIDOS_BUILD__".split(",").filter((a) => a.startsWith("/assets/"));
 const BASE = [
   "/",
   "/manifest.webmanifest",
@@ -47,6 +51,12 @@ self.addEventListener("install", (e) => {
         }
       } catch (err) {
         /* sin red al instalar: se llenará al navegar */
+      }
+      // los minijuegos, para jugarlos sin internet aunque nunca se hayan abierto
+      try {
+        await cache.addAll(DIFERIDOS);
+      } catch (err) {
+        /* se guardarán la primera vez que se abran */
       }
       await self.skipWaiting();
     })()
