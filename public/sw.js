@@ -19,6 +19,8 @@ const BASE = [
   "/greencito.webp",
   "/sismo-cara.webp",
   "/greencito-cara.webp",
+  "/fondo.webp",
+  "/fondo-movil.webp",
   "/fcitec.webp",
   "/bcia.webp",
   "/copits.webp",
