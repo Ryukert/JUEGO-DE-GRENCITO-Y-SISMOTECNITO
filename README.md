@@ -694,6 +694,37 @@ una pantalla concreta.
 
 ---
 
+## Versiones
+
+El juego usa [Versionado Semántico](https://semver.org/lang/es/) (**MAYOR.MENOR.PARCHE**).
+El número vive en `package.json`, se ve al pie de **Ajustes** y cada versión publicada tiene
+su etiqueta en git (`v1.8.0`…). Qué trae cada una está en [CHANGELOG.md](CHANGELOG.md).
+
+| Sube | Cuándo | Ejemplo |
+|---|---|---|
+| **PARCHE** `1.8.0 → 1.8.1` | correcciones y mantenimiento, sin cambios a la vista | un error del confeti |
+| **MENOR** `1.8.0 → 1.9.0` | algo nuevo que no rompe nada | un minijuego nuevo |
+| **MAYOR** `1.8.0 → 2.0.0` | algo deja de funcionar como antes | una migración obligatoria de la base de datos |
+
+**Al trabajar:** anota cada cambio en `CHANGELOG.md`, bajo `## [Sin publicar]` (en
+*Agregado*, *Cambiado*, *Corregido* o *Seguridad*).
+
+**Al publicar** (en `main`, sin cambios pendientes):
+
+```bash
+npm version minor     # o patch, o major
+```
+
+Ese comando, solo:
+
+1. sube el número en `package.json`,
+2. convierte `## [Sin publicar]` en `## [1.9.0] - fecha` y agrega su enlace en `CHANGELOG.md`
+   (`scripts/version-changelog.js`; si «Sin publicar» está vacía, se detiene),
+3. hace el commit «Versión 1.9.0» con la etiqueta `v1.9.0`,
+4. lo sube a GitHub con la etiqueta, y Vercel lo publica.
+
+Las pruebas revisan que `package.json`, el `CHANGELOG.md` y Ajustes digan la misma versión.
+
 ## Pruebas y revisión del código
 
 ```bash

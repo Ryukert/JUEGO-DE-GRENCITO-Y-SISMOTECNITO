@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import Icono from "./Icono.jsx";
+import { VERSION } from "../lib/version.js";
 
 /**
  * Ajustes en un solo lugar: sonido, tema, letra grande, menos animaciones,
@@ -130,6 +131,8 @@ export default function Ajustes({
             </button>
           )}
         </div>
+
+        <p className="ajustes__version">Escuadrón Tecnito y Greencito · versión {VERSION}</p>
       </div>
     </div>
   );
