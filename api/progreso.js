@@ -9,7 +9,7 @@
  *
  * respuestas: [{ personaje, grado, mision, bono, eleccion }]: lo que eligió el alumno en cada
  * pregunta (eleccion null = se acabó el tiempo). Si fue correcta lo decide el servidor con el
- * contenido del juego, igual que en el chat; lo que no exista en el juego se ignora.
+ * contenido del juego; lo que no exista en el juego se ignora.
  */
 import { db, eq, configuracionDb } from "./_db.js";
 import { responderJson, quienEs, leerCuerpo, paseDe, secreto } from "./_comun.js";

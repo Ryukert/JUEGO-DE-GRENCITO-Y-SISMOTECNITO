@@ -10,7 +10,6 @@ import {
 import { leerProgreso, registrarMinijuego, borrarProgreso, usarCuenta } from "../src/lib/progreso.js";
 import { reiniciarCuenta } from "../src/lib/cuenta.js";
 import { reiniciarPreferencias } from "../src/lib/preferencias.js";
-import { reiniciarChat } from "../src/lib/chat.js";
 
 beforeEach(() => {
   localStorage.clear();
@@ -20,7 +19,6 @@ beforeEach(() => {
   usarCuenta(null);
   borrarProgreso();
   reiniciarPreferencias();
-  reiniciarChat();
   window.scrollTo = () => {};   // jsdom no lo trae y avisa «Not implemented»
   window.matchMedia = () => ({ matches: false, addListener() {}, removeListener() {}, addEventListener() {}, removeEventListener() {} });
   window.AudioContext = undefined;

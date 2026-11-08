@@ -16,7 +16,7 @@ beforeEach(() => {
   window.matchMedia = () => ({ matches: false, addListener() {}, removeListener() {} });
   global.requestAnimationFrame = (cb) => setTimeout(cb, 0);
   Element.prototype.scrollIntoView = function () {};
-  global.fetch = vi.fn(async () => ({ ok: false, json: async () => ({}) }));   // sin chat
+  global.fetch = vi.fn(async () => ({ ok: false, json: async () => ({}) }));   // sin servidor
 });
 afterEach(() => { cleanup(); vi.useRealTimers(); vi.restoreAllMocks(); });
 

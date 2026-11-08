@@ -1,7 +1,7 @@
-/* Interfaz: botón «atrás», chat que se esconde si no está, reloj único, atajos de teclado,
+/* Interfaz: botón «atrás», misión sin chat, reloj único, atajos de teclado,
    ajustes, vibración, tutorial, «seguir jugando», mis logros, panel lateral y app instalable. */
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
-import { render, screen, fireEvent, act, cleanup, waitFor } from "@testing-library/react";
+import { render, screen, fireEvent, act, cleanup } from "@testing-library/react";
 import { readFileSync, existsSync } from "node:fs";
 import { resolve } from "node:path";
 import App from "../src/App.jsx";
@@ -14,15 +14,15 @@ import { PERSONAJES } from "../src/data/personajes.js";
 import { POR_ID, JUEGOS } from "../src/juegos/registro.js";
 import { RANGOS, borrarProgreso, leerProgreso, registrarMinijuego, registrarPartida } from "../src/lib/progreso.js";
 import { reiniciarPreferencias, guardarPreferencia } from "../src/lib/preferencias.js";
-import { reiniciarChat } from "../src/lib/chat.js";
 import { sonido } from "../src/lib/sonido.js";
 
 const raiz = (f) => resolve(process.cwd(), f);
 
-function chatResponde(disponible) {
+/** El servidor dice que no hay base de datos (grupos y encuestas apagados). */
+function servidorSinBase() {
   global.fetch = vi.fn(async (url, op = {}) =>
     (op.method || "GET") === "GET"
-      ? { ok: true, status: 200, json: async () => ({ disponible }) }
+      ? { ok: true, status: 200, json: async () => ({ disponible: false }) }
       : { ok: false, status: 503, json: async () => ({}) }
   );
 }
@@ -31,14 +31,13 @@ beforeEach(() => {
   localStorage.clear();
   borrarProgreso();
   reiniciarPreferencias();
-  reiniciarChat();
   window.history.replaceState(null, "");
   window.AudioContext = undefined;
   HTMLCanvasElement.prototype.getContext = () => ({ clearRect() {}, save() {}, restore() {}, translate() {}, rotate() {}, fillRect() {} });
   window.matchMedia = () => ({ matches: false, addListener() {}, removeListener() {}, addEventListener() {}, removeEventListener() {} });
   global.requestAnimationFrame = (cb) => setTimeout(cb, 0);
   Element.prototype.scrollIntoView = function () {};
-  chatResponde(false);
+  servidorSinBase();
 });
 afterEach(() => { cleanup(); vi.useRealTimers(); vi.restoreAllMocks(); });
 
@@ -77,34 +76,24 @@ describe("botón «atrás» del navegador y del teléfono", () => {
   });
 });
 
-describe("chat que se esconde si no está encendido", () => {
+describe("la misión ya no tiene chat con IA", () => {
   const p = PERSONAJES.sismo;
   const mision = p.misiones.find((m) => m.tipo === "reto");
-  const montar = () =>
-    render(<Reto personaje={p} grado="primaria" mision={mision} vidas={3} puntos={0} racha={0} onPuntos={() => {}} onFallo={() => {}} onFin={() => {}} />);
 
-  it("sin llave en el servidor: no hay campo y se explica por qué", async () => {
-    montar();
-    await waitFor(() => expect(document.querySelector(".sin-chat")).toBeTruthy());
+  it("no hay campo para preguntar ni se llama al servidor del chat; la explicación sí sale", async () => {
+    render(<Reto personaje={p} grado="primaria" mision={mision} racha={0} onPuntos={() => {}} onFallo={() => {}} onFin={() => {}} />);
     expect(document.querySelector(".escribe")).toBeNull();
-    expect(global.fetch).toHaveBeenCalledWith("/api/chat", { method: "GET" });
+    expect(screen.queryByPlaceholderText(/Pregúntale/)).toBeNull();
+    fireEvent.click(screen.getByRole("button", { name: new RegExp(mision.opciones.find((o) => o.ok).texto.slice(0, 20)) }));
+    expect(screen.getByText(mision.explicacion)).toBeTruthy();
+    expect(global.fetch.mock.calls.some(([url]) => String(url).includes("/api/chat"))).toBe(false);
   });
 
-  it("con chat encendido aparece «Pregúntale algo»", async () => {
-    chatResponde(true);
-    montar();
-    await waitFor(() => expect(screen.getByPlaceholderText(/Pregúntale algo/)).toBeTruthy());
-  });
-
-  it("si una pregunta falla, el personaje contesta algo en vez de quedarse callado", async () => {
-    chatResponde(true);
-    montar();
-    const campo = await screen.findByPlaceholderText(/Pregúntale algo/);
-    fireEvent.change(campo, { target: { value: "¿Por qué tiembla?" } });
-    fireEvent.submit(campo.closest("form"));
-    await waitFor(() => expect(screen.getByText(/Ahorita no puedo platicar/)).toBeTruthy());
-    // el 503 apagó el chat
-    await waitFor(() => expect(document.querySelector(".escribe")).toBeNull());
+  it("no queda nada de Anthropic en el código ni en la configuración", () => {
+    for (const f of ["api/chat.js", "src/lib/chat.js"]) expect(existsSync(raiz(f)), f).toBe(false);
+    for (const f of [".env.example", "vite.config.js", "package.json", "src/data/personajes.js", "src/components/Reto.jsx"]) {
+      expect(readFileSync(raiz(f), "utf8"), f).not.toMatch(/anthropic|claude|construirSistema/i);
+    }
   });
 });
 
@@ -270,7 +259,7 @@ describe("app instalable y sin internet", () => {
     expect(readFileSync(raiz("index.html"), "utf8")).toContain('rel="manifest"');
   });
 
-  it("el service worker no guarda el chat y solo se registra en la versión publicada", () => {
+  it("el service worker no guarda las funciones del servidor y solo se registra en la versión publicada", () => {
     const sw = readFileSync(raiz("public/sw.js"), "utf8");
     expect(sw).toContain('startsWith("/api/")');
     expect(readFileSync(raiz("src/main.jsx"), "utf8")).toMatch(/import\.meta\.env\.PROD && "serviceWorker" in navigator/);

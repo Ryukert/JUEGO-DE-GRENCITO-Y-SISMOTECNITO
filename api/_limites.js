@@ -1,9 +1,7 @@
 /**
- * Límites de uso del chat (no es una función: el «_» hace que Vercel no la publique).
- *
- * Cuenta por ventanas fijas:
- *   - por persona (IP): CHAT_LIMITE_MINUTO por minuto y CHAT_LIMITE_IP_DIA por día,
- *   - del juego completo: CHAT_LIMITE_DIARIO mensajes por día (tope de gasto).
+ * Topes de uso (no es una función: el «_» hace que Vercel no la publique): intentos de entrar
+ * (PIN del alumno, clave del maestro y de editores) y escrituras de progreso. Cuenta por
+ * ventanas fijas.
  *
  * Si están UPSTASH_REDIS_REST_URL y UPSTASH_REDIS_REST_TOKEN (Upstash o Vercel KV), los
  * contadores se comparten entre todas las copias del servidor y sobreviven a los reinicios.
@@ -16,9 +14,6 @@ const num = (v, def) => (Number.isFinite(Number(v)) && Number(v) > 0 ? Number(v)
 
 export function configuracion(env = process.env) {
   return {
-    porMinuto: num(env.CHAT_LIMITE_MINUTO, 12),
-    porDia: num(env.CHAT_LIMITE_IP_DIA, 150),
-    total: num(env.CHAT_LIMITE_DIARIO, 3000),
     upstash: env.UPSTASH_REDIS_REST_URL && env.UPSTASH_REDIS_REST_TOKEN
       ? { url: String(env.UPSTASH_REDIS_REST_URL).replace(/\/+$/, ""), token: env.UPSTASH_REDIS_REST_TOKEN }
       : null,
@@ -70,18 +65,6 @@ export async function contar(claves, { env = process.env, ahora = Date.now() } =
   if (!cuentas) cuentas = contarEnMemoria(claves, ahora);
   const pasado = claves.find((c, i) => !(cuentas[i] <= c.max));
   return pasado ? pasado.motivo : null;
-}
-
-/** Suma una visita y dice si pasa. Devuelve null si pasa, o el motivo si no. */
-export async function revisarLimites(ip, { env = process.env, ahora = Date.now() } = {}) {
-  const cfg = configuracion(env);
-  const quien = resumen("chat", ip);
-  const minuto = Math.floor(ahora / 60_000), dia = Math.floor(ahora / 86_400_000);
-  return contar([
-    { clave: `chat:${quien}:m:${minuto}`, segundos: 120, max: cfg.porMinuto, motivo: "minuto" },
-    { clave: `chat:${quien}:d:${dia}`, segundos: 90_000, max: cfg.porDia, motivo: "dia" },
-    { clave: `chat:total:d:${dia}`, segundos: 90_000, max: cfg.total, motivo: "total" },
-  ], { env, ahora });
 }
 
 /**

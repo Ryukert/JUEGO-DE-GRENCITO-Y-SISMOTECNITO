@@ -7,7 +7,7 @@ import { versionServiceWorker } from "./version-sw.js";   // cada versión publi
  * En local (npm run dev) montamos los mismos archivos como middleware
  * para que el juego funcione igual sin instalar el CLI de Vercel.
  */
-const FUNCIONES = ["chat", "alumno", "progreso", "grupo", "evaluacion", "encuesta", "editores"];
+const FUNCIONES = ["alumno", "progreso", "grupo", "evaluacion", "encuesta", "editores"];
 
 function apiLocal() {
   return {

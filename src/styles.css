@@ -452,7 +452,7 @@ button, input { font: inherit; color: inherit; }
   /* cielo transparente y piso beige, igual para los dos personajes */
   background: linear-gradient(to bottom, transparent 0 70%, rgba(214, 196, 160, 0.42) 70% 100%);
 }
-.mision-escena .chat { position: relative; z-index: 1; }
+.mision-escena .conversacion { position: relative; z-index: 1; }
 .mision-escena__personaje {
   position: absolute;
   right: clamp(4px, 3vw, 28px);
@@ -473,7 +473,7 @@ button, input { font: inherit; color: inherit; }
 .mision-escena__personaje--tiempo { transform: rotate(-6deg); filter: saturate(0.7); }
 .mision-escena__globo {
   position: absolute;
-  /* sobre la cabeza del personaje: así ningún mensaje del chat lo tapa */
+  /* sobre la cabeza del personaje: así ningún mensaje de la conversación lo tapa */
   top: -9%;
   left: 18%;
   white-space: nowrap;
@@ -526,9 +526,9 @@ button, input { font: inherit; color: inherit; }
 
 @keyframes parpadeo { 50% { opacity: 0.45; } }
 
-/* chat */
+/* conversación de la misión: la pregunta, lo que eligió el jugador y la explicación */
 
-.chat {
+.conversacion {
   flex: 1;
   min-height: 0;
   overflow-y: auto;
@@ -579,7 +579,7 @@ button, input { font: inherit; color: inherit; }
   text-align: center;
 }
 
-/* pie con opciones y chat */
+/* pie con las opciones */
 
 .pie {
   flex-shrink: 0;
@@ -643,40 +643,6 @@ button, input { font: inherit; color: inherit; }
 }
 
 .boton-grande:active { transform: translateY(5px); box-shadow: 0 0 0 var(--contorno); }
-
-.escribe { display: flex; gap: 8px; padding: 7px clamp(12px, 3vw, 18px) 10px; }
-
-.escribe input {
-  flex: 1;
-  min-width: 0;
-  min-height: var(--toque);
-  padding: 10px 14px;
-  font-size: 16px; /* evita el zoom de iOS */
-  background: var(--superficie);
-  border: var(--borde) solid var(--contorno);
-  border-radius: 14px;
-}
-
-.enviar {
-  background: var(--acento);
-  color: #fff;
-  font-weight: bold;
-  border: var(--borde) solid var(--contorno);
-  border-radius: 14px;
-  padding: 10px 16px;
-  min-height: var(--toque);
-  cursor: pointer;
-  box-shadow: 0 4px 0 var(--contorno);
-  flex-shrink: 0;
-}
-
-.enviar:active { transform: translateY(4px); box-shadow: 0 0 0 var(--contorno); }
-.enviar:disabled, .escribe input:disabled { opacity: 0.55; cursor: not-allowed; }
-
-.puntitos { display: inline-flex; gap: 5px; padding: 4px 2px; }
-.puntitos i { width: 9px; height: 9px; border-radius: 50%; background: var(--acento); animation: bota 0.9s infinite; }
-.puntitos i:nth-child(2) { animation-delay: 0.15s; }
-.puntitos i:nth-child(3) { animation-delay: 0.3s; }
 
 /* ============================ minijuegos ============================= */
 
@@ -951,11 +917,6 @@ button, input { font: inherit; color: inherit; }
 @keyframes flota {
   0%, 100% { transform: translateY(0) rotate(0); }
   50% { transform: translateY(-7px) rotate(-1.2deg); }
-}
-
-@keyframes bota {
-  0%, 60%, 100% { transform: translateY(0); }
-  30% { transform: translateY(-7px); }
 }
 
 .tiembla { animation: tiembla 1.2s ease-in-out; }

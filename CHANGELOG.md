@@ -14,6 +14,19 @@ en **Ajustes**. Cómo sacar una versión nueva: ver «Versiones» en el README.
 
 ## [Sin publicar]
 
+### Eliminado
+- El juego ya no usa Anthropic (Claude) ni ninguna inteligencia artificial. Se quitan el
+  campo «Pregúntale algo», los comentarios improvisados del personaje, la función
+  `/api/chat`, sus topes de uso y las variables `ANTHROPIC_API_KEY`, `ANTHROPIC_MODEL`,
+  `CHAT_LIMITE_MINUTO`, `CHAT_LIMITE_IP_DIA` y `CHAT_LIMITE_DIARIO` (ya se pueden borrar
+  de Vercel). También las instrucciones para la IA de `personajes.js` (`persona`, `estilo`
+  y `construirSistema`).
+
+### Cambiado
+- Para quien juega no cambia nada: la pregunta, la explicación escrita de cada respuesta,
+  la bonificación y el botón **Escuchar** siguen igual. El juego no tiene costo por uso.
+- La conversación de la misión usa la clase `.conversacion` (antes `.chat`).
+
 ## [1.8.0] - 2026-11-08
 
 ### Agregado
