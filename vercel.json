@@ -2,7 +2,7 @@
   "$schema": "https://openapi.vercel.sh/vercel.json",
   "framework": "vite",
   "installCommand": "unset npm_config_cache_dir NPM_CONFIG_CACHE_DIR; npm install",
-  "buildCommand": "unset npm_config_cache_dir NPM_CONFIG_CACHE_DIR; npm run build",
+  "buildCommand": "unset npm_config_cache_dir NPM_CONFIG_CACHE_DIR; npm test && npm run build",
   "outputDirectory": "dist",
   "rewrites": [
     {

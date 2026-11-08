@@ -14,7 +14,7 @@ import {
   responderJson, quienEs, leerCuerpo, secreto, crearPase,
   resumirClave, claveCorrecta, limpiarApodo, pinValido, limpiarCodigo,
 } from "./_comun.js";
-import { revisarIntentos } from "./_limites.js";
+import { revisarIntentos, anotarFallo } from "./_limites.js";
 import { limpiarProgreso } from "../src/lib/mezcla.js";
 
 const AVATARES = ["sismo", "green"];
@@ -50,7 +50,10 @@ export default async function handler(req, res) {
 
   try {
     const grupo = await buscarGrupo(codigo);
-    if (!grupo) return responderJson(res, 404, { error: "No encontré ese código de grupo. Revísalo con tu maestro." });
+    if (!grupo) {
+      await anotarFallo(quienEs(req));
+      return responderJson(res, 404, { error: "No encontré ese código de grupo. Revísalo con tu maestro." });
+    }
 
     let alumno, progreso = limpiarProgreso({ grado: grupo.grado });
 
@@ -72,7 +75,10 @@ export default async function handler(req, res) {
     } else {
       const filas = await db(`alumnos?grupo_id=${eq(grupo.id)}&apodo_normal=${eq(apodo.normal)}&select=id,apodo,avatar,pin`);
       const fila = filas?.[0];
-      if (!fila || !claveCorrecta(d.pin, fila.pin)) return responderJson(res, 401, { error: SIN_PASAR });
+      if (!fila || !claveCorrecta(d.pin, fila.pin)) {
+        await anotarFallo(quienEs(req));
+        return responderJson(res, 401, { error: SIN_PASAR });
+      }
       alumno = { id: fila.id, apodo: fila.apodo, avatar: fila.avatar };
       const [guardado] = await db(`progreso?alumno_id=${eq(alumno.id)}&select=datos`);
       if (guardado) progreso = limpiarProgreso(guardado.datos);

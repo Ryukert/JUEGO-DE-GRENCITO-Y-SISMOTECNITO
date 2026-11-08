@@ -219,6 +219,41 @@ describe("alumnos", () => {
     }
     expect(ultimo.statusCode).toBe(429);
   });
+
+  it("un salón entero detrás de la misma IP puede registrarse y entrar", async () => {
+    const { grupo } = await grupoNuevo();
+    const ip = "200.1.1.1";
+    for (let i = 0; i < 35; i++) {
+      const r = await registrar(grupo.codigo, { apodo: `Niño ${i}` }, { ip });
+      expect(r.statusCode, `registro ${i}`).toBe(200);
+    }
+    for (let i = 0; i < 35; i++) {
+      const r = await llamar(alumnoApi, { accion: "entrar", codigo: grupo.codigo, apodo: `Niño ${i}`, pin: "1234" }, { ip });
+      expect(r.statusCode, `entrada ${i}`).toBe(200);
+    }
+  });
+
+  it("desde una IP, 20 intentos fallidos frenan a quien adivina aunque cambie de apodo", async () => {
+    const { grupo } = await grupoNuevo();
+    for (let i = 0; i < 25; i++) await registrar(grupo.codigo, { apodo: `Alumno ${i}` }, { ip: "1.1.1.1" });
+    const ip = "66.6.6.6";
+    for (let i = 0; i < 20; i++) {
+      const r = await llamar(alumnoApi, { accion: "entrar", codigo: grupo.codigo, apodo: `Alumno ${i}`, pin: "9999" }, { ip });
+      expect(r.statusCode).toBe(401);
+    }
+    // el siguiente ya no se revisa, aunque traiga el PIN bueno
+    const bloqueado = await llamar(alumnoApi, { accion: "entrar", codigo: grupo.codigo, apodo: "Alumno 21", pin: "1234" }, { ip });
+    expect(bloqueado.statusCode).toBe(429);
+    // otra IP (otro salón) sigue entrando
+    const otro = await llamar(alumnoApi, { accion: "entrar", codigo: grupo.codigo, apodo: "Alumno 21", pin: "1234" }, { ip: "77.7.7.7" });
+    expect(otro.statusCode).toBe(200);
+  });
+
+  it("probar códigos de grupo al azar también cuenta como fallo", async () => {
+    const ip = "88.8.8.8";
+    for (let i = 0; i < 20; i++) expect((await registrar("ZZZZZZ", { apodo: `Prueba ${i}` }, { ip })).statusCode).toBe(404);
+    expect((await registrar("ZZZZZZ", { apodo: "Otra" }, { ip })).statusCode).toBe(429);
+  });
 });
 
 describe("progreso en la base de datos", () => {
@@ -505,6 +540,32 @@ describe("ventana de editores", () => {
     expect(filas.find((f) => f.gusto === 5)).toMatchObject({ juego: "memorama", dificultad: 2, respuestas: 2 });
     expect(filas.find((f) => f.gusto === 1).respuestas).toBe(1);
     expect(JSON.stringify(filas)).not.toMatch(/alumno|grupo/);
+  });
+
+  it("los días empiezan a la medianoche de Tijuana, también en horario de verano", async () => {
+    const { inicioDelDia } = await import("../api/editores.js");
+    expect(inicioDelDia("2026-01-15")).toBe("2026-01-15T08:00:00.000Z");   // invierno, UTC-8
+    expect(inicioDelDia("2026-07-15")).toBe("2026-07-15T07:00:00.000Z");   // verano, UTC-7
+    expect(inicioDelDia("2026-07-15", "America/Tijuana", { siguiente: true })).toBe("2026-07-16T07:00:00.000Z");
+    // los días del cambio de horario (8 de marzo y 1 de noviembre de 2026)
+    expect(inicioDelDia("2026-03-08")).toBe("2026-03-08T08:00:00.000Z");
+    expect(inicioDelDia("2026-03-09")).toBe("2026-03-09T07:00:00.000Z");
+    expect(inicioDelDia("2026-11-01")).toBe("2026-11-01T07:00:00.000Z");
+    expect(inicioDelDia("2026-11-02")).toBe("2026-11-02T08:00:00.000Z");
+    expect(inicioDelDia("2026-07-15", "America/Mexico_City")).toBe("2026-07-15T06:00:00.000Z");
+  });
+
+  it("al filtrar por fechas pide a la base el periodo completo en hora local", async () => {
+    const { editoresApi, pase } = await entrarEditor();
+    fetch.mockClear();
+    const req = peticion(undefined, { metodo: "GET", pase });
+    req.url = "/api/editores?desde=2026-07-01&hasta=2026-07-31";
+    const res = respuesta();
+    await editoresApi(req, res);
+    expect(res.statusCode).toBe(200);
+    const url = decodeURIComponent(fetch.mock.calls.map((c) => c[0]).find((u) => u.includes("/encuestas?")));
+    expect(url).toContain("creado_en=gte.2026-07-01T07:00:00.000Z");
+    expect(url).toContain("creado_en=lt.2026-08-01T07:00:00.000Z");
   });
 });
 

@@ -14,9 +14,34 @@
 import { createHash, timingSafeEqual } from "node:crypto";
 import { db, configuracionDb, configuracionRpc, rpc } from "./_db.js";
 import { responderJson, quienEs, leerCuerpo, crearPase, paseDe, secreto } from "./_comun.js";
-import { revisarIntentos } from "./_limites.js";
+import { revisarIntentos, anotarFallo } from "./_limites.js";
 
 const FECHA = /^\d{4}-\d{2}-\d{2}$/;
+const zonaEditores = (env = process.env) => env.EVALUACION_ZONA || "America/Tijuana";
+
+/** Cuántos ms va adelantada la hora local de `zona` respecto a UTC en el instante `ms`. */
+function diferencia(ms, zona) {
+  const p = Object.fromEntries(
+    new Intl.DateTimeFormat("en-US", {
+      timeZone: zona, hourCycle: "h23",
+      year: "numeric", month: "2-digit", day: "2-digit", hour: "2-digit", minute: "2-digit", second: "2-digit",
+    }).formatToParts(new Date(ms)).map((x) => [x.type, x.value]),
+  );
+  return Date.UTC(+p.year, p.month - 1, +p.day, +p.hour, +p.minute, +p.second) - ms;
+}
+
+/**
+ * «AAAA-MM-DD» → instante (ISO, UTC) en que empieza ese día en `zona`. Respeta el horario de
+ * verano: en Tijuana la medianoche es 08:00 UTC en invierno y 07:00 UTC en verano.
+ * Con `siguiente`, el inicio del día después (para filtrar con «menor que»).
+ */
+export function inicioDelDia(fecha, zona = "America/Tijuana", { siguiente = false } = {}) {
+  const [y, m, d] = fecha.split("-").map(Number);
+  const local = Date.UTC(y, m - 1, d + (siguiente ? 1 : 0));
+  let ms = local - diferencia(local, zona);
+  ms = local - diferencia(ms, zona);   // segunda vuelta por si el cambio de horario cae en medio
+  return new Date(ms).toISOString();
+}
 const resumen = (t) => createHash("sha256").update(String(t)).digest();
 
 export function claveEditorCorrecta(clave, env = process.env) {
@@ -52,7 +77,10 @@ export default async function handler(req, res) {
     let d;
     try { d = await leerCuerpo(req, 1_000); }
     catch { return responderJson(res, 400, { error: "No entendí el mensaje" }); }
-    if (!claveEditorCorrecta(d?.clave)) return responderJson(res, 401, { error: "Clave incorrecta." });
+    if (!claveEditorCorrecta(d?.clave)) {
+      await anotarFallo(quienEs(req));
+      return responderJson(res, 401, { error: "Clave incorrecta." });
+    }
     return responderJson(res, 200, { pase: crearPase({ rol: "editor" }) });
   }
 
@@ -68,9 +96,13 @@ export default async function handler(req, res) {
     if (configuracionRpc()) {
       filas = await rpc("resumen_encuestas", { p_desde: desde, p_hasta: hasta });
     } else {
-      const filtros = [desde && `creado_en=gte.${desde}T00:00:00-08:00`, hasta && `creado_en=lte.${hasta}T23:59:59-08:00`].filter(Boolean).join("&");
+      const zona = zonaEditores();
+      const filtros = [
+        desde && `creado_en=gte.${encodeURIComponent(inicioDelDia(desde, zona))}`,
+        hasta && `creado_en=lt.${encodeURIComponent(inicioDelDia(hasta, zona, { siguiente: true }))}`,
+      ].filter(Boolean).join("&");
       const crudas = await db(`encuestas?select=juego,tipo,grado,gusto,dificultad,creado_en&limit=100000${filtros ? "&" + filtros : ""}`);
-      filas = agrupar(crudas || []);
+      filas = agrupar(crudas || [], zona);
     }
     return responderJson(res, 200, { filas: (filas || []).map((f) => ({ ...f, respuestas: Number(f.respuestas) })) });
   } catch (e) {

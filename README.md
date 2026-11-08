@@ -145,6 +145,11 @@ git config core.hooksPath .githooks
 - Para un commit sin subir: `SIN_SUBIR=1 git commit ...`
 - Sin internet no pasa nada: avisa y se sube después con `git push`.
 
+**Nada se publica con pruebas rotas.** Vercel corre `npm test` antes de compilar
+(`vercel.json`): si una prueba falla, el despliegue falla y el sitio se queda con la
+versión anterior. Además, GitHub Actions (`.github/workflows/pruebas.yml`) corre las
+pruebas y el build en cada push y pull request, y muestra ✅ o ❌ en GitHub.
+
 ---
 
 ## ¿Quién juega? (computadora del salón)
@@ -261,8 +266,10 @@ Grupos, alumnos, evaluación y panel del maestro sí necesitan la llave secreta.
 - Después de entrar, cada quien recibe un **pase firmado**: el del alumno dura el
   ciclo escolar en ese equipo; el del maestro, 12 horas y se borra al cerrar el
   navegador. Un maestro solo puede ver y cambiar a los alumnos de **su** grupo.
-- **Adivinar un PIN a lo bruto se frena:** 10 intentos por hora por cuenta y 20 cada
-  10 minutos por IP.
+- **Adivinar un PIN a lo bruto se frena:** 10 intentos por hora por cuenta y 20 intentos
+  **fallidos** cada 10 minutos por IP. Los que entran bien no gastan ese tope: en la escuela
+  todo el salón sale por la misma IP, así que 30 niños pueden entrar a la vez (el tope total
+  por IP es de 200 cada 10 minutos). Se cambian con `ENTRAR_FALLOS_IP` y `ENTRAR_LIMITE_IP`.
 - Si una respuesta fue correcta lo decide el servidor con el contenido del juego,
   igual que en el chat; el progreso que llega se limpia antes de guardarse.
 
@@ -362,6 +369,8 @@ sonido se puede silenciar desde el altavoz del HUD y la preferencia se guarda.
 - **Sin internet:** se puede instalar como app (`public/manifest.webmanifest`) y,
   después de la primera visita, funciona sin conexión (`public/sw.js`). Solo el
   chat necesita internet. El service worker solo se registra en la versión publicada.
+  Al compilar, `version-sw.js` le pone a `dist/sw.js` la huella de la versión: cada
+  publicación abre su propia caché y borra la anterior, así no se acumulan archivos viejos.
 
 ---
 
@@ -684,7 +693,7 @@ una pantalla concreta.
 npm test
 ```
 
-211 pruebas. Monta los 46 minijuegos del catálogo, juega hasta el final los seis
+290 pruebas. Monta los 46 minijuegos del catálogo, juega hasta el final los seis
 jefes de simulación, comprueba que los indicadores nunca se salen de 0 a 100,
 que el presupuesto no se va a negativos, que todas las palabras listadas en la
 sopa de letras están de verdad en el tablero, que el rompecabezas siempre
