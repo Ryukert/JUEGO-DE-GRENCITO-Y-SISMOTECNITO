@@ -14,6 +14,8 @@ en **Ajustes**. Cómo sacar una versión nueva: ver «Versiones» en el README.
 
 ## [Sin publicar]
 
+## [2.0.0] - 2026-11-08
+
 ### Eliminado
 - El juego ya no usa Anthropic (Claude) ni ninguna inteligencia artificial. Se quitan el
   campo «Pregúntale algo», los comentarios improvisados del personaje, la función
@@ -152,6 +154,7 @@ en **Ajustes**. Cómo sacar una versión nueva: ver «Versiones» en el README.
 - Chat con los personajes.
 - Centro de entrenamiento con 46 minijuegos en 13 motores, tres dificultades y jefes finales.
 
+[2.0.0]: https://github.com/Ryukert/JUEGO-DE-GRENCITO-Y-SISMOTECNITO/compare/v1.8.0...v2.0.0
 [1.8.0]: https://github.com/Ryukert/JUEGO-DE-GRENCITO-Y-SISMOTECNITO/compare/v1.7.3...v1.8.0
 [1.7.3]: https://github.com/Ryukert/JUEGO-DE-GRENCITO-Y-SISMOTECNITO/compare/v1.7.2...v1.7.3
 [1.7.2]: https://github.com/Ryukert/JUEGO-DE-GRENCITO-Y-SISMOTECNITO/compare/v1.7.1...v1.7.2
