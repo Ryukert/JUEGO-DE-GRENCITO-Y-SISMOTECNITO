@@ -75,9 +75,13 @@ export function confeti({ colores = ["#f4691f", "#0f6fc4", "#5aa32a", "#ffd23f"]
       ctx.restore();
     }
 
-    if (piezas.length) {
-      requestAnimationFrame(paso);
+    // si ya no hay cuadros de animación (la página o el entorno de pruebas se cerró a media
+    // animación), se detiene en vez de lanzar un error
+    const siguiente = globalThis.requestAnimationFrame;
+    if (piezas.length && typeof siguiente === "function") {
+      siguiente(paso);
     } else {
+      piezas = [];
       corriendo = false;
       ctx.clearRect(0, 0, lienzo.width, lienzo.height);
     }
