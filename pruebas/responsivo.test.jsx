@@ -1,14 +1,12 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { render, screen, fireEvent, act, cleanup } from "@testing-library/react";
-import React from "react";
-import { readFileSync } from "node:fs";
-import { resolve } from "node:path";
+import { cssMinijuegos } from "./_css.js";
 import PantallaMinijuego from "../src/juegos/PantallaMinijuego.jsx";
 import { JUEGOS, POR_ID } from "../src/juegos/registro.js";
 import { PERSONAJES } from "../src/data/personajes.js";
 import { borrarProgreso, leerProgreso } from "../src/lib/progreso.js";
 
-const CSS = readFileSync(resolve(process.cwd(), "src/styles-minijuegos.css"), "utf8");
+const CSS = cssMinijuegos();
 
 beforeEach(() => {
   localStorage.clear();

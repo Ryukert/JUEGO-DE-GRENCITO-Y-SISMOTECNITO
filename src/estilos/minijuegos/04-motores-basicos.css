@@ -1,0 +1,253 @@
+/* =============================== quiz ================================ */
+
+.mini--quiz { gap: 8px; }
+
+.quiz__escena {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: var(--superficie);
+  border: var(--borde) solid var(--contorno);
+  border-radius: 18px;
+  padding: 12px 14px;
+  margin: 8px clamp(12px, 3vw, 18px) 0;
+}
+
+.quiz__icono { font-size: clamp(34px, 9vw, 48px); line-height: 1; flex-shrink: 0; }
+.quiz__situacion { margin: 0; line-height: 1.42; font-size: clamp(14.5px, 3.9vw, 17px); }
+.quiz__retro { display: flex; flex-direction: column; }
+.quiz__aviso { margin: 8px clamp(12px, 3vw, 18px) 0; font-weight: bold; text-align: center; color: var(--mal); }
+
+.opciones--vf { flex-direction: row; gap: 10px; }
+.opciones--vf .opcion-vf {
+  flex: 1;
+  justify-content: center;
+  font-size: clamp(16px, 4.6vw, 20px);
+  font-weight: bold;
+  min-height: 68px;
+}
+
+.mini--llamada .quiz__escena {
+  background: var(--contorno);
+  color: #fff;
+  border-color: #0b2338;
+}
+
+/* ============================== búsqueda ============================== */
+
+.mini--busca, .mini--ruta { gap: 6px; }
+
+.busca__pista {
+  margin: 8px clamp(12px, 3vw, 18px) 0;
+  font-size: 13.5px;
+  line-height: 1.4;
+}
+
+.escena {
+  --arw: 4;
+  --arh: 3;
+  position: relative;
+  width: min(100%, var(--tope, 620px));
+  aspect-ratio: var(--arw) / var(--arh);
+  border: 4px solid var(--contorno);
+  border-radius: 18px;
+  overflow: hidden;
+  background:
+    linear-gradient(
+      to bottom,
+      var(--escena-cielo, #cfe3f7) 0%,
+      var(--escena-cielo, #cfe3f7) 62%,
+      var(--escena-piso, #e6d3b3) 62%,
+      var(--escena-piso, #e6d3b3) 100%
+    );
+  touch-action: manipulation;
+}
+
+.escena__obj {
+  position: absolute;
+  transform: translate(-50%, -50%);
+  min-width: 44px;
+  min-height: 44px;
+  display: grid;
+  place-items: center;
+  font-size: clamp(22px, 6.5vw, 34px);
+  line-height: 1;
+  background: rgba(255, 255, 255, 0.72); /* objeto dentro del dibujo: igual en los dos temas */
+  border: 2px solid rgba(16, 48, 79, 0.35);
+  border-radius: 14px;
+  cursor: pointer;
+  padding: 2px;
+  transition: transform 0.12s ease, background 0.15s ease;
+}
+
+.escena__obj:hover { background: #fff; transform: translate(-50%, -50%) scale(1.08); }
+.escena__obj:disabled { cursor: default; }
+.escena__obj--ok { background: var(--bien-suave); border-color: var(--bien); }
+.escena__obj--no { background: var(--mal-suave); border-color: var(--mal); opacity: 0.6; }
+
+.escena__marca {
+  position: absolute;
+  right: -6px;
+  top: -6px;
+  width: 20px;
+  height: 20px;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  background: var(--bien);
+  color: var(--sobre-estado);
+  font-size: 12px;
+  font-weight: bold;
+}
+
+.escena__marca--no { background: var(--mal); }
+
+.busca__retro {
+  position: absolute;
+  inset: auto 0 0 0;
+  background: var(--velo);
+  border-top: 4px solid var(--contorno);
+  padding-bottom: max(8px, env(safe-area-inset-bottom));
+  z-index: 30;
+  max-height: 78%;
+  overflow-y: auto;
+}
+
+/* ============================ clasificación ============================ */
+
+.mini--clasifica { gap: 8px; }
+.clasifica__pista { margin: 8px clamp(12px, 3vw, 18px) 0; font-size: 13.5px; text-align: center; }
+.clasifica__zona { flex: 1; min-height: 130px; display: flex; align-items: center; justify-content: center; }
+
+.residuo--arrastrable {
+  touch-action: none;
+  cursor: grab;
+  user-select: none;
+  -webkit-user-select: none;
+  padding: 6px 14px;
+  border-radius: 20px;
+}
+
+.residuo--tomado {
+  cursor: grabbing;
+  z-index: 40;
+  position: relative;
+  filter: drop-shadow(0 10px 10px rgba(0, 0, 0, 0.25));
+}
+
+.botes--muchos { grid-template-columns: repeat(3, 1fr); }
+/* auto-fit colapsa las pistas vacías, así dos contenedores ocupan medio y medio */
+.botes--pocos { grid-template-columns: repeat(auto-fit, minmax(92px, 1fr)); }
+.bote--resaltado { background: var(--fondo); transform: translateY(-4px); box-shadow: 0 9px 0 var(--contorno); }
+.clasifica__retro { display: flex; flex-direction: column; }
+
+/* ========================= ruta de evacuación ========================= */
+
+.mapa {
+  --tope: 460px;
+  gap: 2px;
+  border: 4px solid var(--contorno);
+  border-radius: 14px;
+  padding: 4px;
+  background: var(--contorno);
+}
+
+.celda {
+  display: grid;
+  place-items: center;
+  line-height: 1;
+  border-radius: 3px;
+  overflow: hidden;
+}
+
+.celda--muro { background: #4b5b6b; }
+.celda--piso { background: #f4f1e6; }
+.celda--yo { background: #ffe7a8; }
+.celda__yo { font-size: 1.15em; }
+
+/* peligro con el que ya chocaste: sigue ahí, pero marcado */
+.celda--golpe { background: #f6c9c2; }
+
+/* réplicas: el escombro cae desde arriba */
+.celda__escombro { animation: cae 0.45s ease-out; }
+
+/* sin luz: lo que no alumbra la linterna se pierde en la oscuridad */
+.mapa--oscuro { background: #05080b; }
+.celda--oscura { background: #11161c; }
+.celda--recuerdo { filter: brightness(0.5) saturate(0.6); }
+.celda--luz { background: #1d3b26; box-shadow: inset 0 0 0 2px #39d353; }
+
+/* Rejilla de 3×3 en vez de posiciones fijas: así la cruceta se encoge
+   sola en pantallas bajas sin que los botones se despeguen. */
+.cruceta {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  grid-template-rows: repeat(3, 1fr);
+  gap: 5px;
+  width: min(174px, 44vw, 25dvh);
+  aspect-ratio: 1;
+  margin: 6px auto max(8px, env(safe-area-inset-bottom));
+  flex-shrink: 0;
+}
+
+.cruceta__btn {
+  display: grid;
+  place-items: center;
+  background: var(--superficie);
+  border: 3px solid var(--contorno);
+  border-radius: 14px;
+  box-shadow: 0 4px 0 var(--contorno);
+  font-size: clamp(13px, 4.5vw, 18px);
+  cursor: pointer;
+  touch-action: manipulation;
+  padding: 0;
+}
+
+.cruceta__btn:active { transform: translateY(4px); box-shadow: 0 0 0 var(--contorno); }
+.cruceta__arriba { grid-area: 1 / 2; }
+.cruceta__abajo { grid-area: 3 / 2; }
+.cruceta__izq { grid-area: 2 / 1; }
+.cruceta__der { grid-area: 2 / 3; }
+.cruceta__centro { grid-area: 2 / 2; display: grid; place-items: center; font-size: clamp(16px, 5.5vw, 22px); }
+
+/* =============================== cultivo =============================== */
+
+.mini--cultiva { gap: 8px; }
+
+.cultivo {
+  width: min(100%, 460px);
+  margin: 6px auto 0;
+  border: 4px solid var(--contorno);
+  border-radius: 18px;
+  overflow: hidden;
+}
+
+.cultivo {
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.cultivo__cielo {
+  display: grid;
+  place-items: center;
+  flex: 1 1 auto;
+  min-height: clamp(74px, 17dvh, 150px);
+  background: linear-gradient(to bottom, #cfe8f7, #eaf6da);
+}
+
+.cultivo__planta { font-size: min(clamp(46px, 16vw, 88px), 14dvh); line-height: 1; transition: font-size 0.4s ease; }
+
+.cultivo__tierra {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  background: #85552c;
+  color: #fff;
+  padding: 8px;
+  font-size: 12.5px;
+}
+
+.cultivo__salud { letter-spacing: 2px; font-size: 14px; }
+.cultivo__pregunta { margin: 8px clamp(12px, 3vw, 18px) 0; font-weight: bold; text-align: center; }

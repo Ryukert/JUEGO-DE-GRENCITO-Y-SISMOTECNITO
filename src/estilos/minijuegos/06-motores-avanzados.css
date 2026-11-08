@@ -1,0 +1,611 @@
+/* ==================================================================
+   Motores avanzados: simulación, construcción, colocación, código,
+   sopa de letras, rompecabezas, ruleta y atrapa.
+   Mismo lenguaje visual: borde grueso, sombra sólida, botón que se hunde.
+================================================================== */
+
+/* ============================ simulación ============================ */
+
+.mini--simulacion { gap: 8px; }
+
+.sim__recurso {
+  background: var(--superficie);
+  color: var(--tinta);
+  border: 2px solid var(--contorno);
+  border-radius: 999px;
+  padding: 3px 9px;
+  font-size: 12.5px;
+  font-weight: bold;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.tablero-sim {
+  display: grid;
+  gap: 5px;
+  flex-shrink: 0;
+  margin: 8px clamp(12px, 3vw, 18px) 0;
+  background: var(--velo);
+  border: 3px solid var(--contorno);
+  border-radius: 14px;
+  padding: 9px 11px;
+}
+
+.sim__ind {
+  display: grid;
+  grid-template-columns: minmax(80px, 34%) 1fr auto;
+  align-items: center;
+  gap: 8px;
+  font-size: 12px;
+}
+
+.sim__nombre { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+.sim__barra {
+  position: relative;
+  display: block;
+  height: 12px;
+  background: var(--pista);
+  border: 2px solid var(--contorno);
+  border-radius: 999px;
+  overflow: hidden;
+}
+
+.sim__relleno {
+  display: block;
+  height: 100%;
+  background: var(--mal);
+  transition: width 0.45s ease;
+}
+
+.sim__ind--ok .sim__relleno { background: var(--bien); }
+.sim__ind--tecnito .sim__nombre { color: var(--tecnito-texto); }
+.sim__ind--greencito .sim__nombre { color: var(--green-texto); }
+
+.sim__meta {
+  position: absolute;
+  top: -2px;
+  bottom: -2px;
+  width: 3px;
+  background: var(--tinta);
+  transform: translateX(-1px);
+}
+
+.sim__valor { font-weight: bold; min-width: 54px; text-align: right; font-variant-numeric: tabular-nums; }
+.sim__sube { color: var(--bien); margin-left: 3px; }
+.sim__baja { color: var(--mal); margin-left: 3px; }
+
+.sim__evento {
+  margin: 6px clamp(12px, 3vw, 18px) 0;
+  background: var(--aviso-suave);
+  border: 2px dashed var(--acento2);
+  border-radius: 12px;
+  padding: 8px 11px;
+  font-size: 13px;
+  line-height: 1.4;
+}
+
+.sim__pregunta { text-align: left; font-size: 14px; line-height: 1.4; }
+.sim__texto { display: block; }
+.sim__costo { color: var(--mal); white-space: nowrap; }
+.sim__gratis { color: var(--bien); white-space: nowrap; }
+
+/* =========================== construcción =========================== */
+
+.constr__etapa {
+  font-size: 11.5px;
+  background: rgba(255, 255, 255, 0.25);
+  border-radius: 999px;
+  padding: 3px 9px;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.obra {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  width: min(100%, 420px);
+  margin: 8px auto 0;
+  min-height: 0;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}
+
+.obra__pieza {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: var(--superficie);
+  border: 3px solid var(--contorno);
+  border-radius: 12px;
+  padding: 8px 12px;
+  font-size: 13px;
+  animation: entra 0.25s ease-out;
+}
+
+.obra__pieza--firme { border-color: var(--bien); background: var(--bien-suave); }
+.obra__pieza--floja { border-color: var(--mal); background: var(--mal-suave); }
+.obra__icono { font-size: 24px; line-height: 1; }
+.obra__nombre { font-weight: bold; }
+
+.obra__suelo {
+  background: #85552c;
+  color: #fff;
+  border-radius: 0 0 12px 12px;
+  padding: 7px 12px;
+  font-size: 12px;
+  text-align: center;
+}
+
+.constr__prueba {
+  margin: 14px clamp(12px, 3vw, 18px);
+  text-align: center;
+  font-size: clamp(17px, 5vw, 22px);
+  font-weight: bold;
+}
+
+.constr__pregunta { display: flex; flex-direction: column; align-items: center; }
+.constr__final { margin: 6px clamp(12px, 3vw, 18px); text-align: center; font-size: 15px; line-height: 1.4; }
+
+/* ---- el edificio dibujado: crece pieza por pieza y luego tiembla ---- */
+
+.edificio {
+  flex: 1 1 auto;
+  min-height: 120px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin: 6px auto 0;
+  width: 100%;
+}
+
+.edificio svg { /* el dibujo conserva su cielo claro en los dos temas */
+  display: block;
+  height: min(38vh, 300px);
+  height: min(38dvh, 300px);
+  width: auto;
+  aspect-ratio: 240 / 230;
+  max-width: 100%;
+  background: #cfe8fb;
+  border: 3px solid var(--contorno);
+  border-radius: 16px;
+  overflow: hidden;
+}
+
+.edificio__pieza { animation: pieza-llega 0.45s ease-out; }
+/* pieza débil: se tiñe de rojo (sin desenfocar el dibujo) */
+.edificio__pieza--debil { filter: sepia(1) saturate(4) hue-rotate(-35deg) brightness(0.85); }
+
+.edificio__plano {
+  fill: none;
+  stroke: #0f6fc4;
+  stroke-width: 2.5;
+  stroke-dasharray: 7 5;
+  animation: parpadeo 1.2s ease-in-out infinite;
+}
+
+.edificio__cuerpo,
+.edificio__arriba,
+.edificio__suelo {
+  transform-box: view-box;
+  transform-origin: 120px 190px;
+}
+
+.edificio--sismo .edificio__cuerpo { animation: edificio-tiembla 0.18s ease-in-out infinite alternate; }
+.edificio--sismo .edificio__suelo { animation: edificio-tiembla 0.13s ease-in-out infinite alternate-reverse; }
+.edificio--regular .edificio__arriba { transform: rotate(2deg); }
+.edificio--malo .edificio__arriba { animation: edificio-derrumbe 1.1s ease-in forwards; }
+.edificio__polvo { animation: entra 0.5s 0.6s both; }
+
+.edificio__veredicto {
+  margin: 6px 0 0;
+  font-size: clamp(20px, 6vw, 26px);
+  font-weight: bold;
+}
+.edificio__veredicto--excelente { color: var(--bien); }
+.edificio__veredicto--regular { color: var(--oro-texto); }
+.edificio__veredicto--malo { color: var(--mal); }
+
+@keyframes pieza-llega {
+  from { transform: translateY(-26px); opacity: 0; }
+  to { transform: none; opacity: 1; }
+}
+
+@keyframes edificio-tiembla {
+  from { transform: translateX(-5px) rotate(-1.5deg); }
+  to { transform: translateX(5px) rotate(1.5deg); }
+}
+
+/* colapso tipo "pastel": los pisos se aplastan contra el suelo */
+@keyframes edificio-derrumbe {
+  to { transform: translateY(6px) rotate(5deg) scaleY(0.3); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .edificio__pieza,
+  .edificio__plano,
+  .edificio--sismo .edificio__cuerpo,
+  .edificio--sismo .edificio__suelo { animation: none; }
+  .edificio--malo .edificio__arriba { animation: none; transform: translateY(6px) rotate(5deg) scaleY(0.3); }
+}
+
+/* ---- lectura fácil (primaria): menos texto, más grande y en voz alta ---- */
+
+.escuchar {
+  align-self: center;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin: 4px auto;
+  min-height: 44px;
+  padding: 6px 16px;
+  background: var(--superficie);
+  color: var(--tinta);
+  border: 3px solid var(--contorno);
+  border-radius: 999px;
+  font: inherit;
+  font-weight: bold;
+  cursor: pointer;
+}
+
+.escuchar:active { transform: translateY(2px); }
+
+.mini--lectura .quiz__situacion { font-size: clamp(19px, 5.5vw, 24px); }
+.mini--lectura .retro__texto { font-size: clamp(17px, 4.8vw, 20px); }
+.opciones--grandes button { font-size: clamp(17px, 5vw, 21px); padding-top: 14px; padding-bottom: 14px; }
+.opciones--grandes .opciones__letra { font-size: 30px; }
+
+/* ============================ colocación ============================ */
+
+.coloca__cuenta {
+  background: var(--superficie);
+  color: var(--tinta);
+  border: 2px solid var(--contorno);
+  border-radius: 999px;
+  padding: 3px 9px;
+  font-size: 12.5px;
+  font-weight: bold;
+  flex-shrink: 0;
+}
+
+.terreno {
+  --tope: 470px;
+  gap: 4px;
+  border: 4px solid var(--contorno);
+  border-radius: 14px;
+  padding: 5px;
+  background: var(--contorno);
+}
+
+.terreno__celda {
+  position: relative;
+  display: grid;
+  place-items: center;
+  border: 2px solid rgba(16, 48, 79, 0.3);
+  border-radius: 8px;
+  line-height: 1;
+  cursor: pointer;
+  padding: 0;
+  touch-action: manipulation;
+  overflow: hidden;
+}
+
+.terreno__celda--puesto { border-color: var(--contorno); box-shadow: inset 0 0 0 3px #fff; }
+.terreno__rinde { position: absolute; bottom: 1px; right: 3px; font-size: 0.42em; opacity: 0.6; }
+
+.coloca__marcador {
+  margin: 4px clamp(12px, 3vw, 18px);
+  text-align: center;
+  font-size: 14px;
+}
+
+.coloca__marcador b { font-size: clamp(24px, 7vw, 34px); color: var(--acento-texto); display: block; }
+.coloca__penal { display: block; margin-top: 4px; color: var(--mal); font-size: 12.5px; }
+.coloca__ayuda { text-align: center; margin: 4px auto 0; }
+
+/* =========================== código secreto =========================== */
+
+.codigo__intentos {
+  background: var(--superficie);
+  color: var(--tinta);
+  border: 2px solid var(--contorno);
+  border-radius: 999px;
+  padding: 3px 9px;
+  font-size: 12.5px;
+  font-weight: bold;
+  flex-shrink: 0;
+}
+
+.codigo__historial {
+  list-style: none;
+  margin: 6px clamp(12px, 3vw, 18px);
+  padding: 0;
+  display: grid;
+  gap: 4px;
+  max-height: 34vh;
+  overflow-y: auto;
+}
+
+.codigo__historial li {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: var(--superficie);
+  border: 2px solid var(--linea);
+  border-radius: 10px;
+  padding: 6px 10px;
+  font-size: 12.5px;
+}
+
+.codigo__fila { font-size: 20px; letter-spacing: 3px; }
+.codigo__pista { margin-left: auto; text-align: right; }
+.codigo__exacto { color: var(--bien); }
+.codigo__vacio { justify-content: center; color: var(--texto-tenue); font-style: italic; }
+
+.codigo__ranura {
+  display: flex;
+  justify-content: center;
+  gap: 8px;
+  margin: 8px 0;
+}
+
+.codigo__hueco {
+  width: 52px;
+  height: 52px;
+  display: grid;
+  place-items: center;
+  background: var(--superficie);
+  border: 3px dashed var(--contorno);
+  border-radius: 12px;
+  font-size: 26px;
+}
+
+.codigo__teclas {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(58px, 1fr));
+  gap: 7px;
+  margin: 0 clamp(12px, 3vw, 18px);
+}
+
+.ficha--simbolo { min-height: 58px; font-size: 26px; padding: 6px; }
+.opciones--fila { flex-direction: row; align-items: stretch; }
+.opciones--fila button { flex: 1; justify-content: center; }
+
+/* =========================== sopa de letras =========================== */
+
+.sopa {
+  --tope: 460px;
+  gap: 2px;
+  border: 4px solid var(--contorno);
+  border-radius: 12px;
+  padding: 4px;
+  background: var(--contorno);
+}
+
+.sopa__celda {
+  display: grid;
+  place-items: center;
+  background: var(--superficie);
+  border: none;
+  border-radius: 3px;
+  font-weight: bold;
+  cursor: pointer;
+  padding: 0;
+  touch-action: manipulation;
+  overflow: hidden;
+}
+
+.sopa__celda--ok { background: var(--bien); color: var(--sobre-estado); }
+.sopa__celda--inicio { background: var(--acento2); color: #fff; }
+.sopa__ayuda { margin: 0 clamp(12px, 3vw, 18px); font-size: 12.5px; text-align: center; }
+
+.sopa__lista {
+  list-style: none;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 6px;
+  margin: 6px clamp(12px, 3vw, 18px);
+  padding: 0;
+}
+
+.sopa__lista li {
+  background: var(--superficie);
+  border: 2px solid var(--linea);
+  border-radius: 999px;
+  padding: 3px 10px;
+  font-size: 12px;
+  font-weight: bold;
+}
+
+.sopa__hallada { background: var(--bien-suave); border-color: var(--bien); text-decoration: line-through; opacity: 0.75; }
+
+/* ============================ rompecabezas ============================ */
+
+.puzzle__movs { font-size: 11px; opacity: 0.85; flex-shrink: 0; }
+
+.puzzle {
+  --tope: 400px;
+  gap: 3px;
+  border: 4px solid var(--contorno);
+  border-radius: 14px;
+  padding: 4px;
+  background: var(--contorno);
+}
+
+.puzzle__pieza {
+  border: 1px solid rgba(255, 255, 255, 0.5);
+  border-radius: 4px;
+  background-color: #fff; /* pieza de la imagen */
+  background-repeat: no-repeat;
+  cursor: pointer;
+  padding: 0;
+  touch-action: manipulation;
+}
+
+.puzzle__pieza--hueco { background: rgba(255, 255, 255, 0.12); cursor: default; border-style: dashed; }
+.puzzle__pieza--ok { box-shadow: inset 0 0 0 2px var(--bien); }
+
+/* ================================ ruleta ================================ */
+
+.ruleta { position: relative; width: min(74vw, 280px, 32dvh); margin: 10px auto 4px; flex-shrink: 0; }
+
+.ruleta__aguja {
+  position: absolute;
+  top: -0.42em;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: clamp(18px, 8cqw, 26px);
+  color: var(--tinta);
+  z-index: 2;
+}
+
+.ruleta__disco {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 1;
+  border-radius: 50%;
+  border: 5px solid var(--contorno);
+  box-shadow: 0 6px 0 rgba(0, 0, 0, 0.18);
+  transition: transform 1.3s cubic-bezier(0.17, 0.85, 0.32, 1);
+}
+
+.ruleta__gajo {
+  position: absolute;
+  left: 50%;
+  top: 8%;
+  transform-origin: 50% 520%;
+  font-size: 22px;
+  margin-left: -11px;
+}
+
+.ruleta__categoria {
+  margin: 8px auto 0;
+  width: fit-content;
+  color: #fff;
+  font-weight: bold;
+  border: 3px solid var(--contorno);
+  border-radius: 999px;
+  padding: 5px 16px;
+  font-size: 14px;
+}
+
+.ruleta__estado { text-align: center; font-weight: bold; }
+
+/* ========================== atrapa la respuesta ========================== */
+
+.cancha {
+  position: relative;
+  flex: 1 1 auto;
+  min-height: min(200px, 34dvh);
+  margin: 8px clamp(12px, 3vw, 18px) max(10px, env(safe-area-inset-bottom));
+  border: 3px dashed var(--linea);
+  border-radius: 16px;
+  background: var(--velo-suave);
+  overflow: hidden;
+}
+
+.cancha__opcion {
+  position: absolute;
+  max-width: 62%;
+  text-align: left;
+  cursor: pointer;
+  background: var(--superficie);
+  border: 3px solid var(--contorno);
+  border-radius: 14px;
+  padding: 9px 13px;
+  min-height: var(--toque);
+  font-size: 13.5px;
+  line-height: 1.25;
+  box-shadow: 0 4px 0 var(--contorno);
+  transition-property: left, top;
+  transition-timing-function: ease-in-out;
+}
+
+.cancha__opcion:active { transform: translateY(3px); box-shadow: 0 1px 0 var(--contorno); }
+
+.ruta__contador { color: var(--acento-texto); white-space: nowrap; }
+
+/* ============================== responsivo ============================== */
+
+@media (min-width: 620px) {
+  .sim__ind { font-size: 13px; }
+  .terreno, .sopa { --tope: 540px; }
+  .puzzle { --tope: 460px; }
+  .cancha__opcion { font-size: 15px; max-width: 46%; }
+}
+
+@media (orientation: landscape) and (max-height: 560px) {
+  .ruleta { width: min(30dvh, 150px); }
+  .obra { max-width: 520px; }
+  .codigo__historial { max-height: 20dvh; }
+  .cancha { min-height: 120px; }
+  .codigo__hueco { width: 42px; height: 42px; font-size: 21px; }
+  .ficha--simbolo { min-height: 46px; font-size: 21px; }
+  .tablero-sim { padding: 5px 8px; gap: 3px; }
+  .sim__barra { height: 9px; }
+}
+
+/* ------------------------ pantallas angostas ------------------------
+   Debajo de 380 px (iPhone SE, gama de entrada Android) todo se aprieta
+   un poco: menos relleno, letra ligeramente menor y las dificultades en
+   rejilla fluida para que no se desborden.                            */
+@media (max-width: 380px) {
+  .dificultades { grid-template-columns: repeat(auto-fit, minmax(92px, 1fr)); gap: 6px; }
+  .dificultad { padding: 7px 3px; font-size: 11px; }
+  .dificultad strong { font-size: 13px; }
+  .dificultad small { font-size: 9.5px; }
+  .jm__hud { gap: 6px; padding: 7px 10px; }
+  .jm__nombre { font-size: 12.5px; }
+  .quiz__escena { gap: 9px; padding: 10px 11px; }
+  .opciones button { padding: 9px 11px; gap: 8px; }
+  .opciones__letra { width: 22px; height: 22px; font-size: 12px; }
+  .codigo__hueco { width: 44px; height: 44px; font-size: 22px; }
+  .codigo__teclas { grid-template-columns: repeat(auto-fit, minmax(50px, 1fr)); }
+  .ficha--simbolo { min-height: 50px; font-size: 22px; }
+  .cartera__dato { font-size: 11.5px; padding: 4px 9px; }
+  .pestana { font-size: 12px; padding: 9px 3px; }
+  .tarjeta { padding: 9px 6px 8px; }
+  .tarjeta__icono { font-size: 26px; }
+  .tarjeta__nombre { font-size: 13px; }
+}
+
+/* --------------------------- pantallas altas ---------------------------
+   En tablet vertical sobra alto: se aprovecha subiendo el tope de los
+   tableros para que no se queden chiquitos en medio de la pantalla.  */
+@media (min-width: 700px) and (min-height: 900px) {
+  .mapa { --tope: 560px; }
+  .terreno, .sopa { --tope: 600px; }
+  .puzzle { --tope: 520px; }
+  .escena { --tope: 720px; }
+}
+
+/* Sin animación si el sistema lo pide: la ruleta salta al resultado. */
+@media (prefers-reduced-motion: reduce) {
+  .ruleta__disco, .sim__relleno, .cancha__opcion { transition: none !important; }
+}
+
+/* ------------------- arreglos de ajuste heredados -------------------
+   El tablero del memorama repartía las cartas por su proporción fija, y
+   en pantallas bajas la última fila se salía. Ahora las filas reparten
+   el alto disponible, así que las doce cartas caben siempre.
+   Se conserva el diseño: solo cambia cómo se calcula el alto.        */
+
+.tablero {
+  grid-auto-rows: minmax(0, 1fr);
+  align-content: stretch;
+}
+
+.memo { min-height: 0; }
+
+/* La ficha de "clasifica" ocupaba un alto fijo enorme en pantallas
+   bajas; ahora el icono se limita también contra el alto de pantalla. */
+.residuo__icono { font-size: min(clamp(52px, 20vw, 110px), 16dvh); }
+.residuo__nombre { font-size: min(clamp(15px, 4.4vw, 20px), 3.4dvh); }
+.bote { min-height: min(84px, 13dvh); }
+.ficha { min-height: min(88px, 14dvh); }
+
+.opcion--sin-recurso { opacity: 0.45; cursor: not-allowed; box-shadow: 0 4px 0 var(--apagado-borde); border-color: var(--apagado-borde); }
+.opcion--sin-recurso:active { transform: none; box-shadow: 0 4px 0 var(--apagado-borde); }
+.sim__nota { text-align: center; margin: 0 auto 8px; }

@@ -231,7 +231,7 @@ describe("alumnos", () => {
       const r = await llamar(alumnoApi, { accion: "entrar", codigo: grupo.codigo, apodo: `Niño ${i}`, pin: "1234" }, { ip });
       expect(r.statusCode, `entrada ${i}`).toBe(200);
     }
-  });
+  }, 30_000);   // 70 PIN con scrypt: es lento a propósito
 
   it("desde una IP, 20 intentos fallidos frenan a quien adivina aunque cambie de apodo", async () => {
     const { grupo } = await grupoNuevo();

@@ -17,35 +17,11 @@
  */
 import { PERSONAJES, GRADOS, construirSistema } from "../src/data/personajes.js";
 import { revisarLimites } from "./_limites.js";
+import { responderJson, quienEs, leerCuerpo } from "./_comun.js";
 
 const MODELO = process.env.ANTHROPIC_MODEL || "claude-sonnet-4-6";
 const MAX_PREGUNTA = 300;      // lo que escribe un niño en el chat
 const MAX_TOKENS = 300;        // la regla pide máximo 35 palabras
-
-function responderJson(res, codigo, cuerpo, extra = {}) {
-  res.statusCode = codigo;
-  res.setHeader("Content-Type", "application/json");
-  res.setHeader("Cache-Control", "no-store");
-  for (const [k, v] of Object.entries(extra)) res.setHeader(k, v);
-  return res.end(JSON.stringify(cuerpo));
-}
-
-function quienEs(req) {
-  const cabecera = req.headers["x-forwarded-for"] || req.headers["x-real-ip"] || "";
-  return String(cabecera).split(",")[0].trim() || req.socket?.remoteAddress || "anonimo";
-}
-
-async function leerCuerpo(req) {
-  if (req.body) return typeof req.body === "string" ? JSON.parse(req.body) : req.body;
-  const partes = [];
-  let total = 0;
-  for await (const trozo of req) {
-    total += trozo.length;
-    if (total > 8_000) throw new Error("cuerpo demasiado grande");
-    partes.push(trozo);
-  }
-  return JSON.parse(Buffer.concat(partes).toString("utf8") || "{}");
-}
 
 /** Arma las instrucciones y el mensaje a partir del contenido del juego, o explica por qué no. */
 export function armarConsulta(datos) {
@@ -98,7 +74,7 @@ export default async function handler(req, res) {
   }
 
   let datos;
-  try { datos = await leerCuerpo(req); }
+  try { datos = await leerCuerpo(req, 8_000); }
   catch { return responderJson(res, 400, { error: "No entendí el mensaje" }); }
 
   const consulta = armarConsulta(datos);

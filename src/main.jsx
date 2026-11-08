@@ -2,7 +2,7 @@ import React from "react";
 import { createRoot } from "react-dom/client";
 import App from "./App.jsx";
 import "./styles.css";
-import "./styles-minijuegos.css";
+import "./estilos/minijuegos/index.js";   // en orden, después de styles.css
 
 // sin internet después de la primera visita (public/sw.js); solo en la versión publicada
 if (import.meta.env.PROD && "serviceWorker" in navigator) {

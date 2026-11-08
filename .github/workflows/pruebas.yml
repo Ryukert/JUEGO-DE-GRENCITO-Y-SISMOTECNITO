@@ -1,4 +1,4 @@
-# Corre las pruebas y el build en cada push y pull request.
+# Corre la revisión del código (ESLint), las pruebas y el build en cada push y pull request.
 # Vercel también corre `npm test` antes de compilar (vercel.json), así que si algo falla
 # no se publica: el sitio se queda con la versión anterior.
 name: Pruebas
@@ -22,6 +22,7 @@ jobs:
           node-version: 22
           cache: npm
       - run: npm ci
+      - run: npm run lint
       - run: npm test
       - run: npm run build
       - name: El service worker lleva la huella de la versión

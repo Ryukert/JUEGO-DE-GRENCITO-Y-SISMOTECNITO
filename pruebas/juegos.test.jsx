@@ -1,6 +1,5 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { render, screen, fireEvent, act, cleanup } from "@testing-library/react";
-import React from "react";
 import App from "../src/App.jsx";
 import PantallaMinijuego from "../src/juegos/PantallaMinijuego.jsx";
 import { JUEGOS } from "../src/juegos/registro.js";
@@ -15,7 +14,7 @@ beforeEach(() => {
   HTMLCanvasElement.prototype.getContext = () => ({
     clearRect() {}, save() {}, restore() {}, translate() {}, rotate() {}, fillRect() {},
   });
-  window.matchMedia = window.matchMedia || ((q) => ({ matches: false, addListener() {}, removeListener() {} }));
+  window.matchMedia = window.matchMedia || (() => ({ matches: false, addListener() {}, removeListener() {} }));
   global.requestAnimationFrame = (cb) => setTimeout(cb, 0);
   Element.prototype.scrollIntoView = function () {}; // jsdom no lo trae
   vi.spyOn(console, "error").mockImplementation((...a) => { throw new Error("React error: " + a[0]); });

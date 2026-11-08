@@ -59,3 +59,21 @@ describe("CSV de la ventana de editores", () => {
     expect(lineas[2]).toContain("Misiones de Greencito,Misiones,1,1.00");
   });
 });
+
+describe("PDF de la ventana de editores", () => {
+  it("se arma con jsPDF, con sus gráficas, y pasa a otra hoja cuando no cabe", async () => {
+    const { crearPdf } = await import("../src/lib/pdfResultados.js");
+    const filas = [];
+    for (let d = 1; d <= 20; d++) {
+      for (const juego of ["memorama", "simulacro", "basura", "mision-green", "mision-sismo"]) {
+        filas.push({ juego, tipo: juego.startsWith("mision") ? "mision" : "minijuego", grado: d % 2 ? "primaria" : "secundaria",
+          dia: `2026-11-${String(d).padStart(2, "0")}`, gusto: 1 + (d % 5), dificultad: 1 + (d % 3), respuestas: d });
+      }
+    }
+    const doc = await crearPdf(resumir(filas), { periodo: "Últimos 30 días", grado: "Todos", tipo: "Todos" });
+    expect(doc.getNumberOfPages()).toBeGreaterThanOrEqual(1);
+    const bytes = doc.output("arraybuffer");
+    expect(new TextDecoder().decode(new Uint8Array(bytes).slice(0, 5))).toBe("%PDF-");
+    expect(bytes.byteLength).toBeGreaterThan(2_000);
+  });
+});

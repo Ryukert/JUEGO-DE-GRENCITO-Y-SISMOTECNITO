@@ -2,7 +2,6 @@
    propio progreso, sin registrarse. */
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { render, screen, fireEvent, cleanup, within, act } from "@testing-library/react";
-import React from "react";
 import App from "../src/App.jsx";
 import {
   crearJugador, elegirJugador, jugarSinNombre, borrarJugador, listarJugadores, jugadorActual,

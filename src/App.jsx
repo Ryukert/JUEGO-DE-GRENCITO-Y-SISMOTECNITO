@@ -13,7 +13,7 @@ import { sonido, sonidoActivo, alternarSonido } from "./lib/sonido.js";
 import { leerProgreso, guardarGrado, registrarPartida, borrarProgreso } from "./lib/progreso.js";
 import { temaInicial, temaGuardado, guardarTema, TEMA_NEUTRO, TEMA_NEUTRO_OSCURO } from "./lib/tema.js";
 import { leerPreferencias, guardarPreferencia, aplicarPreferencias } from "./lib/preferencias.js";
-import { usarAtajos } from "./lib/atajos.js";
+import { useAtajos } from "./lib/atajos.js";
 import Cuenta from "./components/Cuenta.jsx";
 import Maestro from "./pages/Maestro.jsx";
 import QuienJuega from "./components/QuienJuega.jsx";
@@ -21,7 +21,7 @@ import {
   jugadorActual, listarJugadores, alCambiarJugador, yaSePregunto, marcarPreguntado as marcarQuienPreguntado,
   olvidarJugadorActual,
 } from "./lib/jugadores.js";
-import { usarInactividad } from "./lib/inactividad.js";
+import { useInactividad } from "./lib/inactividad.js";
 import { iniciarRevisionDeVersion, hayVersionNueva } from "./lib/version.js";
 import AvisoInactividad from "./components/AvisoInactividad.jsx";
 import {
@@ -171,15 +171,14 @@ export default function App() {
     };
     window.addEventListener("popstate", alVolver);
     return () => window.removeEventListener("popstate", alVolver);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
   const origenRef = useRef(origenLogros);
   origenRef.current = origenLogros;
 
-  usarAtajos(!ajustes && !verCuenta && !verQuien && !avisoInactivo);
+  useAtajos(!ajustes && !verCuenta && !verQuien && !avisoInactivo);
 
   // computadora del salón: tras unos minutos sin que nadie toque, vuelve al inicio y pide el nombre
-  usarInactividad({
+  useInactividad({
     activo: !cuenta,
     onAviso: (s) => setAvisoInactivo(s),
     onActividad: () => setAvisoInactivo(null),

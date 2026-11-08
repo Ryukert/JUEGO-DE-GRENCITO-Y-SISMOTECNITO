@@ -19,7 +19,7 @@ const EVENTOS = ["pointerdown", "keydown", "wheel", "touchstart"];
  * onAviso(segundosQueQuedan) se llama al empezar el aviso; onActividad() cuando alguien vuelve
  * a tocar durante el aviso; onVencer() al cumplirse el tiempo.
  */
-export function usarInactividad({ activo = true, ms = MINUTOS_INACTIVIDAD * 60_000, avisoMs = AVISO_SEGUNDOS * 1000, onAviso, onActividad, onVencer }) {
+export function useInactividad({ activo = true, ms = MINUTOS_INACTIVIDAD * 60_000, avisoMs = AVISO_SEGUNDOS * 1000, onAviso, onActividad, onVencer }) {
   const llamadas = useRef({ onAviso, onActividad, onVencer });
   llamadas.current = { onAviso, onActividad, onVencer };
 

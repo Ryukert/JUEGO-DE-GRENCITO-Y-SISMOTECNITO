@@ -2,7 +2,7 @@ import { useState, useMemo, useEffect, useRef } from "react";
 import { PREGUNTAS, comoOpciones } from "../../data/juegos/preguntas.js";
 import { segundos, cuantasRondas } from "../../lib/dificultad.js";
 import { construirResultado, puntosAcierto } from "../../lib/recompensas.js";
-import { useCronometro, useTemporizadores } from "../../hooks/useCronometro.js";
+import { useCronometro } from "../../hooks/useCronometro.js";
 import { sonido } from "../../lib/sonido.js";
 import { confeti } from "../../lib/confeti.js";
 import { MarcoJuego, Cronometro, Progreso, Retroalimentacion } from "../ui/Marco.jsx";
@@ -21,7 +21,6 @@ import IconoJuego from "../../components/IconoJuego.jsx";
  * preguntas. El intervalo se limpia al desmontar.
  */
 export default function Atrapa({ juego, personaje, dif, onTerminar, onSalir }) {
-  const enTiempo = useTemporizadores();
 
   const bancos = juego.bancos || [juego.banco];
   const fuente = useMemo(

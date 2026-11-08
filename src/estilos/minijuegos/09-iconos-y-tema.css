@@ -1,0 +1,257 @@
+/* ==================================================================
+   ICONOS, TEMA, CENTRO COMPACTO Y FESTEJO
+================================================================== */
+
+/* ---- iconos propios (src/components/Icono.jsx) ---- */
+.icono {
+  width: 1.15em;
+  height: 1.15em;
+  flex-shrink: 0;
+  vertical-align: -0.2em;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2.2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+.icono .r { fill: currentColor; }
+.icono .hueco { stroke: #fff; stroke-width: 2; }
+.icono .hueco-r { fill: #fff; stroke: none; }
+
+.icono--escudo { color: var(--tecnito-texto); }
+.icono--brote { color: var(--green-texto); }
+.icono--trofeo { color: #e0a100; }
+.icono--fuego { color: #ff7a1a; }
+.icono--rayo { color: #ffc93c; }
+.icono--foco { color: #e0a100; }
+.cartera .icono--estrella, .tarjeta__premio.icono--estrella { color: #e0a100; }
+.marcador .icono--escudo { color: #0f6fc4; }
+.marcador .icono--brote { color: #3d7d1e; }
+
+/* corazones de vida */
+.vidas { display: inline-flex; align-items: center; gap: 1px; letter-spacing: 0; }
+.vida { width: 1.25em; height: 1.25em; }
+.vida--llena { color: #ff4d6d; }
+.vida--vacia { color: currentColor; opacity: 0.35; }
+.vida--vacia .r { fill: none; }
+
+.hud__estado { display: flex; align-items: center; flex-wrap: wrap; gap: 4px 8px; margin: 2px 0 0; font-size: 12px; }
+.hud__icono .icono, .jm__salir .icono { width: 18px; height: 18px; }
+.marcador { display: inline-flex; align-items: center; gap: 4px; }
+.barra__texto .icono { margin-right: 3px; }
+
+/* la racha salta cada vez que sube */
+.racha { display: inline-flex; align-items: center; gap: 2px; animation: racha-pop 0.45s cubic-bezier(0.3, 1.7, 0.5, 1); }
+@keyframes racha-pop { from { transform: scale(0.4); } to { transform: scale(1); } }
+
+.veredicto { display: flex; align-items: center; flex-wrap: wrap; gap: 4px; }
+.veredicto__racha {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  margin-left: 4px;
+  padding: 0 8px;
+  border-radius: 999px;
+  background: var(--aviso-suave);
+  color: var(--acento2-texto);
+  font-size: 12px;
+  animation: racha-pop 0.45s cubic-bezier(0.3, 1.7, 0.5, 1);
+}
+.retro__titulo .icono { vertical-align: -0.22em; }
+.retro__marca { color: var(--bien); }
+.retro--mal .retro__marca { color: var(--mal); }
+.mision-escena__globo .icono { width: 18px; height: 18px; vertical-align: -0.25em; }
+.mision-escena__lugar { display: inline-flex; align-items: center; gap: 3px; }
+.mision-escena__lugar .icono { color: var(--mal); }
+
+/* puntitos de dificultad (antes 🟢🟡🔴) */
+.punto-dif {
+  display: inline-block;
+  width: 0.72em;
+  height: 0.72em;
+  border-radius: 50%;
+  border: 2px solid var(--contorno);
+  background: var(--c);
+  vertical-align: -0.05em;
+}
+.punto-dif--facil { --c: #2fb35a; }
+.punto-dif--medio { --c: #f2b705; }
+.punto-dif--dificil { --c: #e2442f; }
+.dificultad .punto-dif { justify-self: center; width: 14px; height: 14px; }
+.jm__estrellas { display: flex; justify-content: center; gap: 4px; letter-spacing: 0; }
+.jm__estrella { width: 1.1em; height: 1.1em; color: var(--linea); }
+.jm__estrella--ganada { color: #f5b301; }
+.jm__estrella--ganada .r { stroke: var(--contorno); stroke-width: 1.4; }
+.jm__desglose b { display: inline-flex; align-items: center; gap: 3px; }
+
+/* botones con icono */
+.volver { display: inline-flex; align-items: center; gap: 4px; }
+.boton-centro { display: flex; align-items: center; justify-content: center; gap: 8px; }
+.carta__cta { display: inline-flex; align-items: center; gap: 6px; }
+.grado__icono { display: flex; justify-content: center; color: var(--acento-texto); }
+.grado__icono .icono { width: 34px; height: 34px; }
+.escuchar .icono { width: 18px; height: 18px; }
+
+/* ---- botón de tema claro / oscuro ---- */
+.boton-tema {
+  display: grid;
+  place-items: center;
+  width: var(--toque);
+  height: var(--toque);
+  flex-shrink: 0;
+  cursor: pointer;
+  border-radius: 50%;
+  background: var(--superficie);
+  color: var(--tinta);
+  border: 3px solid var(--contorno);
+  box-shadow: 0 3px 0 var(--contorno);
+}
+.boton-tema:active { transform: translateY(3px); box-shadow: 0 0 0 var(--contorno); }
+.boton-tema .icono { width: 22px; height: 22px; }
+.boton-tema .icono--sol { color: #ffc93c; }
+.boton-tema .icono--luna { color: #5b4fc9; }
+.portada { position: relative; }
+.portada > .boton-tema {
+  position: absolute;
+  top: max(12px, env(safe-area-inset-top));
+  right: max(12px, env(safe-area-inset-right));
+  z-index: 2;
+}
+
+/* ---- centro compacto ---- */
+.centro { gap: 6px; }
+.centro__barra { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+.centro__barra .volver { margin: 0; }
+.centro h1 { display: flex; align-items: center; justify-content: center; gap: 8px; margin: 2px 0; }
+.centro h1 .icono { color: var(--acento-texto); }
+.cartera { margin: 8px 0 4px; }
+.cartera__dato { display: inline-flex; align-items: center; gap: 5px; }
+.centro__siguiente { display: flex; align-items: center; justify-content: center; gap: 4px; flex-wrap: wrap; }
+/* las pestañas se quedan arriba al bajar por la lista */
+.pestanas {
+  position: sticky;
+  top: 0;
+  z-index: 5;
+  padding: 8px 0;
+  margin-top: 2px;
+  background: var(--fondo);
+  border-radius: 0 0 16px 16px;
+}
+.pestana { display: flex; align-items: center; justify-content: center; gap: 5px; }
+.pestana--on .icono { color: #fff; }
+.categoria { margin-top: 10px; }
+.categoria__titulo { font-size: 14px; margin-bottom: 7px; }
+.centro__pie { margin-top: 14px; }
+
+@media (min-width: 620px) {
+  .tarjetas { grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 10px; }
+}
+
+/* ---- festejo de la pantalla final ---- */
+.final__escenario { position: relative; display: grid; place-items: center; isolation: isolate; }
+.final__rayos {
+  position: absolute;
+  z-index: -1;
+  width: min(380px, 92vw);
+  aspect-ratio: 1;
+  border-radius: 50%;
+  background: repeating-conic-gradient(var(--rayo) 0deg 11deg, transparent 11deg 22deg);
+  -webkit-mask: radial-gradient(closest-side, #000 35%, transparent 100%);
+  mask: radial-gradient(closest-side, #000 35%, transparent 100%);
+  animation: gira 26s linear infinite;
+}
+@keyframes gira { to { transform: rotate(1turn); } }
+
+.final__figura--festeja { animation: festeja 0.7s ease-out 3, flota 3.4s ease-in-out 2.1s infinite; transform-origin: 50% 100%; }
+@keyframes festeja {
+  0%, 100% { transform: translateY(0) scale(1); }
+  35% { transform: translateY(-26px) scale(1.05) rotate(-3deg); }
+  65% { transform: translateY(0) scale(1.04, 0.95); }
+}
+
+.final__estrellas { display: flex; justify-content: center; align-items: flex-end; gap: 6px; margin: 8px 0 0; }
+.final__estrella { width: 46px; height: 46px; color: var(--linea); }
+.final__estrella--ganada { color: #f5b301; animation: estrella-entra 0.55s cubic-bezier(0.3, 1.6, 0.5, 1) 0.35s both; }
+.final__estrella--ganada .r { stroke: var(--contorno); stroke-width: 1.4; }
+.final__estrella:nth-child(2) { width: 58px; height: 58px; animation-delay: 0.6s; }
+.final__estrella:nth-child(3) { animation-delay: 0.85s; }
+@keyframes estrella-entra {
+  from { transform: scale(0) rotate(-120deg); opacity: 0; }
+  to { transform: none; opacity: 1; }
+}
+
+.final__sello { display: inline-block; animation: sello 0.55s cubic-bezier(0.3, 1.5, 0.5, 1) 1s both; }
+@keyframes sello {
+  from { transform: scale(2.6) rotate(-25deg); opacity: 0; }
+  to { transform: none; opacity: 1; }
+}
+.final h2 { font-variant-numeric: tabular-nums; }
+
+.final__liston {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 3px 12px;
+  border-radius: 999px;
+  border: 3px solid var(--contorno);
+  box-shadow: 0 3px 0 var(--contorno);
+  color: #10304f;
+  background: linear-gradient(100deg, #ffd23f 0%, #ffb300 42%, #fff3b0 50%, #ffb300 58%, #ffd23f 100%);
+  background-size: 260% 100%;
+  animation: sello 0.55s cubic-bezier(0.3, 1.5, 0.5, 1) 1.5s both, brillo 2.4s linear 2s infinite;
+}
+.final__liston .icono { color: #10304f; }
+@keyframes brillo { from { background-position: 100% 0; } to { background-position: -160% 0; } }
+
+.insignias li { display: flex; align-items: center; gap: 8px; animation: entra 0.35s ease-out both; animation-delay: calc(var(--i, 0) * 120ms + 1s); }
+
+/* ---- tema oscuro: lo que no se resuelve solo con variables ---- */
+:root[data-tema="oscuro"] .creditos__escudo { background: #fff; border-radius: 12px; padding: 6px; }
+:root[data-tema="oscuro"] .creditos__marcas { border-color: var(--apagado-borde); }
+:root[data-tema="oscuro"] .mision-escena { background: linear-gradient(to bottom, transparent 0 70%, rgba(120, 100, 70, 0.28) 70% 100%); }
+:root[data-tema="oscuro"] .icono--trofeo { color: #ffc93c; }
+:root[data-tema="oscuro"] .final__liston .icono { color: #10304f; }
+:root[data-tema="oscuro"] .final__estrella:not(.final__estrella--ganada),
+:root[data-tema="oscuro"] .jm__estrella:not(.jm__estrella--ganada) { color: var(--apagado-borde); }
+
+/* sin animación si el sistema lo pide (la regla general de styles.css ya las apaga;
+   esto asegura que lo que entra desde opacidad 0 quede visible) */
+@media (prefers-reduced-motion: reduce) {
+  .final__estrella--ganada, .final__sello, .final__liston, .insignias li { opacity: 1 !important; transform: none !important; }
+}
+
+/* ---- insignias de los minijuegos y medallas de rango (IconoJuego.jsx) ---- */
+.insignia { display: block; width: 44px; height: 44px; flex-shrink: 0; overflow: visible; }
+.insignia__fondo { fill: var(--c); stroke: var(--contorno); stroke-width: 3; }
+.insignia__brillo { fill: none; stroke: rgba(255, 255, 255, 0.35); stroke-width: 3; stroke-linecap: round; }
+.insignia__dibujo { fill: none; stroke: #fff; stroke-width: 2.8; stroke-linecap: round; stroke-linejoin: round; }
+.insignia__dibujo .f { fill: #fff; }
+.insignia__dibujo .s { fill: rgba(255, 255, 255, 0.22); stroke: none; }
+.insignia__dibujo .a { fill: #ffd23f; }
+.insignia__dibujo .r { fill: #ff6b6b; }
+.insignia__dibujo .v { fill: #b2f2bb; }
+.insignia__dibujo .m { fill: #a0672f; }
+.insignia__dibujo .d { fill: var(--c); stroke: none; }
+.insignia__dibujo .ta { stroke: #ffd23f; }
+.insignia__dibujo .tc { stroke: var(--c); }
+.insignia__dibujo .n { stroke: none; }
+.insignia__corona { fill: #ffd23f; stroke: var(--contorno); stroke-width: 2; stroke-linejoin: round; }
+.insignia--emoji { display: grid; place-items: center; font-size: 30px; line-height: 1; }
+
+.medalla { display: inline-block; width: 1.4em; height: 1.4em; vertical-align: -0.35em; flex-shrink: 0; }
+.medalla__disco { stroke: var(--contorno); stroke-width: 2.5; stroke-linejoin: round; }
+
+/* dónde aparecen */
+.tarjeta .insignia { width: 46px; height: 46px; }
+.tarjeta--bloqueada .insignia { filter: grayscale(1); opacity: 0.45; }
+.tarjeta__icono .tarjeta__candado { right: -8px; bottom: -6px; }
+.jm__hud .insignia { width: 30px; height: 30px; }
+.jm__hud .insignia__fondo { stroke: #fff; }
+.jm__intro h2 { display: flex; align-items: center; justify-content: center; gap: 10px; }
+.jm__intro h2 .insignia { width: 40px; height: 40px; }
+.centro__siguiente .insignia { display: inline-block; width: 20px; height: 20px; vertical-align: -0.3em; }
+.quiz__icono .insignia, .cancha .insignia { width: 1em; height: 1em; }
+.final__sello .medalla { width: 30px; height: 30px; }
+.final__rango { display: flex; align-items: center; justify-content: center; gap: 6px; }
+.cartera .medalla { width: 20px; height: 20px; }
+.carta__record { display: inline-flex; align-items: center; gap: 4px; }
