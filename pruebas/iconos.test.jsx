@@ -1,7 +1,6 @@
 /* Insignias propias de los 46 juegos, medallas de rango y emojis que se ven en equipos viejos. */
 import { describe, it, expect, afterEach } from "vitest";
 import { render, cleanup } from "@testing-library/react";
-import React from "react";
 import { readFileSync, readdirSync, statSync } from "node:fs";
 import { resolve, join } from "node:path";
 import IconoJuego, { IconoRango, JUEGOS_CON_DIBUJO, COLOR_CATEGORIA } from "../src/components/IconoJuego.jsx";

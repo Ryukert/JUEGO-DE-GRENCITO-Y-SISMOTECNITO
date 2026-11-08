@@ -13,8 +13,6 @@ export default function Reto({
   personaje: p,
   grado,
   mision,
-  vidas,
-  puntos,
   racha,
   onPuntos,
   onFallo,
@@ -28,7 +26,7 @@ export default function Reto({
   const [mensajes, setMensajes] = useState([{ de: "bot", texto: mision.escenario }]);
   const [pensando, setPensando] = useState(false);
   const [texto, setTexto] = useState("");
-  const [ultimo, setUltimo] = useState(null);
+  const [, setUltimo] = useState(null);
   // cómo reacciona el personaje en escena: piensa (esperando), feliz, triste o tiempo
   const [animo, setAnimo] = useState("piensa");
   // chat con el personaje: null = preguntando al servidor, true / false = ya se sabe

@@ -1,6 +1,5 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { render, screen, fireEvent, act, cleanup } from "@testing-library/react";
-import React from "react";
 import PantallaMinijuego from "../src/juegos/PantallaMinijuego.jsx";
 import { POR_ID } from "../src/juegos/registro.js";
 import { PERSONAJES } from "../src/data/personajes.js";
@@ -108,7 +107,7 @@ describe("construcción y colocación", () => {
   });
 
   it("energía solar: colocar y quitar paneles respeta el máximo", () => {
-    const juego = montar("energia-solar");
+    montar("energia-solar");
     const celdas = () => [...document.querySelectorAll(".terreno__celda")];
     const puestos = () => document.querySelectorAll(".terreno__celda--puesto").length;
 
@@ -185,7 +184,7 @@ describe("desafíos generales nuevos", () => {
     montar("rompecabezas");
     const piezas = () => [...document.querySelectorAll(".puzzle__pieza")];
     expect(piezas().length).toBe(9);
-    const ordenado = piezas().every((p, i) => p.classList.contains("puzzle__pieza--ok"));
+    const ordenado = piezas().every((p) => p.classList.contains("puzzle__pieza--ok"));
     expect(ordenado).toBe(false);
 
     const hueco = piezas().findIndex((p) => p.classList.contains("puzzle__pieza--hueco"));

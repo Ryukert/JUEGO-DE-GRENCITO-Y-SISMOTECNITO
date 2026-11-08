@@ -1,0 +1,155 @@
+/* ============================ marco común ============================ */
+
+.jm__hud {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px clamp(10px, 3vw, 18px);
+  background: var(--acento);
+  color: #fff;
+  border-bottom: 4px solid var(--contorno);
+  flex-shrink: 0;
+}
+
+.jm__salir {
+  background: rgba(255, 255, 255, 0.22);
+  border: 2px solid #fff;
+  color: #fff;
+  border-radius: 50%;
+  width: 34px;
+  height: 34px;
+  display: grid;
+  place-items: center;
+  font-size: 15px;
+  line-height: 1;
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
+.jm__id { display: flex; align-items: center; gap: 6px; min-width: 0; flex: 1; }
+.jm__icono { font-size: 20px; flex-shrink: 0; }
+
+.jm__nombre {
+  font-weight: bold;
+  font-size: clamp(13px, 3.4vw, 16px);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.jm__vidas { display: block; font-size: 12px; flex-shrink: 0; }
+.jm__puntos { font-size: 14px; }
+
+.jm__progreso {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 6px clamp(12px, 3vw, 18px);
+  background: var(--velo);
+  border-bottom: 2px dashed var(--linea);
+  font-size: 12px;
+  flex-shrink: 0;
+}
+
+.jm__pasos { display: flex; gap: 4px; flex-wrap: wrap; flex: 1; }
+.jm__pasos .paso { width: 16px; height: 8px; border-radius: 4px; background: var(--linea); }
+.jm__pasos .paso--hecho { background: var(--acento2); }
+.jm__progreso-texto { font-weight: bold; flex-shrink: 0; }
+
+/* ========================== intro y dificultad ======================== */
+
+.jm__intro { padding-top: 14px; }
+.jm__intro h2 { text-align: center; }
+.jm__record { margin: 2px 0; font-size: 14px; font-weight: bold; color: var(--acento2-texto); }
+
+.dificultades {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+  width: 100%;
+  max-width: 420px;
+  margin: 6px auto;
+}
+
+.dificultad {
+  display: grid;
+  gap: 1px;
+  cursor: pointer;
+  background: var(--superficie);
+  color: var(--tinta);
+  border: 3px solid var(--contorno);
+  border-radius: 14px;
+  padding: 9px 4px;
+  min-height: var(--toque);
+  box-shadow: 0 4px 0 var(--contorno);
+  text-align: center;
+  font-size: 12px;
+  transition: transform 0.08s ease, box-shadow 0.08s ease;
+}
+
+.dificultad strong { font-size: 14px; }
+.dificultad small { font-size: 10.5px; color: var(--texto-tenue); }
+.dificultad:active { transform: translateY(4px); box-shadow: 0 0 0 var(--contorno); }
+
+.dificultad--on {
+  background: var(--acento);
+  color: #fff;
+  border-color: var(--contorno);
+}
+
+.dificultad--on small { color: rgba(255, 255, 255, 0.85); }
+
+/* ========================= resultado del reto ========================= */
+
+.jm__resultado { gap: 6px; }
+.jm__estrellas { font-size: 30px; margin: 6px 0 0; letter-spacing: 4px; }
+.jm__marcador-final { margin: 0; font-size: clamp(30px, 9vw, 46px); font-weight: bold; color: var(--acento-texto); line-height: 1; }
+.jm__marcador-final small { font-size: 15px; color: var(--tinta); font-weight: normal; }
+
+.jm__desglose {
+  list-style: none;
+  padding: 0;
+  margin: 12px auto;
+  width: min(100%, 340px);
+}
+
+.jm__desglose li {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  background: var(--superficie);
+  border: 2px solid var(--linea);
+  border-radius: 10px;
+  padding: 7px 12px;
+  margin-bottom: 6px;
+  font-size: 14px;
+}
+
+/* ==================== retroalimentación educativa ==================== */
+
+.retro {
+  background: var(--superficie);
+  border: var(--borde) solid var(--bien);
+  border-radius: 16px;
+  padding: 12px 14px;
+  margin: 4px clamp(12px, 3vw, 18px);
+  text-align: left;
+  animation: entra 0.22s ease-out;
+}
+
+.retro--mal { border-color: var(--mal); background: var(--mal-suave); }
+.retro--bien { background: var(--bien-suave); }
+.retro__titulo { margin: 0 0 6px; font-weight: bold; font-size: 16px; }
+.retro__puntos { color: var(--acento2-texto); }
+.retro__respuesta { margin: 0 0 6px; font-size: 14.5px; line-height: 1.4; }
+.retro__texto { margin: 0; font-size: 14.5px; line-height: 1.45; }
+
+.retro__dato {
+  margin: 9px 0 0;
+  font-size: 13.5px;
+  line-height: 1.45;
+  background: var(--velo);
+  border: 2px dashed var(--linea);
+  border-radius: 12px;
+  padding: 8px 11px;
+}

@@ -29,7 +29,7 @@ export function Escuchar({ texto, etiqueta = "Escuchar" }) {
 
 /* ------------------------------ encabezado ------------------------------ */
 
-export function MarcoJuego({ juego, dificultad, vidas, vidasMax, puntos, extra, onSalir }) {
+export function MarcoJuego({ juego, vidas, vidasMax, puntos, extra, onSalir }) {
   return (
     <header className="jm__hud">
       <button className="jm__salir" onClick={onSalir} aria-label="Salir del minijuego">

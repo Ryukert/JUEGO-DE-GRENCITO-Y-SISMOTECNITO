@@ -36,7 +36,7 @@ export function manejarTecla(e) {
   }
 }
 
-export function usarAtajos(activos = true) {
+export function useAtajos(activos = true) {
   useEffect(() => {
     if (!activos) return;
     document.addEventListener("keydown", manejarTecla);

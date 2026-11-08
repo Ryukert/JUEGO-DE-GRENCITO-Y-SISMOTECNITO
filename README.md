@@ -480,7 +480,7 @@ src/lib/tema.js                tema claro / oscuro (sistema o elección guardada
 src/lib/                       sonido.js, confeti.js
 src/fuentes/                   Nunito (woff2) y su licencia OFL
 src/styles.css                 estilos del juego original
-src/styles-minijuegos.css      estilos de los minijuegos, del centro y el
+src/estilos/minijuegos/        estilos de los minijuegos, del centro y el
                                sistema de tableros que se ajustan a la pantalla
 public/revisar.html            vista del juego en ocho tamaños a la vez
 
@@ -653,7 +653,7 @@ ancho = min( ancho de la zona, alto de la zona × proporción, tope de diseño )
 ```
 
 Eso vive en `.tablero-zona` (un contenedor de consulta) y `.tablero-ajustable`
-dentro de `src/styles-minijuegos.css`. El componente solo declara cuántas filas
+dentro de `src/estilos/minijuegos/02-tableros.css`. El componente solo declara cuántas filas
 y columnas tiene:
 
 ```jsx
@@ -694,11 +694,15 @@ una pantalla concreta.
 
 ---
 
-## Pruebas
+## Pruebas y revisión del código
 
 ```bash
+npm run lint   # ESLint: errores comunes y reglas de los hooks de React
 npm test
 ```
+
+Las dos corren antes de cada publicación (Vercel y GitHub Actions); con un error o un
+aviso de ESLint no se publica. Se necesita Node 22 (`engines` en `package.json`).
 
 290 pruebas. Monta los 46 minijuegos del catálogo, juega hasta el final los seis
 jefes de simulación, comprueba que los indicadores nunca se salen de 0 a 100,

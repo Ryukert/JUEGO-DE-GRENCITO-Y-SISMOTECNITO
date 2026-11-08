@@ -1,0 +1,96 @@
+/* ==================================================================
+   SISTEMA DE TABLEROS QUE SE AJUSTAN A LA PANTALLA
+
+   El problema de un juego de cuadrícula en móvil es que el tablero
+   compite por el alto con el HUD, el cronómetro y los controles. Si
+   solo se limita el ancho, en pantallas bajas el tablero empuja los
+   botones fuera de la vista.
+
+   Aquí el tablero se calcula contra las DOS medidas disponibles:
+   ancho y alto de su zona. `.tablero-zona` es un contenedor de
+   consulta y el tablero toma el menor de:
+       ancho de la zona · alto de la zona × proporción · tope de diseño
+
+   Si el navegador no soporta contenedores de consulta, se cae al
+   comportamiento anterior (ancho limitado y la pantalla scrollea),
+   que sigue siendo usable.
+================================================================== */
+
+.tablero-zona {
+  display: grid;
+  place-items: center;
+  width: 100%;
+  min-height: 0;
+  margin-block: 4px;
+  flex: 0 0 auto;
+}
+
+/* Lo que acompaña al tablero no se deja aplastar. */
+.busca__pista,
+.clasifica__pista,
+.sopa__ayuda,
+.sopa__lista,
+.coloca__ayuda,
+.cronometro,
+.jm__progreso {
+  flex-shrink: 0;
+}
+
+.tablero-ajustable {
+  --ar: calc(var(--columnas) / var(--filas));
+  width: min(100%, var(--tope, 520px));
+  aspect-ratio: var(--columnas) / var(--filas);
+  display: grid;
+  grid-template-columns: repeat(var(--columnas), minmax(0, 1fr));
+  grid-template-rows: repeat(var(--filas), minmax(0, 1fr));
+  font-size: clamp(9px, 2.6vw, 20px);
+}
+
+/* las casillas heredan el tamaño de letra del tablero y llenan su celda */
+.tablero-ajustable > * {
+  min-width: 0;
+  min-height: 0;
+  font-size: inherit;
+}
+
+@supports (container-type: size) {
+  /* La pantalla deja de desplazarse y el que se desplaza, si de plano no
+     cabe nada, es el cuerpo del juego. Así el HUD y el cronómetro
+     siempre quedan a la vista. */
+  .juego--mini { overflow: hidden; }
+  .mini { overflow-y: auto; overscroll-behavior: contain; }
+
+  .tablero-zona {
+    flex: 1 1 0;
+    container-type: size;
+    /* piso de seguridad: aunque el alto se acabe, el tablero nunca
+       desaparece; en ese caso el cuerpo del juego se desplaza */
+    min-height: min(170px, 34dvh);
+  }
+
+  .escena {
+    width: min(100cqw, calc(100cqh * var(--arw) / var(--arh)), var(--tope, 620px));
+  }
+
+  .tablero-ajustable {
+    width: min(100cqw, calc(100cqh * var(--ar)), var(--tope, 520px));
+    height: auto;
+    font-size: min(
+      calc(100cqw / var(--columnas) * 0.5),
+      calc(100cqh / var(--filas) * 0.5),
+      26px
+    );
+  }
+
+  /* las pantallas de texto sí pueden desplazarse por dentro */
+  .mini--intro,
+  .jm__resultado,
+  .quiz__retro,
+  .clasifica__retro,
+  .busca__retro,
+  .codigo__historial {
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    min-height: 0;
+  }
+}

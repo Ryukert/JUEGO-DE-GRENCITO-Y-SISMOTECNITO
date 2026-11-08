@@ -1,0 +1,19 @@
+/* ------------------------------------------------------------------
+   Minijuegos y Centro de entrenamiento.
+
+   Va en archivo aparte para no tocar styles.css, y reutiliza a propósito
+   las mismas variables (--acento, --tinta, --linea...) y el mismo lenguaje
+   visual del juego original: bordes gruesos, sombra sólida abajo y
+   botones que se hunden al presionarlos.
+------------------------------------------------------------------- */
+
+.juego--mini {
+  /* vh primero como respaldo para navegadores viejos sin dvh */
+  height: 100vh;
+  height: 100dvh;
+  max-height: 100vh;
+  max-height: 100dvh;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  background: none; /* se ve el fondo de la página */
+}

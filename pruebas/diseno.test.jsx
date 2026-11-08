@@ -2,9 +2,9 @@
    festejo final y tema oscuro. */
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { render, screen, fireEvent, act, cleanup } from "@testing-library/react";
-import React from "react";
 import { readFileSync, existsSync } from "node:fs";
 import { resolve } from "node:path";
+import { cssMinijuegos, archivosMinijuegos, CARPETA_MINIJUEGOS } from "./_css.js";
 import App from "../src/App.jsx";
 import Juego from "../src/components/Juego.jsx";
 import Final, { estrellasPara } from "../src/components/Final.jsx";
@@ -14,7 +14,7 @@ import { JUEGOS } from "../src/juegos/registro.js";
 import { borrarProgreso, leerProgreso } from "../src/lib/progreso.js";
 
 const raiz = (f) => resolve(process.cwd(), f);
-const CSS = readFileSync(raiz("src/styles.css"), "utf8") + readFileSync(raiz("src/styles-minijuegos.css"), "utf8");
+const CSS = readFileSync(raiz("src/styles.css"), "utf8") + cssMinijuegos();
 
 beforeEach(() => {
   localStorage.clear();
@@ -176,5 +176,15 @@ describe("tema oscuro", () => {
     for (const p of Object.values(PERSONAJES)) {
       expect(Object.keys(p.temaOscuro).sort()).toEqual(Object.keys(p.tema).sort());
     }
+  });
+});
+
+describe("estilos de los minijuegos partidos por tema", () => {
+  it("index.js carga todos los .css de la carpeta, en su orden numérico", () => {
+    const indice = readFileSync(resolve(CARPETA_MINIJUEGOS, "index.js"), "utf8");
+    const importados = [...indice.matchAll(/^import "\.\/([^"]+\.css)";/gm)].map((m) => m[1]);
+    expect(importados).toEqual(archivosMinijuegos());
+    expect(importados.every((f) => /^\d{2}-/.test(f))).toBe(true);
+    expect(readFileSync(resolve(process.cwd(), "src/main.jsx"), "utf8")).toMatch(/import "\.\/styles\.css";\s*\nimport "\.\/estilos\/minijuegos\/index\.js";/);
   });
 });

@@ -3,28 +3,38 @@
   "private": true,
   "version": "1.0.0",
   "type": "module",
+  "engines": {
+    "node": "22.x"
+  },
   "description": "Juego-chatbot educativo con Sismo Tecnito (protección civil) y Greencito (medio ambiente)",
   "author": "Marco Antonio Adame Rodriguez",
   "scripts": {
     "dev": "vite",
     "build": "vite build",
     "preview": "vite preview",
+    "lint": "eslint . --max-warnings 0",
     "test": "vitest run --environment jsdom pruebas/"
   },
   "dependencies": {
-    "jspdf": "^2.5.2",
+    "jspdf": "^4.2.1",
     "react": "^18.3.1",
     "react-dom": "^18.3.1"
   },
   "devDependencies": {
-    "@testing-library/react": "^16.3.0",
-    "@vitejs/plugin-react": "^4.3.4",
-    "jsdom": "^25.0.1",
-    "vite": "^5.4.11",
-    "vitest": "^2.1.9"
+    "@eslint/js": "^10.0.1",
+    "@testing-library/react": "^16.3.3",
+    "@vitejs/plugin-react": "^6.2.1",
+    "eslint": "^10.14.0",
+    "eslint-plugin-react-hooks": "^7.1.1",
+    "globals": "^17.14.0",
+    "jsdom": "^29.1.1",
+    "vite": "^8.3.6",
+    "vitest": "^5.1.0"
   },
   "allowScripts": {
-    "esbuild@0.21.5": true,
     "core-js": false
+  },
+  "overrides": {
+    "minimatch": "^11.0.5"
   }
 }

@@ -2,7 +2,6 @@
    ajustes, vibración, tutorial, «seguir jugando», mis logros, panel lateral y app instalable. */
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { render, screen, fireEvent, act, cleanup, waitFor } from "@testing-library/react";
-import React from "react";
 import { readFileSync, existsSync } from "node:fs";
 import { resolve } from "node:path";
 import App from "../src/App.jsx";

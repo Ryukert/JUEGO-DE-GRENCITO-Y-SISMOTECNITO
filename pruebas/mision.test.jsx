@@ -2,7 +2,6 @@
    y textos de la portada que salen del contenido real. */
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { render, screen, fireEvent, act, cleanup } from "@testing-library/react";
-import React from "react";
 import Reto from "../src/components/Reto.jsx";
 import Portada from "../src/components/Portada.jsx";
 import { PERSONAJES, GRADOS } from "../src/data/personajes.js";
@@ -14,7 +13,7 @@ beforeEach(() => {
   localStorage.clear();
   window.AudioContext = undefined;
   HTMLCanvasElement.prototype.getContext = () => ({ clearRect() {}, save() {}, restore() {}, translate() {}, rotate() {}, fillRect() {} });
-  window.matchMedia = (q) => ({ matches: false, addListener() {}, removeListener() {} });
+  window.matchMedia = () => ({ matches: false, addListener() {}, removeListener() {} });
   global.requestAnimationFrame = (cb) => setTimeout(cb, 0);
   Element.prototype.scrollIntoView = function () {};
   global.fetch = vi.fn(async () => ({ ok: false, json: async () => ({}) }));   // sin chat

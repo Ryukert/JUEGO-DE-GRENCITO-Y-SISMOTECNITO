@@ -1,0 +1,195 @@
+/* ====================== centro de entrenamiento ====================== */
+
+.centro {
+  gap: 10px;
+  padding: clamp(14px, 4vw, 26px) clamp(12px, 4vw, 26px) 30px;
+  background:
+    repeating-linear-gradient(0deg, transparent 0 39px, var(--cuadricula) 39px 40px),
+    repeating-linear-gradient(90deg, transparent 0 39px, var(--cuadricula) 39px 40px);
+}
+
+.centro__cabeza { text-align: center; max-width: 760px; margin-inline: auto; width: 100%; }
+.centro h1 { font-size: clamp(21px, 5.6vw, 32px); margin: 0 0 4px; }
+.centro__resumen { margin: 0; font-size: 13.5px; color: var(--texto-suave); }
+
+.cartera {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 7px;
+  margin: 10px 0 6px;
+}
+
+.cartera__dato {
+  background: var(--superficie);
+  border: 3px solid var(--contorno);
+  border-radius: 999px;
+  padding: 5px 12px;
+  font-size: 13px;
+  font-weight: bold;
+  box-shadow: 0 3px 0 var(--contorno);
+}
+
+.centro__siguiente { margin: 4px 0 0; font-size: 12.5px; color: var(--texto-suave); }
+
+.pestanas {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 7px;
+  width: 100%;
+  max-width: 620px;
+  margin: 6px auto 0;
+}
+
+.pestana {
+  cursor: pointer;
+  background: var(--superficie);
+  color: var(--tinta);
+  border: 3px solid var(--contorno);
+  border-radius: 14px;
+  padding: 10px 4px;
+  min-height: var(--toque);
+  font-size: 13.5px;
+  font-weight: bold;
+  box-shadow: 0 4px 0 var(--contorno);
+}
+
+.pestana:active { transform: translateY(4px); box-shadow: 0 0 0 var(--contorno); }
+.pestana--on { color: #fff; }
+.pestana--tecnito.pestana--on { background: #0f6fc4; }
+.pestana--greencito.pestana--on { background: #3d7d1e; }
+.pestana--general.pestana--on { background: #6b4fa8; }
+
+.centro__lista { width: 100%; max-width: 760px; margin-inline: auto; }
+.categoria { margin-top: 16px; }
+
+.categoria__titulo {
+  font-size: 15px;
+  margin: 0 0 8px;
+  color: var(--texto-suave);
+  border-bottom: 2px dashed var(--linea);
+  padding-bottom: 4px;
+}
+
+/* Tarjetas compactas: icono, nombre y lo que ya hiciste. La descripción va
+   en la pantalla de inicio de cada juego; así una pestaña cabe en pocas pantallas. */
+.tarjetas { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 136px), 1fr)); gap: 9px; }
+
+.tarjeta {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 5px;
+  text-align: center;
+  cursor: pointer;
+  background: var(--superficie);
+  color: var(--tinta);
+  border: 3px solid var(--contorno);
+  border-radius: 16px;
+  padding: 10px 8px 9px;
+  min-height: 112px;
+  box-shadow: 0 4px 0 var(--contorno);
+  transition: transform 0.09s ease, box-shadow 0.09s ease;
+}
+
+.tarjeta:hover { transform: translateY(-2px); box-shadow: 0 6px 0 var(--contorno); }
+.tarjeta:active { transform: translateY(4px); box-shadow: 0 0 0 var(--contorno); }
+
+/* bloqueada: gris pero legible (sin opacidad, para que el texto conserve el contraste) */
+.tarjeta--bloqueada {
+  cursor: not-allowed;
+  background: var(--apagado);
+  color: var(--texto-tenue);
+  box-shadow: 0 4px 0 var(--apagado-borde);
+  border-color: var(--apagado-borde);
+}
+
+.tarjeta--bloqueada:hover { transform: none; box-shadow: 0 4px 0 var(--apagado-borde); }
+.tarjeta__icono { position: relative; font-size: 30px; line-height: 1; }
+.tarjeta .tarjeta__candado {
+  position: absolute;
+  right: -10px;
+  bottom: -4px;
+  width: 20px;
+  height: 20px;
+  padding: 2px;
+  border-radius: 50%;
+  background: var(--superficie);
+  color: var(--tinta);
+}
+.tarjeta__nombre { font-size: 14px; line-height: 1.2; font-weight: 800; }
+.tarjeta__pie { display: flex; align-items: center; justify-content: center; gap: 8px; margin-top: auto; font-size: 12.5px; }
+.tarjeta__dif { display: inline-flex; gap: 3px; }
+.tarjeta__dif .punto-dif { opacity: 0.25; }
+.tarjeta__dif .punto-dif.hecha { opacity: 1; }
+.tarjeta__record { display: inline-flex; align-items: center; gap: 2px; font-weight: bold; color: var(--oro-texto); }
+.tarjeta .tarjeta__premio { width: 16px; height: 16px; }
+.tarjeta__xp { font-weight: bold; color: var(--texto-tenue); }
+.centro__pie { margin-top: 20px; }
+
+.boton-centro {
+  display: block;
+  width: min(100%, 340px);
+  margin: 4px auto 0;
+  cursor: pointer;
+  background: var(--boton-oscuro);
+  color: #fff;
+  font-weight: bold;
+  font-size: 16px;
+  border: 3px solid var(--contorno);
+  border-radius: 16px;
+  padding: 12px 20px;
+  min-height: var(--toque);
+  box-shadow: 0 5px 0 rgba(0, 0, 0, 0.25);
+}
+
+.boton-centro:active { transform: translateY(4px); box-shadow: 0 1px 0 rgba(0, 0, 0, 0.25); }
+
+/* ------------------- envoltura de los juegos clásicos ------------------- */
+
+.mini-envoltura--clasico { position: relative; }
+.volver--flotante { position: absolute; top: 6px; left: 12px; z-index: 5; }
+
+/* ============================ responsivo ============================= */
+
+@media (min-width: 620px) {
+  .botes--muchos { grid-template-columns: repeat(6, 1fr); }
+  .escena__obj { min-width: 52px; min-height: 52px; }
+}
+
+/* Teléfono acostado: hay mucho ancho y muy poco alto. La escena se
+   ensancha, la cruceta se encoge y las instrucciones caben en dos
+   columnas para que el botón de empezar no quede fuera de la vista. */
+@media (orientation: landscape) and (max-height: 560px) {
+  .escena { --arw: 16; --arh: 7; }
+  .cruceta { width: min(120px, 24dvh); }
+  .cultivo__cielo { min-height: 64px; }
+  .dificultades { max-width: 560px; }
+  .mini__figura { height: clamp(70px, 18dvh, 120px); }
+  .mini--intro h2 { font-size: clamp(17px, 4vw, 22px); margin: 0; }
+  .jm__estrellas { font-size: 24px; }
+  .jm__desglose li { padding: 4px 12px; font-size: 13px; }
+  .quiz__escena { padding: 8px 12px; }
+  .quiz__icono { font-size: clamp(26px, 6vw, 36px); }
+}
+
+@media (min-width: 900px) {
+  .juego--mini {
+    width: min(760px, 100%);
+    height: min(86dvh, 840px);
+    margin-inline: auto;
+    border: 4px solid var(--contorno);
+    border-radius: 24px;
+    box-shadow: 0 12px 0 rgba(0, 0, 0, 0.16);
+    background: var(--consola);
+  }
+
+  .centro { min-height: auto; width: min(900px, 100%); margin-inline: auto; }
+}
+
+/* Respeta la preferencia de menos animación que ya tenía el proyecto. */
+@media (prefers-reduced-motion: reduce) {
+  .escena__obj:hover { transform: translate(-50%, -50%); }
+  .cultivo__planta { transition: none; }
+}

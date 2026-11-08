@@ -2,7 +2,6 @@
    equipo, respuestas en cola cuando no hay internet, y el botón «Mi grupo» solo si hay base de datos. */
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { render, screen, fireEvent, cleanup, waitFor } from "@testing-library/react";
-import React from "react";
 import App from "../src/App.jsx";
 import { leerProgreso, registrarMinijuego, usarCuenta, borrarProgreso } from "../src/lib/progreso.js";
 import {
