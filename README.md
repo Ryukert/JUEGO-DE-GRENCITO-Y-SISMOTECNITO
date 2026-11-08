@@ -702,7 +702,8 @@ npm test
 ```
 
 Las dos corren antes de cada publicación (Vercel y GitHub Actions); con un error o un
-aviso de ESLint no se publica. Se necesita Node 22 (`engines` en `package.json`).
+aviso de ESLint no se publica. Se necesita Node 22.13 o más nuevo; Vercel usa la versión de
+*Project Settings* (24.x) y GitHub Actions la misma.
 
 290 pruebas. Monta los 46 minijuegos del catálogo, juega hasta el final los seis
 jefes de simulación, comprueba que los indicadores nunca se salen de 0 a 100,
