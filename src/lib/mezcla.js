@@ -5,11 +5,32 @@
  * Regla: el progreso solo sube. Récords, XP y monedas se quedan con el mayor; insignias,
  * logros y dificultades superadas se juntan. Si un alumno jugó sin internet en dos equipos
  * a la vez, se conserva lo mejor de cada uno (la XP no se suma: gana la más alta).
+ *
+ * Repaso: `repaso.fallos[clave]` cuenta cuántas veces se falló una pregunta de misión y
+ * `repaso.dominadas[clave]` cuántos de esos fallos ya se corrigieron. Las dos solo suben, así
+ * que también se combinan con el mayor. Clave: «personaje:reto» o «personaje:reto:b» (bonificación).
  */
 
 const MAXIMO = 10_000_000;
 const ID = /^[a-z0-9-]{1,40}$/;
 const TEXTO_CORTO = 80;
+const CLAVE_REPASO = /^(sismo|green):[a-z0-9]{1,10}(:b)?$/;
+const FECHA_ISO = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(\.\d{1,3})?Z$/;
+const fecha = (v) => (typeof v === "string" && FECHA_ISO.test(v) ? v : null);
+const mayorFecha = (a, b) => (a && b ? (a > b ? a : b) : a || b || null);
+
+/** { clave: número } con claves de repaso válidas (máximo 300). */
+const contadores = (obj) => {
+  const r = {};
+  if (!obj || typeof obj !== "object" || Array.isArray(obj)) return r;
+  for (const [k, v] of Object.entries(obj).slice(0, 300)) if (CLAVE_REPASO.test(k) && numero(v) > 0) r[k] = Math.min(numero(v), 10_000);
+  return r;
+};
+const juntarContadores = (a, b) => {
+  const r = { ...a };
+  for (const [k, v] of Object.entries(b)) r[k] = Math.max(r[k] || 0, v);
+  return r;
+};
 
 const numero = (v) => {
   const n = Math.floor(Number(v));
@@ -35,8 +56,10 @@ export function limpiarProgreso(crudo) {
       partidas: numero(j.partidas),
       mejorPrecision: Math.min(100, numero(j.mejorPrecision)),
       dificultades: textos(j.dificultades, 10),
+      ...(fecha(j.jugadoEn) ? { jugadoEn: fecha(j.jugadoEn) } : {}),
     };
   }
+  const repaso = c.repaso && typeof c.repaso === "object" ? c.repaso : {};
   return {
     version: 2,
     grado: c.grado === "primaria" || c.grado === "secundaria" ? c.grado : null,
@@ -48,6 +71,7 @@ export function limpiarProgreso(crudo) {
     semillas: numero(c.semillas),
     juegos,
     logros: textos(c.logros),
+    repaso: { fallos: contadores(repaso.fallos), dominadas: contadores(repaso.dominadas) },
   };
 }
 
@@ -64,6 +88,7 @@ export function mezclarProgreso(viejo, nuevo) {
           partidas: Math.max(antes.partidas, j.partidas),
           mejorPrecision: Math.max(antes.mejorPrecision, j.mejorPrecision),
           dificultades: juntar(antes.dificultades, j.dificultades, 10),
+          ...(mayorFecha(antes.jugadoEn, j.jugadoEn) ? { jugadoEn: mayorFecha(antes.jugadoEn, j.jugadoEn) } : {}),
         }
       : j;
   }
@@ -81,5 +106,9 @@ export function mezclarProgreso(viejo, nuevo) {
     semillas: Math.max(a.semillas, b.semillas),
     juegos,
     logros: juntar(a.logros, b.logros),
+    repaso: {
+      fallos: juntarContadores(a.repaso.fallos, b.repaso.fallos),
+      dominadas: juntarContadores(a.repaso.dominadas, b.repaso.dominadas),
+    },
   };
 }

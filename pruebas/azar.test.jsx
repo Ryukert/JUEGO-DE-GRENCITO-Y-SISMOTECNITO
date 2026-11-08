@@ -91,7 +91,8 @@ describe("todo sale al azar", () => {
     const tinaco = new Set();
     for (let i = 0; i < 30; i++) {
       montar("energia-solar");
-      const celdas = [...document.querySelectorAll(".terreno__celda")].map((c) => c.getAttribute("aria-label"));
+      // la etiqueta dice «Fila f, columna c: terreno…»; aquí solo importa el terreno
+      const celdas = [...document.querySelectorAll(".terreno__celda")].map((c) => c.getAttribute("aria-label").replace(/^Fila \d+, columna \d+: /, ""));
       celdas.slice(0, 5).forEach((n) => expect(n).toMatch(/norte/));
       tinaco.add(celdas.findIndex((n) => n === "Tinaco"));
       cleanup();

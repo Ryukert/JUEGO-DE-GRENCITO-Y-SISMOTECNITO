@@ -23,7 +23,7 @@ const MALA = RETO.opciones.find((o) => !o.ok).texto;
 
 /* ---------------- Supabase de mentiras ---------------- */
 let tablas;
-const UNICOS = { grupos: [["codigo"]], alumnos: [["grupo_id", "apodo_normal"]], progreso: [["alumno_id"]], evaluaciones: [["alumno_id", "fecha"]] };
+const UNICOS = { grupos: [["codigo"]], alumnos: [["grupo_id", "apodo_normal"]], progreso: [["alumno_id"]], evaluaciones: [["alumno_id", "fecha"]], tareas: [["grupo_id"]] };
 
 function filtrar(filas, params) {
   return filas.filter((f) =>
@@ -48,13 +48,14 @@ function supabaseFalso(url, op = {}) {
   const ok = (datos, status = 200) => ({ ok: true, status, text: async () => (datos === undefined ? "" : JSON.stringify(datos)) });
   const error = (status, code) => ({ ok: false, status, text: async () => JSON.stringify({ code, message: "error " + code }) });
   if (op.headers?.apikey !== "sb_secret_prueba") return error(401, "PGRST301");
+  if (!(tabla in tablas)) return error(404, "PGRST205");   // como Supabase: la tabla no existe
 
   if (metodo === "GET") return ok(filtrar(tablas[tabla], u.searchParams).map((f) => incrustar(tabla, f, u.searchParams.get("select"))));
   if (metodo === "POST") {
     const nuevas = [];
     for (const fila of Array.isArray(cuerpo) ? cuerpo : [cuerpo]) {
       const completa = { id: tabla === "respuestas" ? tablas[tabla].length + 1 : randomUUID(), creado_en: new Date().toISOString(), ultima_vez: new Date().toISOString(), ...fila };
-      if (tabla === "progreso") delete completa.id;
+      if (tabla === "progreso" || tabla === "tareas") delete completa.id;
       if (tabla === "evaluaciones" || tabla === "encuestas") completa.id = tablas[tabla].length + 1;
       if (choca(tabla, completa)) {
         if (!prefer.includes("merge-duplicates")) return error(409, "23505");
@@ -104,7 +105,7 @@ const llamar = async (api, cuerpo, op) => { const res = respuesta(); await api(p
 const ENV = { SUPABASE_URL: "https://falso.supabase.co", SUPABASE_SECRET_KEY: "sb_secret_prueba", JUEGO_SECRETO: "x".repeat(40) };
 
 beforeEach(() => {
-  tablas = { grupos: [], alumnos: [], progreso: [], respuestas: [], evaluaciones: [], encuestas: [] };
+  tablas = { grupos: [], alumnos: [], progreso: [], respuestas: [], evaluaciones: [], encuestas: [], tareas: [] };
   reiniciarMemoria();
   Object.assign(process.env, ENV);
   for (const k of ["UPSTASH_REDIS_REST_URL", "UPSTASH_REDIS_REST_TOKEN", "SUPABASE_SERVICE_ROLE_KEY"]) delete process.env[k];
@@ -185,7 +186,7 @@ describe("alumnos", () => {
     expect(r.statusCode).toBe(200);
     const d = r.json();
     expect(d.alumno).toMatchObject({ apodo: "Ana", avatar: "green" });
-    expect(d.grupo).toEqual({ codigo: grupo.codigo, nombre: "5° B", grado: "secundaria" });
+    expect(d.grupo).toEqual({ codigo: grupo.codigo, nombre: "5° B", grado: "secundaria", tarea: null });
     expect(d.progreso.grado).toBe("secundaria");
     expect(JSON.stringify(tablas)).not.toContain("1234");
     expect(JSON.stringify(tablas)).not.toContain("maestra123");
@@ -583,5 +584,83 @@ describe("resumen para las gráficas", () => {
     expect(r.fueraDeCatalogo).toBe(1);
     expect(resumir(filas, { grado: "primaria" }).juegos).toHaveLength(1);
     expect(rellenarDias(r.dias).map((d) => d.total)).toEqual([4, 0, 2]);
+  });
+});
+
+describe("tarea del maestro y avance por tema", () => {
+  const RETO_VAR = PERSONAJES.sismo.misiones.find((m) => m.id === "s1").variantes[0];
+  const BUENA_VAR = RETO_VAR.opciones.find((o) => o.ok).texto;
+
+  it("el maestro pone una tarea, el alumno la ve y cuenta cuando juega después", async () => {
+    const { grupo, pase } = await grupoNuevo();
+    const { pase: paseAna } = (await registrar(grupo.codigo)).json();
+    const puesta = await llamar(grupoApi, { accion: "tarea", juegos: ["clasifica-basura", "energia-solar"], nota: "  Para   el viernes " }, { pase });
+    expect(puesta.statusCode).toBe(200);
+    expect(puesta.json().tarea).toMatchObject({ juegos: ["clasifica-basura", "energia-solar"], nota: "Para el viernes" });
+    const desde = puesta.json().tarea.desde;
+
+    // el alumno la recibe con los datos de su grupo
+    const leido = await llamar(progresoApi, undefined, { metodo: "GET", pase: paseAna });
+    expect(leido.json().grupo.tarea).toMatchObject({ juegos: ["clasifica-basura", "energia-solar"], desde });
+
+    // jugó uno antes de la tarea (no cuenta) y otro después (sí cuenta)
+    const antes = new Date(Date.parse(desde) - 60_000).toISOString();
+    const despues = new Date(Date.parse(desde) + 60_000).toISOString();
+    await llamar(progresoApi, { progreso: { juegos: {
+      "clasifica-basura": { record: 10, partidas: 1, jugadoEn: antes },
+      "energia-solar": { record: 20, partidas: 1, jugadoEn: despues },
+    } } }, { metodo: "PUT", pase: paseAna });
+    const panel = (await llamar(grupoApi, undefined, { metodo: "GET", pase })).json();
+    expect(panel.tarea.juegos).toHaveLength(2);
+    expect(panel.alumnos[0].tarea).toEqual({ hechos: 1, total: 2 });
+
+    // al quitarla, ya no aparece
+    expect((await llamar(grupoApi, { accion: "quitarTarea" }, { pase })).statusCode).toBe(200);
+    expect((await llamar(grupoApi, undefined, { metodo: "GET", pase })).json().tarea).toBeNull();
+  });
+
+  it("valida la tarea, y solo el maestro de ese grupo la cambia", async () => {
+    const { grupo, pase } = await grupoNuevo();
+    const { pase: paseAna } = (await registrar(grupo.codigo)).json();
+    const seis = ["a", "b", "c", "d", "e", "f"];
+    expect((await llamar(grupoApi, { accion: "tarea", juegos: seis }, { pase })).statusCode).toBe(400);
+    expect((await llamar(grupoApi, { accion: "tarea", juegos: [] }, { pase })).statusCode).toBe(400);
+    expect((await llamar(grupoApi, { accion: "tarea", juegos: ["<script>"] }, { pase })).statusCode).toBe(400);
+    expect((await llamar(grupoApi, { accion: "tarea", juegos: ["memorama"], nota: "x".repeat(141) }, { pase })).statusCode).toBe(400);
+    expect((await llamar(grupoApi, { accion: "tarea", juegos: ["memorama"] }, { pase: paseAna })).statusCode).toBe(401);
+    expect((await llamar(grupoApi, { accion: "tarea", juegos: ["memorama"] })).statusCode).toBe(401);
+    expect(tablas.tareas).toHaveLength(0);
+  });
+
+  it("si la tabla de tareas todavía no existe, el panel sigue y poner una tarea avisa", async () => {
+    delete tablas.tareas;
+    const { grupo, pase } = await grupoNuevo();
+    await registrar(grupo.codigo);
+    const panel = await llamar(grupoApi, undefined, { metodo: "GET", pase });
+    expect(panel.statusCode).toBe(200);
+    expect(panel.json().tarea).toBeNull();
+    const r = await llamar(grupoApi, { accion: "tarea", juegos: ["memorama"] }, { pase });
+    expect(r.statusCode).toBe(503);
+    expect(r.json().error).toMatch(/todavía no están activadas/);
+  });
+
+  it("califica las variantes de los retos y las junta por tema en el panel", async () => {
+    const { grupo, pase } = await grupoNuevo();
+    const { pase: paseAna } = (await registrar(grupo.codigo)).json();
+    const base = { personaje: "sismo", grado: "primaria" };
+    await llamar(progresoApi, { respuestas: [
+      { ...base, mision: "s1", eleccion: PERSONAJES.sismo.misiones[0].opciones.find((o) => o.ok).texto },
+      { ...base, mision: RETO_VAR.id, eleccion: BUENA_VAR },
+      { ...base, mision: RETO_VAR.id, eleccion: null },
+      { ...base, mision: "s3c", eleccion: "Dejarlo así: nunca se ha caído" },
+    ] }, { metodo: "PUT", pase: paseAna });
+    expect(tablas.respuestas.map((f) => [f.mision, f.correcta])).toEqual([["s1", true], [RETO_VAR.id, true], [RETO_VAR.id, false], ["s3c", false]]);
+    const d = (await llamar(grupoApi, undefined, { metodo: "GET", pase })).json();
+    expect(d.temas).toEqual([
+      { personaje: "sismo", tema: "El salón se mueve", total: 3, aciertos: 2 },
+      { personaje: "sismo", tema: "La mochila que salva", total: 1, aciertos: 0 },
+    ]);
+    // la pregunta de la variante sale con su propio título y escenario
+    expect(d.preguntas.find((q) => q.mision === RETO_VAR.id)).toMatchObject({ titulo: RETO_VAR.titulo, pregunta: RETO_VAR.escenario });
   });
 });

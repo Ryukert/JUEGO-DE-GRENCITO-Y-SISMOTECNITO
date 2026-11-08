@@ -6,6 +6,7 @@ import { revolver } from "../lib/azar.js";
 import Icono from "./Icono.jsx";
 import Reloj from "./Reloj.jsx";
 import { anotarRespuesta } from "../lib/cuenta.js";
+import { registrarRespuesta } from "../lib/progreso.js";
 import { Escuchar } from "../juegos/ui/Marco.jsx";
 
 export default function Reto({
@@ -13,6 +14,8 @@ export default function Reto({
   grado,
   mision,
   racha,
+  esBonificacion = false,   // en el repaso: esta pregunta era la de bonificación de su reto
+  textoSeguir = "Siguiente misión",
   onPuntos,
   onFallo,
   onFin,
@@ -89,6 +92,10 @@ export default function Reto({
       sonido.mal();
     }
 
+    // para el repaso: fallar la deja pendiente; acertar la quita
+    const comoBono = enBono || esBonificacion;
+    registrarRespuesta({ personaje: p.id, mision: mision.id, bono: comoBono, correcto });
+
     setMensajes((m) => [
       ...m,
       { de: "yo", texto: elegido },
@@ -106,7 +113,7 @@ export default function Reto({
     else onFallo();
 
     // para el panel del maestro (solo si el alumno entró a un grupo; el servidor califica)
-    anotarRespuesta({ personaje: p.id, grado, mision: mision.id, bono: enBono, eleccion: opcion ? opcion.texto : null });
+    anotarRespuesta({ personaje: p.id, grado, mision: mision.id, bono: comoBono, eleccion: opcion ? opcion.texto : null });
 
     setEtapa(enBono ? "bonoResultado" : "resultado");
   }
@@ -204,7 +211,7 @@ export default function Reto({
               {etapa === "resultado" && hayBono ? (
                 <>Pregunta de bonificación <Icono nombre="estrella" /></>
               ) : (
-                <>Siguiente misión <Icono nombre="siguiente" /></>
+                <>{textoSeguir} <Icono nombre="siguiente" /></>
               )}
             </button>
           </div>

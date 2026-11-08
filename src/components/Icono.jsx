@@ -159,7 +159,8 @@ export function Vidas({ vidas, max, className = "", children }) {
   const quedan = Math.max(0, vidas);
   const perdidas = Math.max(0, (max ?? vidas) - quedan);
   return (
-    <span className={`vidas ${className}`.trim()} aria-label={`${quedan} vidas`}>
+    <span className={`vidas ${className}`.trim()}>
+      <span className="visualmente-oculto">{quedan === 1 ? "1 vida" : `${quedan} vidas`}</span>
       {Array.from({ length: quedan }, (_, i) => (
         <Icono key={`l${i}`} nombre="corazon" className="vida vida--llena" />
       ))}

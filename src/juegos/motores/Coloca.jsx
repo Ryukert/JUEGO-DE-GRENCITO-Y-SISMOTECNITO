@@ -33,6 +33,9 @@ export default function Coloca({ juego, personaje, dif, onTerminar, onSalir }) {
 
   const [puestos, setPuestos] = useState([]);
   const [fase, setFase] = useState("colocando"); // colocando | resultado
+  // teclado: una sola casilla está en el orden de Tab; las flechas mueven el foco (roving tabindex)
+  const [foco, setFoco] = useState({ f: 0, c: 0 });
+  const tablero = useRef(null);
   const [resumen, setResumen] = useState(null);
   const cerrado = useRef(false);
 
@@ -134,6 +137,17 @@ export default function Coloca({ juego, personaje, dif, onTerminar, onSalir }) {
 
   const produccion = calcular(puestos);
 
+  function moverFoco(e) {
+    const pasos = { ArrowUp: [-1, 0], ArrowDown: [1, 0], ArrowLeft: [0, -1], ArrowRight: [0, 1], Home: [0, -99], End: [0, 99] };
+    const paso = pasos[e.key];
+    if (!paso) return;
+    e.preventDefault();
+    const f = Math.min(filas - 1, Math.max(0, foco.f + paso[0]));
+    const c = Math.min(columnas - 1, Math.max(0, foco.c + paso[1]));
+    setFoco({ f, c });
+    tablero.current?.querySelector(`[data-celda="${f}-${c}"]`)?.focus();
+  }
+
   return (
     <div className="mini mini--coloca">
       <MarcoJuego
@@ -158,8 +172,10 @@ export default function Coloca({ juego, personaje, dif, onTerminar, onSalir }) {
         <div
           className="terreno tablero-ajustable"
           style={{ "--columnas": columnas, "--filas": filas }}
-          role="grid"
-          aria-label={`Terreno de ${filas} por ${columnas}`}
+          ref={tablero}
+          role="group"
+          aria-label={`Terreno de ${filas} filas por ${columnas} columnas. Muévete con las flechas y coloca con Enter.`}
+          onKeyDown={moverFoco}
         >
         {datos.mapa.map((fila, f) =>
           fila.map((clave, c) => {
@@ -168,11 +184,15 @@ export default function Coloca({ juego, personaje, dif, onTerminar, onSalir }) {
             return (
               <button
                 key={`${f}-${c}`}
+                data-celda={`${f}-${c}`}
+                tabIndex={foco.f === f && foco.c === c ? 0 : -1}
+                onFocus={() => setFoco({ f, c })}
                 className={`terreno__celda ${puesto ? "terreno__celda--puesto" : ""}`}
                 style={{ background: t.color }}
                 onClick={() => poner(f, c)}
                 disabled={fase !== "colocando"}
-                aria-label={`${t.nombre}${puesto ? `, con ${datos.nombreUnidad}` : ""}`}
+                aria-label={`Fila ${f + 1}, columna ${c + 1}: ${t.nombre}${muestraPistas && t.rinde > 0 ? `, rinde ${t.rinde}%` : ""}${puesto ? `, con ${datos.nombreUnidad}` : ""}`}
+                aria-pressed={puesto}
                 title={muestraPistas ? t.nombre : undefined}
               >
                 <span aria-hidden="true">{puesto ? datos.unidad : t.icono}</span>
@@ -198,7 +218,7 @@ export default function Coloca({ juego, personaje, dif, onTerminar, onSalir }) {
               : "Poner en marcha ⚡"}
           </button>
           <p className="mini__texto mini__texto--chico coloca__ayuda">
-            Toca una casilla para colocar y vuelve a tocarla para quitar.
+            Toca una casilla para colocar y vuelve a tocarla para quitar. Con teclado: flechas y Enter.
           </p>
         </div>
       ) : (

@@ -296,6 +296,11 @@ export const cambiarPin = (alumno, pin) =>
   comoMaestro((pase) => api("/api/grupo", { metodo: "POST", pase, cuerpo: { accion: "pin", alumno, pin } }));
 export const quitarAlumno = (alumno) =>
   comoMaestro((pase) => api("/api/grupo", { metodo: "POST", pase, cuerpo: { accion: "quitar", alumno } }));
+/** Tarea del grupo: hasta 5 minijuegos del Centro y una nota. */
+export const ponerTarea = (juegos, nota = "") =>
+  comoMaestro((pase) => api("/api/grupo", { metodo: "POST", pase, cuerpo: { accion: "tarea", juegos, nota } }));
+export const borrarTarea = () =>
+  comoMaestro((pase) => api("/api/grupo", { metodo: "POST", pase, cuerpo: { accion: "quitarTarea" } }));
 
 /** Solo para pruebas. */
 export function reiniciarCuenta() {

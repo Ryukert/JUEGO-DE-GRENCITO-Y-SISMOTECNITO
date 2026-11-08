@@ -1,4 +1,4 @@
-import { useState, useMemo, useRef } from "react";
+import { useState, useMemo, useRef, useEffect } from "react";
 import { CLASIFICACIONES } from "../../data/juegos/clasificacion.js";
 import { segundos, cuantasRondas } from "../../lib/dificultad.js";
 import { construirResultado, puntosAcierto } from "../../lib/recompensas.js";
@@ -185,6 +185,21 @@ export default function Clasifica({ juego, personaje, dif, onTerminar, onSalir }
     if (bote) resolver(bote);
   }
 
+  // teclado: 1, 2, 3… mandan el residuo al contenedor con ese número
+  useEffect(() => {
+    if (!jugando) return undefined;
+    const alTeclear = (e) => {
+      if (e.ctrlKey || e.metaKey || e.altKey || e.target?.tagName === "INPUT") return;
+      const n = Number(e.key);
+      if (Number.isInteger(n) && n >= 1 && n <= contenedores.length) {
+        e.preventDefault();
+        resolver(contenedores[n - 1].id);
+      }
+    };
+    document.addEventListener("keydown", alTeclear);
+    return () => document.removeEventListener("keydown", alTeclear);
+  });
+
   if (!actual || !datos) return null;
 
   return (
@@ -227,7 +242,13 @@ export default function Clasifica({ juego, personaje, dif, onTerminar, onSalir }
         </div>
       ) : (
         <>
-          <p className="clasifica__pista">{datos.pista} Arrástralo o toca el contenedor.</p>
+          <p className="clasifica__pista">
+            {datos.pista} Arrástralo, toca el contenedor o usa las teclas 1 a {contenedores.length}.
+          </p>
+          {/* para lectores de pantalla: cada residuo nuevo se anuncia */}
+          <p className="visualmente-oculto" aria-live="polite">
+            {`${indice + 1} de ${cola.length}: ${actual.nombre}. ¿En qué contenedor va?`}
+          </p>
 
           <div className="clasifica__zona">
             <div
@@ -237,6 +258,7 @@ export default function Clasifica({ juego, personaje, dif, onTerminar, onSalir }
               onPointerMove={alMover}
               onPointerUp={alSoltar}
               onPointerCancel={alSoltar}
+              aria-hidden="true"
             >
               <span className="residuo__icono" aria-hidden="true">
                 {actual.icono}
@@ -246,15 +268,17 @@ export default function Clasifica({ juego, personaje, dif, onTerminar, onSalir }
           </div>
 
           <div className={`botes botes--${contenedores.length > 3 ? "muchos" : "pocos"}`}>
-            {contenedores.map((c) => (
+            {contenedores.map((c, i) => (
               <button
                 key={c.id}
                 data-bote={c.id}
+                aria-keyshortcuts={String(i + 1)}
                 className={`bote bote--boton ${resaltado === c.id ? "bote--resaltado" : ""}`}
                 style={{ borderColor: c.color }}
                 onClick={() => resolver(c.id)}
                 aria-label={`Mandar ${actual.nombre} a ${c.nombre}`}
               >
+                <kbd className="bote__tecla" aria-hidden="true">{i + 1}</kbd>
                 <span className="bote__icono" aria-hidden="true">
                   {c.icono}
                 </span>

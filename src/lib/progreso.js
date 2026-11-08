@@ -32,11 +32,14 @@ const VACIO = {
   xp: 0,
   escudos: 0,
   semillas: 0,
-  juegos: {}, // id → { record, partidas, mejorPrecision, dificultades: [] }
+  juegos: {}, // id → { record, partidas, mejorPrecision, dificultades: [], jugadoEn }
   logros: [],
+  repaso: { fallos: {}, dominadas: {} }, // preguntas de misión falladas (src/lib/repaso.js)
 };
 
-let memoria = { ...VACIO, records: { ...VACIO.records }, juegos: {} };
+const repasoVacio = () => ({ fallos: {}, dominadas: {} });
+
+let memoria = { ...VACIO, records: { ...VACIO.records }, juegos: {}, repaso: repasoVacio() };
 let cargado = false;
 
 function normalizar(crudo) {
@@ -45,6 +48,10 @@ function normalizar(crudo) {
   base.juegos = { ...(crudo.juegos || {}) };
   base.insignias = Array.isArray(crudo.insignias) ? crudo.insignias : [];
   base.logros = Array.isArray(crudo.logros) ? crudo.logros : [];
+  base.repaso = {
+    fallos: { ...(crudo.repaso?.fallos || {}) },
+    dominadas: { ...(crudo.repaso?.dominadas || {}) },
+  };
   base.version = 2;
   return base;
 }
@@ -86,7 +93,7 @@ export function alCambiar(fn) {
 /** Cambia a la copia de un alumno (id) o a la de quien juega sin cuenta (null). */
 export function usarCuenta(id) {
   LLAVE = id ? `${LLAVE_INVITADO}:${id}` : LLAVE_INVITADO;
-  memoria = { ...VACIO, records: { ...VACIO.records }, juegos: {} };
+  memoria = { ...VACIO, records: { ...VACIO.records }, juegos: {}, repaso: repasoVacio() };
   cargado = false;
   return leerProgreso();
 }
@@ -101,7 +108,12 @@ export function mezclarDesdeServidor(datos, { avisar = false } = {}) {
 
 /** Copia nueva, para que React note el cambio de estado. */
 function instantanea() {
-  return { ...memoria, records: { ...memoria.records }, juegos: { ...memoria.juegos } };
+  return {
+    ...memoria,
+    records: { ...memoria.records },
+    juegos: { ...memoria.juegos },
+    repaso: { fallos: { ...memoria.repaso.fallos }, dominadas: { ...memoria.repaso.dominadas } },
+  };
 }
 
 export function guardarGrado(grado) {
@@ -146,6 +158,7 @@ export function registrarMinijuego(idJuego, resultado) {
     partidas: antes.partidas + 1,
     mejorPrecision: Math.max(antes.mejorPrecision, resultado.accuracy || 0),
     dificultades,
+    jugadoEn: new Date().toISOString(),   // para saber si ya cumplió la tarea del maestro
   };
 
   memoria.xp += Math.max(0, resultado.xp || 0);
@@ -154,6 +167,24 @@ export function registrarMinijuego(idJuego, resultado) {
 
   guardar();
   return { nuevoRecord, recordAnterior: antes.record, progreso: instantanea() };
+}
+
+/**
+ * Anota una respuesta de misión para el repaso. Fallar suma un pendiente; acertar marca como
+ * dominados todos los fallos que llevaba esa pregunta (sale del repaso hasta que se vuelva a fallar).
+ */
+export function registrarRespuesta({ personaje, mision, bono = false, correcto }) {
+  leerProgreso();
+  const clave = `${personaje}:${mision}${bono ? ":b" : ""}`;
+  const { fallos, dominadas } = memoria.repaso;
+  if (correcto) {
+    if (!fallos[clave] || (dominadas[clave] || 0) >= fallos[clave]) return instantanea();
+    dominadas[clave] = fallos[clave];
+  } else {
+    fallos[clave] = (fallos[clave] || 0) + 1;
+  }
+  guardar();
+  return instantanea();
 }
 
 export function registrarLogro(id) {
@@ -169,7 +200,7 @@ export function recordDeJuego(progreso, idJuego) {
 }
 
 export function borrarProgreso() {
-  memoria = { ...VACIO, records: { ...VACIO.records }, juegos: {} };
+  memoria = { ...VACIO, records: { ...VACIO.records }, juegos: {}, repaso: repasoVacio() };
   cargado = true;
   try {
     localStorage.removeItem(LLAVE);

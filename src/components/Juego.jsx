@@ -9,6 +9,7 @@ export default function Juego({
   personaje: p,
   grado,
   mision,
+  misiones = p.misiones,   // las de esta partida (App las arma con variantes)
   nivel,
   puntos,
   vidas,
@@ -33,7 +34,7 @@ export default function Juego({
           {GRADOS[grado].nombre} · {p.nombre}
         </p>
         <ol className="mesa__misiones">
-          {p.misiones.map((m, i) => (
+          {misiones.map((m, i) => (
             <li key={m.id} className={i < nivel ? "hecha" : i === nivel ? "actual" : ""}>
               <span className="mesa__marca" aria-hidden="true">
                 {i < nivel ? <Icono nombre="bien" /> : m.tipo === "minijuego" ? <Icono nombre="rayo" /> : i + 1}
@@ -102,7 +103,7 @@ export default function Juego({
 
       <div className="barra">
         <div className="barra__pasos" aria-hidden="true">
-          {p.misiones.map((m, i) => (
+          {misiones.map((m, i) => (
             <span
               key={m.id}
               className={`paso ${i < nivel ? "paso--hecho" : ""} ${i === nivel ? "paso--on" : ""}`}
@@ -111,7 +112,7 @@ export default function Juego({
         </div>
         <span className="barra__texto">
           {mision.tipo === "minijuego" && <Icono nombre="rayo" />}
-          {nivel + 1}/{p.misiones.length} · {mision.titulo}
+          {nivel + 1}/{misiones.length} · {mision.titulo}
         </span>
       </div>
 

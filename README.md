@@ -338,6 +338,26 @@ sonido se puede silenciar desde el altavoz del HUD y la preferencia se guarda.
 
 ---
 
+## Juego y maestros
+
+- **Variantes de los retos.** Cada reto de misión (`s1`, `s3`, `s5`, `g1`, `g3`, `g5`) tiene
+  `variantes` en `src/data/personajes.js`: otras situaciones del mismo tema, con su propio id
+  (máximo 10 caracteres) y su pregunta de bonificación. `armarPartida` elige una al azar en
+  cada reto; `buscarReto` encuentra originales y variantes (lo usa el servidor para calificar).
+  La insignia es siempre la del reto original.
+- **Repaso.** `registrarRespuesta` (en `src/lib/progreso.js`) cuenta los fallos y los
+  aciertos de cada pregunta de misión; `src/lib/repaso.js` arma la lista de pendientes y
+  `src/pages/Repaso.jsx` las pone de 5 en 5, de la más fallada a la menos.
+- **Tarea del maestro.** Tabla `tareas` (una por grupo, hasta 5 minijuegos y una nota). La
+  ponen y quitan `POST /api/grupo { accion: "tarea" | "quitarTarea" }`; el alumno la recibe con
+  los datos de su grupo. Cuenta como hecho cada minijuego jugado después de ponerla
+  (`juegos[id].jugadoEn`). Si la tabla no existe todavía, el panel sigue funcionando.
+- **Panel del maestro:** avance por tema y PDF (`src/lib/pdfGrupo.js`).
+- **Errores en producción:** `src/lib/errores.js` + `api/error.js` → registro de Vercel
+  (Logs). Máximo 5 avisos por visita, 30 cada 10 minutos por IP y 2,000 al día.
+- **Accesibilidad:** `pruebas/accesibilidad.test.jsx` corre axe-core sobre las pantallas
+  principales y prueba los juegos de arrastrar solo con el teclado.
+
 ## Velocidad
 
 - **Minijuegos diferidos.** Cada uno de los 13 motores (con su contenido) viaja en su propio
@@ -704,7 +724,7 @@ Las dos corren antes de cada publicación (Vercel y GitHub Actions); con un erro
 aviso de ESLint no se publica. Se necesita Node 22.13 o más nuevo; Vercel usa la versión de
 *Project Settings* (24.x) y GitHub Actions la misma.
 
-291 pruebas. Monta los 46 minijuegos del catálogo, juega hasta el final los seis
+321 pruebas. Monta los 46 minijuegos del catálogo, juega hasta el final los seis
 jefes de simulación, comprueba que los indicadores nunca se salen de 0 a 100,
 que el presupuesto no se va a negativos, que todas las palabras listadas en la
 sopa de letras están de verdad en el tablero, que el rompecabezas siempre

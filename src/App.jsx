@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef, useCallback } from "react";
-import { PERSONAJES, GRADOS } from "./data/personajes.js";
+import { PERSONAJES, GRADOS, armarPartida } from "./data/personajes.js";
 import Portada from "./components/Portada.jsx";
 import Juego from "./components/Juego.jsx";
 import Final from "./components/Final.jsx";
@@ -16,6 +16,7 @@ import { leerPreferencias, guardarPreferencia, aplicarPreferencias } from "./lib
 import { useAtajos } from "./lib/atajos.js";
 import Cuenta from "./components/Cuenta.jsx";
 import Maestro from "./pages/Maestro.jsx";
+import Repaso from "./pages/Repaso.jsx";
 import QuienJuega from "./components/QuienJuega.jsx";
 import {
   jugadorActual, listarJugadores, alCambiarJugador, yaSePregunto, marcarPreguntado as marcarQuienPreguntado,
@@ -29,7 +30,7 @@ import {
 } from "./lib/cuenta.js";
 
 /* Pantalla a la que lleva el botón «atrás» del navegador o del teléfono. */
-const ARRIBA = { minijuego: "centro", centro: "inicio", logros: "inicio", tutorial: "inicio", juego: "inicio", caido: "inicio", fin: "inicio", maestro: "inicio" };
+const ARRIBA = { minijuego: "centro", centro: "inicio", logros: "inicio", tutorial: "inicio", juego: "inicio", caido: "inicio", fin: "inicio", maestro: "inicio", repaso: "inicio" };
 
 export default function App() {
   // la cuenta del alumno (si hay) se recupera antes de leer el progreso: así se abre el suyo
@@ -48,6 +49,8 @@ export default function App() {
   const [quien, setQuien] = useState(null);
   const [grado, setGrado] = useState(progreso.grado || "primaria");
   const [nivel, setNivel] = useState(0);
+  // las misiones de esta partida: en cada reto, el original o una variante al azar
+  const [misiones, setMisiones] = useState([]);
   const [puntos, setPuntos] = useState(0);
   const [vidas, setVidas] = useState(3);
   const [racha, setRacha] = useState(0);
@@ -69,7 +72,7 @@ export default function App() {
     : juegoLibre
       ? PERSONAJES[juegoLibre.personaje]
       : null;
-  const mision = p ? p.misiones[Math.min(nivel, p.misiones.length - 1)] : null;
+  const mision = p && misiones.length ? misiones[Math.min(nivel, misiones.length - 1)] : null;
 
   const oscuro = tema === "oscuro";
 
@@ -234,6 +237,7 @@ export default function App() {
   function iniciar(id, gradoElegido) {
     const g = gradoElegido || grado;
     setQuien(id);
+    setMisiones(armarPartida(PERSONAJES[id]));
     setMinijuego(null);
     setGrado(g);
     guardarGrado(g);
@@ -278,15 +282,15 @@ export default function App() {
       return;
     }
 
-    setInsignias((b) => [...b, mision.titulo]);
+    setInsignias((b) => [...b, mision.insignia]);
 
     const siguiente = nivel + 1;
-    if (siguiente >= p.misiones.length) {
+    if (siguiente >= misiones.length) {
       const totalFinal = puntos + (resultado.puntos || 0);
       const r = registrarPartida({
         personaje: p.id,
         puntos: totalFinal,
-        insignias: [...insignias, mision.titulo],
+        insignias: [...insignias, mision.insignia],
       });
       setRecord(r);
       setProgreso(leerProgreso());
@@ -295,7 +299,7 @@ export default function App() {
     }
 
     setNivel(siguiente);
-    if (p.misiones[siguiente].tipo === "minijuego" || quien === "sismo") sacudir();
+    if (misiones[siguiente].tipo === "minijuego" || quien === "sismo") sacudir();
   }
 
   function reintentar() {
@@ -323,6 +327,13 @@ export default function App() {
   function abrirMinijuego(id) {
     setMinijuego(id);
     setPantalla("minijuego");
+  }
+
+  function abrirRepaso() {
+    sonido.clic();
+    setQuien(null);
+    setMinijuego(null);
+    setPantalla("repaso");
   }
 
   function abrirLogros() {
@@ -380,8 +391,12 @@ export default function App() {
         onQuien={cuenta ? null : abrirQuien}
         tema={tema}
         onTema={alternarTema}
+        onRepaso={abrirRepaso}
+        onJugar={abrirMinijuego}
       />
     );
+  } else if (pantalla === "repaso") {
+    vista = <Repaso grado={grado} onSalir={alInicio} onProgreso={setProgreso} />;
   } else if (pantalla === "maestro") {
     vista = <Maestro onSalir={alInicio} />;
   } else if (pantalla === "centro") {
@@ -456,6 +471,7 @@ export default function App() {
         personaje={p}
         grado={grado}
         mision={mision}
+        misiones={misiones}
         nivel={nivel}
         puntos={puntos}
         vidas={vidas}

@@ -14,8 +14,9 @@
 import { db, eq, configuracionDb } from "./_db.js";
 import { responderJson, quienEs, leerCuerpo, paseDe, secreto } from "./_comun.js";
 import { revisarEscrituras } from "./_limites.js";
+import { leerTarea } from "./_tareas.js";
 import { mezclarProgreso, limpiarProgreso } from "../src/lib/mezcla.js";
-import { PERSONAJES, GRADOS } from "../src/data/personajes.js";
+import { PERSONAJES, GRADOS, buscarReto } from "../src/data/personajes.js";
 
 const MAX_RESPUESTAS = 60;
 const tiene = (obj, k) => Object.prototype.hasOwnProperty.call(obj, k);
@@ -25,7 +26,7 @@ export function calificar(r) {
   if (!r || typeof r !== "object") return null;
   const p = tiene(PERSONAJES, r.personaje) ? PERSONAJES[r.personaje] : null;
   const grado = tiene(GRADOS, r.grado) ? r.grado : null;
-  const mision = p?.misiones.find((m) => m.id === r.mision && m.tipo === "reto");
+  const mision = buscarReto(p, r.mision);   // el original o una de sus variantes
   if (!p || !grado || !mision) return null;
   const bono = r.bono === true;
   if (bono && !(GRADOS[grado].retoExtra && mision.retoSecundaria)) return null;
@@ -59,7 +60,7 @@ export default async function handler(req, res) {
       return responderJson(res, 200, {
         progreso: antes,
         alumno: { id: alumno.id, apodo: alumno.apodo, avatar: alumno.avatar },
-        grupo: { codigo: g.codigo, nombre: g.nombre, grado: g.grado },
+        grupo: { codigo: g.codigo, nombre: g.nombre, grado: g.grado, tarea: await leerTarea(pase.g) },
       });
     }
 
