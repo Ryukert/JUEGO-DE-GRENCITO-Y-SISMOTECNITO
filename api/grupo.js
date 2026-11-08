@@ -14,7 +14,7 @@ import {
   responderJson, quienEs, leerCuerpo, secreto, crearPase, paseDe,
   resumirClave, claveCorrecta, pinValido, claveValida, nuevoCodigo, limpiarCodigo,
 } from "./_comun.js";
-import { revisarIntentos } from "./_limites.js";
+import { revisarIntentos, anotarFallo } from "./_limites.js";
 import { limpiarProgreso } from "../src/lib/mezcla.js";
 import { PERSONAJES, GRADOS } from "../src/data/personajes.js";
 import { PREGUNTAS as PREGUNTAS_EVAL, MINIMO_ANONIMO } from "../src/data/evaluacion.js";
@@ -171,7 +171,10 @@ export default async function handler(req, res) {
       if (!codigo || typeof d.clave !== "string") return mal(res, "Escribe el código del grupo y tu clave.");
       if (await revisarIntentos(ip, `maestro|${codigo}`)) return mal(res, "Demasiados intentos. Espera un rato.", 429);
       const [grupo] = await db(`grupos?codigo=${eq(codigo)}&select=id,codigo,nombre,grado,clave_maestro`);
-      if (!grupo || !claveCorrecta(d.clave, grupo.clave_maestro)) return mal(res, "Código o clave incorrectos.", 401);
+      if (!grupo || !claveCorrecta(d.clave, grupo.clave_maestro)) {
+        await anotarFallo(ip);
+        return mal(res, "Código o clave incorrectos.", 401);
+      }
       const { id, clave_maestro, ...publico } = grupo;
       return responderJson(res, 200, { pase: crearPase({ rol: "maestro", g: id }), grupo: publico });
     }

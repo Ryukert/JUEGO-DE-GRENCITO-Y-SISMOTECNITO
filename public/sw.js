@@ -6,10 +6,12 @@
  * - Lo demás: lo guardado al instante y se actualiza por detrás.
  * - El chat (/api/) nunca se guarda: sin internet el juego lo esconde.
  *
- * Al publicar una versión nueva, el navegador detecta que este archivo o el
- * index.html cambiaron y vuelve a llenar la caché.
+ * El navegador solo reinstala el service worker si ESTE archivo cambia. Por eso, al compilar,
+ * version-sw.js (plugin de Vite) cambia __VERSION_BUILD__ por una huella de la versión: cada publicación trae un
+ * sw.js distinto, se instala con una caché nueva y al activarse borra la de la versión anterior
+ * (si no, los scripts viejos con hash se quedaban guardados para siempre).
  */
-const VERSION = "escuadron-v1";
+const VERSION = "escuadron-__VERSION_BUILD__";
 const BASE = [
   "/",
   "/manifest.webmanifest",

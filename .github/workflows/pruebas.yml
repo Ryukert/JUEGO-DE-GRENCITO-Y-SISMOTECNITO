@@ -1,0 +1,30 @@
+# Corre las pruebas y el build en cada push y pull request.
+# Vercel también corre `npm test` antes de compilar (vercel.json), así que si algo falla
+# no se publica: el sitio se queda con la versión anterior.
+name: Pruebas
+
+on:
+  push:
+  pull_request:
+
+concurrency:
+  group: pruebas-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  pruebas:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npm test
+      - run: npm run build
+      - name: El service worker lleva la huella de la versión
+        run: |
+          ! grep -q "__VERSION_BUILD__" dist/sw.js
+          grep -o 'escuadron-[0-9a-f]\{12\}' dist/sw.js

@@ -278,4 +278,32 @@ describe("app instalable y sin internet", () => {
     const v = JSON.parse(readFileSync(raiz("vercel.json"), "utf8"));
     expect(v.headers.find((h) => h.source === "/sw.js").headers).toContainEqual({ key: "Cache-Control", value: "no-cache" });
   });
+
+  it("cada versión publicada trae un sw.js distinto, con su propia caché", async () => {
+    const { mkdtempSync, writeFileSync, rmSync } = await import("node:fs");
+    const { tmpdir } = await import("node:os");
+    const { join } = await import("node:path");
+    const { versionServiceWorker } = await import("../version-sw.js");
+    const original = readFileSync(raiz("public/sw.js"), "utf8");
+    expect(original).toContain('const VERSION = "escuadron-__VERSION_BUILD__"');
+
+    const compilar = (indexHtml) => {
+      const dir = mkdtempSync(join(tmpdir(), "sw-"));
+      writeFileSync(join(dir, "index.html"), indexHtml);
+      writeFileSync(join(dir, "sw.js"), original);
+      const p = versionServiceWorker();
+      p.configResolved({ root: dir, build: { outDir: "." } });
+      p.closeBundle();
+      const sw = readFileSync(join(dir, "sw.js"), "utf8");
+      rmSync(dir, { recursive: true, force: true });
+      return sw.match(/const VERSION = "escuadron-([0-9a-f]{12})"/)?.[1];
+    };
+    const v1 = compilar('<script type="module" src="/assets/index-aaa.js"></script>');
+    const v2 = compilar('<script type="module" src="/assets/index-bbb.js"></script>');
+    expect(v1).toBeTruthy();
+    expect(v2).toBeTruthy();
+    expect(v1).not.toBe(v2);
+    // al activarse borra toda caché que no sea la suya
+    expect(original).toMatch(/filter\(\(n\) => n !== VERSION\)\.map\(\(n\) => caches\.delete\(n\)\)/);
+  });
 });
