@@ -98,7 +98,8 @@ describe("iconos propios en la interfaz", () => {
     expect(hud.querySelector(".marcador .icono--brote")).toBeTruthy();
     expect(hud.querySelector(".racha .icono--fuego")).toBeTruthy();
     expect(hud.textContent).not.toMatch(/[❤🖤🔊🔇🔥🌱🛡]/u);
-    expect(screen.getByLabelText("2 vidas")).toBeTruthy();
+    // las vidas se leen con un texto oculto (no con aria-label en un <span> sin rol)
+    expect(hud.querySelector(".vidas .visualmente-oculto").textContent).toBe("2 vidas");
   });
 });
 

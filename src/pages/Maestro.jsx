@@ -1,15 +1,19 @@
 import { useState, useEffect, useCallback } from "react";
 import { PERSONAJES, GRADOS } from "../data/personajes.js";
 import { rangoPara } from "../lib/progreso.js";
-import { panelGrupo, cambiarPin, quitarAlumno, salirMaestro, leerMaestro } from "../lib/cuenta.js";
+import { panelGrupo, cambiarPin, quitarAlumno, salirMaestro, leerMaestro, ponerTarea, borrarTarea } from "../lib/cuenta.js";
 import Icono from "../components/Icono.jsx";
 import { IconoRango } from "../components/IconoJuego.jsx";
 import { ESCALA, DIFICULTAD, MINIMO_ANONIMO, caritaDe } from "../data/evaluacion.js";
-import { POR_ID } from "../juegos/registro.js";
+import { POR_ID, JUEGOS, FAMILIAS } from "../juegos/registro.js";
+
+const MAX_TAREA = 5;
+const NOMBRES = Object.fromEntries(JUEGOS.map((j) => [j.id, j.nombre]));
 
 /**
- * Panel del maestro: código del grupo para dictarlo, avance de cada alumno y las preguntas
- * que más cuestan. Se puede poner un PIN nuevo a quien lo olvidó, quitar alumnos y bajar un CSV.
+ * Panel del maestro: código del grupo para dictarlo, la tarea, el avance de cada alumno y por
+ * tema, y las preguntas que más cuestan. Se puede poner un PIN nuevo a quien lo olvidó, quitar
+ * alumnos y bajar un CSV o un PDF.
  */
 
 const relativo = new Intl.RelativeTimeFormat("es", { numeric: "auto" });
@@ -138,7 +142,153 @@ function ResumenEncuestas({ lista }) {
   );
 }
 
-function FilaAlumno({ a, onCambio }) {
+/** Tarea del grupo: hasta MAX_TAREA minijuegos del Centro y una nota; quién ya la terminó. */
+function TareaGrupo({ tarea, alumnos, onCambio }) {
+  const [editando, setEditando] = useState(false);
+  const [elegidos, setElegidos] = useState(() => tarea?.juegos.filter((id) => NOMBRES[id]) || []);
+  const [nota, setNota] = useState(tarea?.nota || "");
+  const [aviso, setAviso] = useState("");
+  const [ocupado, setOcupado] = useState(false);
+  const terminaron = alumnos.filter((a) => a.tarea && a.tarea.hechos >= a.tarea.total).length;
+
+  function abrir() {
+    setElegidos(tarea?.juegos.filter((id) => NOMBRES[id]) || []);
+    setNota(tarea?.nota || "");
+    setAviso("");
+    setEditando(true);
+  }
+  const alternar = (id) =>
+    setElegidos((l) => (l.includes(id) ? l.filter((x) => x !== id) : l.length < MAX_TAREA ? [...l, id] : l));
+
+  async function guardar(e) {
+    e.preventDefault();
+    setOcupado(true);
+    setAviso("");
+    try {
+      await ponerTarea(elegidos, nota);
+      setEditando(false);
+      onCambio();
+    } catch (err) {
+      setAviso(err.message);
+    } finally {
+      setOcupado(false);
+    }
+  }
+  async function quitar() {
+    setOcupado(true);
+    try {
+      await borrarTarea();
+      setEditando(false);
+      onCambio();
+    } catch (err) {
+      setAviso(err.message);
+    } finally {
+      setOcupado(false);
+    }
+  }
+
+  return (
+    <section className="logros__seccion tarea-maestro">
+      <h2>Tarea del grupo <small>hasta {MAX_TAREA} minijuegos del Centro</small></h2>
+      {!editando && tarea && (
+        <>
+          <ul className="tarea-maestro__lista">
+            {tarea.juegos.filter((id) => NOMBRES[id]).map((id) => <li key={id}>{NOMBRES[id]}</li>)}
+          </ul>
+          {tarea.nota && <p className="tarea-maestro__nota">«{tarea.nota}»</p>}
+          <p className="logros__nota">
+            Desde el {new Date(tarea.desde).toLocaleDateString("es-MX", { day: "numeric", month: "long" })} ·{" "}
+            <strong>{terminaron} de {alumnos.length}</strong> alumnos ya la terminaron. Cuenta cuando juegan cada minijuego
+            después de ponerla.
+          </p>
+        </>
+      )}
+      {!editando && !tarea && (
+        <p className="logros__nota">
+          Elige minijuegos para que tus alumnos los jueguen: les aparecen en la portada al entrar con su cuenta, y aquí ves quién
+          ya los jugó.
+        </p>
+      )}
+      {!editando && (
+        <div className="maestro__pie">
+          <button onClick={abrir}>{tarea ? "Cambiar la tarea" : "Poner una tarea"}</button>
+          {tarea && <button onClick={quitar} disabled={ocupado}>Quitar la tarea</button>}
+        </div>
+      )}
+      {editando && (
+        <form className="tarea-maestro__form" onSubmit={guardar}>
+          <p role="status" className="logros__nota">
+            {elegidos.length} de {MAX_TAREA} elegidos{elegidos.length >= MAX_TAREA ? " (para cambiar uno, quita otro)" : ""}
+          </p>
+          {Object.values(FAMILIAS).map((f) => (
+            <fieldset key={f.id} className="tarea-maestro__familia">
+              <legend>{f.nombre}</legend>
+              {JUEGOS.filter((j) => j.familia === f.id).map((j) => {
+                const marcado = elegidos.includes(j.id);
+                return (
+                  <label key={j.id} className={marcado ? "marcado" : ""}>
+                    <input
+                      type="checkbox"
+                      checked={marcado}
+                      disabled={!marcado && elegidos.length >= MAX_TAREA}
+                      onChange={() => alternar(j.id)}
+                    />
+                    {j.nombre}
+                  </label>
+                );
+              })}
+            </fieldset>
+          ))}
+          <label className="tarea-maestro__campo">
+            Nota para el grupo (opcional)
+            <input value={nota} maxLength={140} onChange={(e) => setNota(e.target.value)} placeholder="Por ejemplo: para el viernes" />
+          </label>
+          {aviso && <p className="cuenta__error" role="alert">{aviso}</p>}
+          <div className="maestro__pie">
+            <button type="submit" className="boton-grande" disabled={ocupado || elegidos.length === 0}>Guardar la tarea</button>
+            <button type="button" onClick={() => setEditando(false)} disabled={ocupado}>Cancelar</button>
+          </div>
+        </form>
+      )}
+    </section>
+  );
+}
+
+/** Aciertos del grupo en cada tema de las misiones (las variantes de un reto cuentan juntas). */
+function AvanceTemas({ temas }) {
+  if (!temas) return null;
+  return (
+    <section className="logros__seccion">
+      <h2>Avance por tema <small>aciertos del grupo en las misiones</small></h2>
+      {temas.length === 0 ? (
+        <p className="logros__nota">Aparece cuando el grupo juega las misiones.</p>
+      ) : (
+        <ul className="temas-maestro">
+          {temas.map((t) => {
+            const pct = porciento(t.aciertos, t.total) ?? 0;
+            return (
+              <li key={`${t.personaje}-${t.tema}`}>
+                <span className="temas-maestro__nombre">
+                  <img src={PERSONAJES[t.personaje]?.cara} alt="" width="28" height="28" />
+                  <span>
+                    <strong>{t.tema}</strong>
+                    <small>{PERSONAJES[t.personaje]?.nombre}</small>
+                  </span>
+                </span>
+                <span className="temas-maestro__barra" role="img" aria-label={`${pct}% de aciertos en ${t.total} respuestas`}>
+                  <span style={{ width: `${pct}%` }} className={pct < 50 ? "bajo" : pct < 75 ? "medio" : "alto"} />
+                </span>
+                <span className="temas-maestro__cifra">{pct}% <small>de {t.total}</small></span>
+              </li>
+            );
+          })}
+        </ul>
+      )}
+    </section>
+  );
+}
+
+function FilaAlumno({ a, conTarea, onCambio }) {
   const [aviso, setAviso] = useState("");
   const [confirmar, setConfirmar] = useState(false);
   const [ocupado, setOcupado] = useState(false);
@@ -187,6 +337,17 @@ function FilaAlumno({ a, onCambio }) {
       <td>{a.minijuegos}</td>
       <td>{pct === null ? "—" : `${pct}% de ${a.respuestas.total}`}</td>
       <td>{haceCuanto(a.ultima_vez)}</td>
+      {conTarea && (
+        <td>
+          {a.tarea ? (
+            a.tarea.hechos >= a.tarea.total ? (
+              <span className="maestro__hecha"><Icono nombre="bien" /> lista</span>
+            ) : (
+              `${a.tarea.hechos} de ${a.tarea.total}`
+            )
+          ) : "—"}
+        </td>
+      )}
       <td className="maestro__acciones">
         {aviso && <span className="maestro__aviso" role="status">{aviso}</span>}
         {confirmar ? (
@@ -232,6 +393,20 @@ export default function Maestro({ onSalir }) {
   const total = alumnos.reduce((s, a) => s + a.respuestas.total, 0);
   const aciertos = alumnos.reduce((s, a) => s + a.respuestas.aciertos, 0);
   const dificiles = (datos?.preguntas || []).filter((q) => q.total >= 3 && q.fallos > 0).slice(0, 8);
+  const conTarea = !!datos?.tarea;
+  const [haciendoPdf, setHaciendoPdf] = useState(false);
+
+  async function pdf() {
+    setHaciendoPdf(true);
+    try {
+      const { descargarPdfGrupo } = await import("../lib/pdfGrupo.js");
+      await descargarPdfGrupo(datos, { nombres: NOMBRES });
+    } catch (e) {
+      setError("No se pudo armar el PDF: " + e.message);
+    } finally {
+      setHaciendoPdf(false);
+    }
+  }
 
   function descargar() {
     const url = URL.createObjectURL(new Blob([csv(alumnos)], { type: "text/csv;charset=utf-8" }));
@@ -291,17 +466,20 @@ export default function Maestro({ onSalir }) {
                     <tr>
                       <th scope="col">Alumno</th><th scope="col">XP</th><th scope="col">Mejor récord</th>
                       <th scope="col">Misiones</th><th scope="col">Minijuegos</th><th scope="col">Aciertos</th>
-                      <th scope="col">Última vez</th><th scope="col"><span className="solo-lector">Acciones</span></th>
+                      <th scope="col">Última vez</th>{conTarea && <th scope="col">Tarea</th>}
+                      <th scope="col"><span className="solo-lector">Acciones</span></th>
                     </tr>
                   </thead>
                   <tbody>
-                    {alumnos.map((a) => <FilaAlumno key={a.id} a={a} onCambio={cargar} />)}
+                    {alumnos.map((a) => <FilaAlumno key={a.id} a={a} conTarea={conTarea} onCambio={cargar} />)}
                   </tbody>
                 </table>
               </div>
             )}
           </section>
 
+          <TareaGrupo key={datos.tarea?.desde || "sin-tarea"} tarea={datos.tarea} alumnos={alumnos} onCambio={cargar} />
+          <AvanceTemas temas={datos.temas} />
           <ResumenEvaluacion ev={datos.evaluacion} />
           <ResumenEncuestas lista={datos.encuestas} />
 
@@ -326,6 +504,7 @@ export default function Maestro({ onSalir }) {
           <section className="logros__seccion maestro__pie">
             <button onClick={cargar} disabled={cargando}>{cargando ? "Actualizando…" : "Actualizar"}</button>
             <button onClick={descargar} disabled={!alumnos.length}><Icono nombre="descargar" /> Descargar CSV</button>
+            <button onClick={pdf} disabled={haciendoPdf}><Icono nombre="descargar" /> {haciendoPdf ? "Armando el PDF…" : "Descargar PDF"}</button>
             <button onClick={() => { salirMaestro(); onSalir(); }}>Cerrar el panel</button>
           </section>
         </>

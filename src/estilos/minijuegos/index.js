@@ -19,3 +19,4 @@ import "./09-iconos-y-tema.css";         // iconos, tema oscuro, centro compacto
 import "./10-interfaz.css";              // transiciones, ajustes, tutorial, logros, panel lateral
 import "./11-grupos-y-encuestas.css";    // cuentas, panel del maestro, evaluación, encuestas, editores
 import "./12-portada-y-avisos.css";      // tarjeta del nombre, aviso de inactividad y constancia
+import "./13-juego-y-maestros.css";     // repaso, tarea del alumno y del maestro, avance por tema

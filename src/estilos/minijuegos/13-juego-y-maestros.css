@@ -1,0 +1,151 @@
+/* ==================================================================
+   JUEGO Y MAESTROS: repaso de lo que falló, tarea del maestro en la
+   portada del alumno, y en el panel del maestro la tarea y el avance
+   por tema. Colores solo con las variables del tema (claro y oscuro).
+   ================================================================== */
+
+/* ---- botón «Repasar lo que fallé» (portada) ---- */
+.boton-repaso {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 4px 8px;
+  width: min(100%, 340px);
+  margin: 10px auto 0;
+  cursor: pointer;
+  background: var(--superficie);
+  color: var(--tinta);
+  font-weight: bold;
+  font-size: 16px;
+  border: 3px solid var(--contorno);
+  border-radius: 16px;
+  padding: 10px 18px;
+  min-height: var(--toque);
+  box-shadow: 0 5px 0 var(--contorno);
+}
+.boton-repaso:active { transform: translateY(4px); box-shadow: 0 1px 0 var(--contorno); }
+.boton-repaso__cuenta { font-size: 13px; font-weight: 700; color: var(--acento2-texto); }
+
+/* ---- pantalla de repaso ---- */
+.repaso .hud__estado { font-size: 13px; }
+.repaso-fin { text-align: center; align-items: center; justify-content: center; gap: 10px; padding: 24px 16px; }
+.repaso-fin > .icono { width: 64px; height: 64px; color: var(--acento2-texto); }
+
+/* ---- tarea del maestro en la portada del alumno ---- */
+.tarea-alumno {
+  width: min(100%, 520px);
+  margin: 0 auto;
+  padding: 12px 14px;
+  background: var(--velo);
+  border: 3px solid var(--contorno);
+  border-radius: 18px;
+  text-align: left;
+}
+.tarea-alumno h2 { display: flex; align-items: center; gap: 8px; margin: 0 0 6px; font-size: 17px; }
+.tarea-alumno h2 small { margin-left: auto; font-size: 13px; color: var(--texto-suave); }
+.tarea-alumno--lista h2 { color: var(--bien); }
+.tarea-alumno__nota { margin: 0 0 8px; font-size: 14px; color: var(--texto-suave); font-style: italic; }
+.tarea-alumno ul { margin: 0; padding: 0; list-style: none; display: grid; gap: 6px; }
+.tarea-alumno li button {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  min-height: var(--toque);
+  padding: 6px 10px;
+  text-align: left;
+  font-weight: 700;
+  cursor: pointer;
+  background: var(--superficie);
+  border: 2px solid var(--contorno);
+  border-radius: 12px;
+}
+.tarea-alumno li button > span:first-of-type { flex: 1; }
+.tarea-alumno li button .insignia { width: 34px; height: 34px; flex-shrink: 0; }
+.tarea-alumno li button.hecho { border-color: var(--bien); background: var(--bien-suave); }
+.tarea-alumno__marca { color: var(--bien); display: inline-flex; }
+
+/* ---- panel del maestro: tarea ---- */
+.tarea-maestro__lista { margin: 0 0 6px; padding-left: 20px; font-weight: 700; }
+.tarea-maestro__nota { margin: 0 0 6px; font-style: italic; color: var(--texto-suave); }
+.tarea-maestro__form { display: grid; gap: 10px; }
+.tarea-maestro__familia {
+  margin: 0;
+  padding: 8px 10px 10px;
+  border: 2px solid var(--linea);
+  border-radius: 14px;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(190px, 1fr));
+  gap: 4px 12px;
+}
+.tarea-maestro__familia legend { font-weight: 800; padding: 0 4px; }
+.tarea-maestro__familia label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 44px;
+  font-size: 14px;
+  cursor: pointer;
+}
+.tarea-maestro__familia label.marcado { font-weight: 800; }
+.tarea-maestro__familia input { width: 18px; height: 18px; flex-shrink: 0; }
+.tarea-maestro__campo { display: grid; gap: 4px; font-weight: 700; font-size: 14px; }
+.tarea-maestro__campo input {
+  min-height: var(--toque);
+  padding: 8px 12px;
+  font-size: 16px;
+  background: var(--superficie);
+  border: 2px solid var(--contorno);
+  border-radius: 12px;
+}
+.maestro__hecha { display: inline-flex; align-items: center; gap: 4px; color: var(--bien); font-weight: 800; }
+
+/* ---- panel del maestro: avance por tema ---- */
+.temas-maestro { margin: 0; padding: 0; list-style: none; display: grid; gap: 8px; }
+.temas-maestro li {
+  display: grid;
+  grid-template-columns: minmax(150px, 1.2fr) 2fr auto;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 10px;
+  background: var(--superficie);
+  border: 2px solid var(--linea);
+  border-radius: 12px;
+}
+.temas-maestro__nombre { display: flex; align-items: center; gap: 8px; min-width: 0; }
+.temas-maestro__nombre > span { display: grid; min-width: 0; }
+.temas-maestro__nombre small { color: var(--texto-suave); font-size: 12px; }
+.temas-maestro__barra { height: 14px; border-radius: 7px; background: var(--pista); overflow: hidden; }
+.temas-maestro__barra span { display: block; height: 100%; border-radius: 7px; }
+.temas-maestro__barra .alto { background: var(--bien); }
+.temas-maestro__barra .medio { background: var(--acento); }
+.temas-maestro__barra .bajo { background: var(--mal); }
+.temas-maestro__cifra { font-weight: 800; white-space: nowrap; }
+.temas-maestro__cifra small { font-weight: 600; color: var(--texto-suave); }
+
+@media (max-width: 560px) {
+  .temas-maestro li { grid-template-columns: 1fr auto; }
+  .temas-maestro__barra { grid-column: 1 / -1; grid-row: 2; }
+}
+
+/* ---- teclado en los juegos de clasificar: número de cada contenedor ---- */
+.bote--boton { position: relative; }
+.bote__tecla {
+  position: absolute;
+  top: 4px;
+  left: 6px;
+  min-width: 20px;
+  padding: 0 4px;
+  font: 800 12px/18px inherit;
+  font-family: inherit;
+  color: var(--tinta);
+  background: var(--velo);
+  border: 1.5px solid var(--contorno);
+  border-radius: 6px;
+}
+
+/* el botón principal del formulario de tarea: letra blanca sobre el acento (los botones del
+   panel ponen letra oscura y aquí no se leería) */
+.maestro__pie .boton-grande { background: var(--acento); color: #fff; }
+.maestro__pie .boton-grande:disabled { opacity: 0.6; }

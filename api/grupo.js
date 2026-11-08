@@ -6,6 +6,8 @@
  *   GET  /api/grupo                         (pase de maestro)  → { grupo, alumnos, preguntas }
  *   POST /api/grupo { accion: "pin",    alumno, pin }  (pase)  → { ok }   ← el alumno olvidó su PIN
  *   POST /api/grupo { accion: "quitar", alumno }       (pase)  → { ok }
+ *   POST /api/grupo { accion: "tarea", juegos, nota }  (pase)  → { tarea }   ← hasta 5 minijuegos
+ *   POST /api/grupo { accion: "quitarTarea" }           (pase)  → { ok }
  *
  * La clave del maestro se guarda resumida (scrypt). El pase del maestro dura 12 horas.
  */
@@ -16,17 +18,19 @@ import {
 } from "./_comun.js";
 import { revisarIntentos, anotarFallo } from "./_limites.js";
 import { limpiarProgreso } from "../src/lib/mezcla.js";
-import { PERSONAJES, GRADOS } from "../src/data/personajes.js";
+import { PERSONAJES, GRADOS, buscarReto } from "../src/data/personajes.js";
+import { leerTarea, guardarTarea, quitarTarea, limpiarTarea, cumplimiento, faltaTabla, MAX_JUEGOS, MAX_NOTA } from "./_tareas.js";
 import { PREGUNTAS as PREGUNTAS_EVAL, MINIMO_ANONIMO } from "../src/data/evaluacion.js";
 import { hoyEn } from "./evaluacion.js";
 
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 const mal = (res, error, codigo = 400) => responderJson(res, codigo, { error });
 
-/** Lo que el maestro ve de cada alumno, a partir de su progreso. */
-export function resumenAlumno(datos) {
+/** Lo que el maestro ve de cada alumno, a partir de su progreso (y cuánto lleva de la tarea). */
+export function resumenAlumno(datos, tarea = null) {
   const p = limpiarProgreso(datos);
   return {
+    tarea: cumplimiento(tarea, p),
     xp: p.xp,
     records: p.records,
     mejor: Math.max(p.records.sismo, p.records.green),
@@ -37,11 +41,23 @@ export function resumenAlumno(datos) {
   };
 }
 
-/** Junta las respuestas por pregunta y por alumno. */
+/**
+ * Junta las respuestas por pregunta, por alumno y por tema. El tema es el reto de la misión
+ * (su insignia): las variantes de un mismo reto cuentan juntas.
+ */
 export function resumirRespuestas(filas) {
   const porPregunta = new Map();
+  const porTema = new Map();
   const porAlumno = {};
   for (const r of filas) {
+    const reto = buscarReto(PERSONAJES[r.personaje], r.mision);
+    if (reto) {
+      const k = `${r.personaje}|${reto.insignia}`;
+      const t = porTema.get(k) || { personaje: r.personaje, tema: reto.insignia, total: 0, aciertos: 0 };
+      t.total += 1;
+      if (r.correcta) t.aciertos += 1;
+      porTema.set(k, t);
+    }
     const clave = `${r.personaje}|${r.mision}|${r.bono ? 1 : 0}`;
     const v = porPregunta.get(clave) || { personaje: r.personaje, mision: r.mision, bono: !!r.bono, total: 0, fallos: 0 };
     v.total += 1;
@@ -52,7 +68,7 @@ export function resumirRespuestas(filas) {
     if (r.correcta) a.aciertos += 1;
   }
   const preguntas = [...porPregunta.values()].map((v) => {
-    const mision = PERSONAJES[v.personaje]?.misiones.find((m) => m.id === v.mision);
+    const mision = buscarReto(PERSONAJES[v.personaje], v.mision);
     return {
       ...v,
       titulo: mision?.titulo || v.mision,
@@ -60,7 +76,10 @@ export function resumirRespuestas(filas) {
     };
   });
   preguntas.sort((a, b) => b.fallos / b.total - a.fallos / a.total || b.total - a.total);
-  return { preguntas, porAlumno };
+  // en el orden de las misiones de cada personaje
+  const orden = Object.values(PERSONAJES).flatMap((p) => p.misiones.filter((m) => m.tipo === "reto").map((m) => `${p.id}|${m.titulo}`));
+  const temas = [...porTema.values()].sort((a, b) => orden.indexOf(`${a.personaje}|${a.tema}`) - orden.indexOf(`${b.personaje}|${b.tema}`));
+  return { preguntas, porAlumno, temas };
 }
 
 /**
@@ -108,18 +127,21 @@ async function panel(res, pase) {
   if (!grupo) return mal(res, "El grupo ya no existe.", 401);
   const alumnos = await db(`alumnos?grupo_id=${eq(pase.g)}&select=id,apodo,avatar,creado_en,ultima_vez,progreso(datos)&order=apodo_normal`);
   const respuestas = await db(`respuestas?grupo_id=${eq(pase.g)}&select=alumno_id,personaje,mision,bono,correcta&limit=20000`);
-  const { preguntas, porAlumno } = resumirRespuestas(respuestas || []);
+  const { preguntas, porAlumno, temas } = resumirRespuestas(respuestas || []);
+  const tarea = await leerTarea(pase.g);
   // sin alumno_id a propósito: el resumen es anónimo desde la consulta
   const evaluaciones = await db(`evaluaciones?grupo_id=${eq(pase.g)}&select=fecha,${PREGUNTAS_EVAL.map((p) => p.id).join(",")}&limit=20000`);
   const encuestas = await db(`encuestas?grupo_id=${eq(pase.g)}&select=juego,tipo,gusto,dificultad&limit=20000`);
   return responderJson(res, 200, {
     grupo,
+    tarea,
+    temas,
     encuestas: resumirEncuestas(encuestas || []),
     evaluacion: resumirEvaluaciones((evaluaciones || []).map(({ alumno_id, ...f }) => f), { hoy: hoyEn() }),
     // campo por campo: aunque la consulta cambie, el PIN resumido nunca sale del servidor
     alumnos: (alumnos || []).map(({ id, apodo, avatar, creado_en, ultima_vez, progreso }) => ({
       id, apodo, avatar, creado_en, ultima_vez,
-      ...resumenAlumno(Array.isArray(progreso) ? progreso[0]?.datos : progreso?.datos),
+      ...resumenAlumno(Array.isArray(progreso) ? progreso[0]?.datos : progreso?.datos, tarea),
       respuestas: porAlumno[id] || { total: 0, aciertos: 0 },
     })),
     preguntas,
@@ -193,6 +215,23 @@ export default async function handler(req, res) {
         if (!filas?.length) return mal(res, "Ese alumno no está en tu grupo.", 404);
       }
       return responderJson(res, 200, { ok: true });
+    }
+
+    if (d?.accion === "tarea" || d?.accion === "quitarTarea") {
+      const pase = paseDe(req, "maestro");
+      if (!pase) return mal(res, "Vuelve a entrar con el código y la clave del grupo.", 401);
+      try {
+        if (d.accion === "quitarTarea") {
+          await quitarTarea(pase.g);
+          return responderJson(res, 200, { ok: true });
+        }
+        const limpia = limpiarTarea(d);
+        if (!limpia) return mal(res, `Elige de 1 a ${MAX_JUEGOS} minijuegos; la nota, de hasta ${MAX_NOTA} letras.`);
+        return responderJson(res, 200, { tarea: await guardarTarea(pase.g, limpia) });
+      } catch (e) {
+        if (faltaTabla(e)) return mal(res, "Las tareas todavía no están activadas en la base de datos.", 503);
+        throw e;
+      }
     }
 
     return mal(res, "Acción desconocida");

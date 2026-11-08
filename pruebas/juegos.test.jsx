@@ -50,7 +50,9 @@ describe("flujo original", () => {
     fireEvent.click(screen.getByText("Sismo Tecnito"));
     // la primera vez sale la explicación de 3 pasos; se puede saltar
     fireEvent.click(screen.getByText("Saltar"));
-    expect(document.querySelector(".barra__texto").textContent).toMatch(/El salón se mueve/);
+    // el primer reto puede salir como el original o como una de sus variantes
+    const opciones = [PERSONAJES.sismo.misiones[0], ...PERSONAJES.sismo.misiones[0].variantes].map((r) => r.titulo);
+    expect(opciones.some((t) => document.querySelector(".barra__texto").textContent.includes(t))).toBe(true);
   });
 
   it("se llega al Centro de entrenamiento desde la portada", () => {

@@ -14,6 +14,32 @@ en **Ajustes**. Cómo sacar una versión nueva: ver «Versiones» en el README.
 
 ## [Sin publicar]
 
+### Agregado
+- **Más retos:** cada uno de los 6 retos de las misiones tiene 2 variantes con otra situación
+  del mismo tema (12 retos nuevos, con su pregunta de bonificación). Cada partida elige al azar
+  en cada reto. Las insignias siguen siendo las del reto original.
+- **Repasar lo que fallé:** las preguntas de misión que se fallan quedan pendientes y en la
+  portada aparece «Repasar lo que fallé». Acertar una la quita. Cada jugador de la computadora
+  tiene su repaso, y el del alumno con cuenta viaja con su progreso a otros equipos.
+- **Tarea del maestro:** en el panel elige hasta 5 minijuegos y una nota. El alumno la ve en
+  su portada, cada minijuego se abre con un toque y se palomea al jugarlo; el maestro ve quién
+  la terminó. Necesita la tabla `tareas` (`supabase/migrations/20261108000000_tareas.sql`);
+  sin ella el panel sigue y solo avisa que las tareas no están activadas.
+- **Avance por tema** en el panel: aciertos del grupo en cada reto de las misiones.
+- **PDF del panel del maestro**, con alumnos, tarea, avance por tema y preguntas difíciles.
+- **Errores en producción:** el navegador avisa a `/api/error`, que los escribe en el registro
+  de Vercel (sin datos de quién juega, con tope por IP y diario). Si una pantalla se rompe,
+  sale «¡Ups! Algo se atoró» con un botón para volver a empezar en vez de quedar en blanco.
+- Encabezados de seguridad en todo el sitio (`nosniff`, `Referrer-Policy`,
+  `X-Frame-Options: SAMEORIGIN`, `Permissions-Policy`).
+
+### Cambiado
+- **Accesibilidad:** «Coloca» se recorre con las flechas (una sola casilla en el orden de
+  Tab) y cada casilla dice su fila y columna; «Clasifica» anuncia cada residuo y acepta las
+  teclas 1 a 6. Toda la app va dentro de `<main>` y las vidas se leen con texto oculto.
+  axe-core revisa portada, misión, Centro, repaso, los juegos de arrastrar y el panel del
+  maestro en las pruebas.
+
 ## [2.1.0] - 2026-11-08
 
 ### Cambiado

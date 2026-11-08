@@ -238,6 +238,366 @@ const MISIONES_GREEN = [
   },
 ];
 
+/* ------------------------- variantes de los retos -------------------------
+ * Cada reto de misión tiene otras situaciones del mismo tema. Al empezar una partida se
+ * elige una al azar para cada lugar (armarPartida), así que dos partidas casi nunca son
+ * iguales. La insignia sigue siendo la del reto original (`insignia`), para que las
+ * medallas ya ganadas valgan igual. Cada variante tiene su propio id (lo usan el servidor
+ * para calificar, el repaso y el panel del maestro): máximo 10 caracteres.
+ */
+const VARIANTES = {
+  s1: [
+    {
+      id: "s1b",
+      titulo: "Libros que vuelan",
+      lugar: "Biblioteca de la escuela",
+      escenario:
+        "Estás junto a un librero altísimo, lleno de enciclopedias, cuando empieza a temblar. Las repisas ya rechinan. ¿Qué haces?",
+      opciones: [
+        { texto: "Alejarme del librero y protegerme bajo una mesa firme", ok: true },
+        { texto: "Detener el librero con las manos para que no se caiga", ok: false },
+        { texto: "Correr hacia la salida entre los libreros", ok: false },
+      ],
+      opcionExtra: { texto: "Pararme bajo el marco de la puerta", ok: false },
+      explicacion:
+        "Lejos de lo que se puede caer: libreros, vitrinas, lámparas y ventanas. Bajo una mesa firme, agachado y sujetándote de una pata.",
+      dato: "En los sismos, muchas lesiones las causan objetos que se caen o se vuelcan, no solo los edificios.",
+      retoSecundaria: {
+        pregunta: "Nivel experto: ¿por qué ya no se recomienda refugiarse bajo el marco de la puerta?",
+        opciones: [
+          { texto: "En construcciones actuales no es más fuerte que el resto y la puerta puede golpearte", ok: true },
+          { texto: "Porque las puertas atraen las ondas del sismo", ok: false },
+          { texto: "Porque el marco se derrite con la vibración", ok: false },
+        ],
+        explicacion:
+          "Era un consejo para casas antiguas de adobe. Hoy el marco no protege más que una mesa firme, y la puerta se azota con la sacudida.",
+      },
+    },
+    {
+      id: "s1c",
+      titulo: "Temblor en el recreo",
+      lugar: "Patio, en educación física",
+      escenario:
+        "Estás jugando futbol en el patio y empieza a temblar fuerte. Cerca hay una barda, un poste con cables y el edificio de los salones. ¿Qué haces?",
+      opciones: [
+        { texto: "Ir al centro del patio, lejos de bardas, postes y cables, y agacharme", ok: true },
+        { texto: "Correr a meterme al salón para protegerme", ok: false },
+        { texto: "Abrazar el poste para no caerme", ok: false },
+      ],
+      opcionExtra: { texto: "Subirme a las gradas para ver mejor", ok: false },
+      explicacion:
+        "Al aire libre, lo más seguro es un espacio abierto, lejos de lo que pueda caer: bardas, vidrios, postes, cables y árboles. Entrar al edificio mientras tiembla es más peligroso.",
+      dato: "Un cable caído puede tener corriente aunque no saque chispas: nunca se toca.",
+      retoSecundaria: {
+        pregunta: "Nivel experto: ¿qué mide la magnitud de un sismo?",
+        opciones: [
+          { texto: "La energía que se liberó donde empezó el sismo", ok: true },
+          { texto: "Qué tanto se movió tu casa", ok: false },
+          { texto: "Cuántos minutos duró la sacudida", ok: false },
+        ],
+        explicacion:
+          "La magnitud es una sola para cada sismo: la energía liberada. Lo que cambia de lugar a lugar es la intensidad, qué tanto se sintió.",
+      },
+    },
+  ],
+  s3: [
+    {
+      id: "s3b",
+      titulo: "El plan de la familia",
+      lugar: "La sala de tu casa",
+      escenario:
+        "Tu familia quiere un plan por si tiembla cuando cada quien está en otro lado: unos en la escuela y otros en el trabajo. ¿Qué acuerdan?",
+      opciones: [
+        { texto: "Un punto de reunión y los teléfonos importantes anotados en papel", ok: true },
+        { texto: "Que todos salgan a buscarse por la ciudad", ok: false },
+        { texto: "Nada: con el celular basta", ok: false },
+      ],
+      opcionExtra: { texto: "Que cada quien publique en redes dónde está y ya", ok: false },
+      explicacion:
+        "Un lugar donde encontrarse y los números anotados en papel. Después de un sismo el celular puede quedarse sin pila o sin señal.",
+      dato: "Tener un familiar de contacto en otra ciudad ayuda: a veces entran mejor las llamadas de lejos que las de la zona del sismo.",
+      retoSecundaria: {
+        pregunta: "Nivel experto: ¿cada cuánto conviene revisar la mochila de emergencia?",
+        opciones: [
+          { texto: "Cada seis meses, para cambiar agua, pilas y medicinas que caducan", ok: true },
+          { texto: "Solo cuando ya tembló", ok: false },
+          { texto: "Nunca: una vez armada dura para siempre", ok: false },
+        ],
+        explicacion:
+          "El agua, las pilas, la comida y las medicinas caducan. Revisarla dos veces al año asegura que todo sirva cuando haga falta.",
+      },
+    },
+    {
+      id: "s3c",
+      titulo: "Un cuarto seguro",
+      lugar: "Tu cuarto",
+      escenario:
+        "Estamos revisando tu cuarto. Junto a tu cama hay un librero alto con cosas pesadas en la repisa de arriba. ¿Qué hacemos?",
+      opciones: [
+        { texto: "Fijar el librero a la pared y poner lo pesado abajo", ok: true },
+        { texto: "Dejarlo así: nunca se ha caído", ok: false },
+        { texto: "Mover la cama justo debajo del librero", ok: false },
+      ],
+      opcionExtra: { texto: "Colgar un espejo grande sobre la cabecera", ok: false },
+      explicacion:
+        "Los muebles altos se fijan a la pared y lo pesado va abajo. Así no se vuelcan y nada cae sobre la cama mientras duermes.",
+      dato: "Unas escuadras de metal para fijar un librero cuestan poco y pueden evitar un accidente.",
+      retoSecundaria: {
+        pregunta: "Nivel experto: ¿por qué en el antiguo lago de la Ciudad de México los sismos se sienten más fuertes?",
+        opciones: [
+          { texto: "El suelo blando de arcilla amplifica las ondas, como una gelatina", ok: true },
+          { texto: "Porque ahí siempre está el epicentro", ok: false },
+          { texto: "Porque los edificios son más altos", ok: false },
+        ],
+        explicacion:
+          "La arcilla blanda del antiguo lago hace que las ondas crezcan y duren más. Por eso un sismo lejano se siente tanto en algunas colonias.",
+      },
+    },
+  ],
+  s5: [
+    {
+      id: "s5b",
+      titulo: "Cables en la banqueta",
+      lugar: "La calle de tu casa",
+      escenario:
+        "Ya pasó el temblor y salen a la calle. Un cable de luz cayó sobre la banqueta y junto hay un charco. ¿Qué haces?",
+      opciones: [
+        { texto: "Alejarme, no tocar el cable ni el charco y avisar a un adulto", ok: true },
+        { texto: "Moverlo con un palo para que nadie se tropiece", ok: false },
+        { texto: "Saltar el charco rápido para pasar", ok: false },
+      ],
+      opcionExtra: { texto: "Acercarme a tomarle una foto", ok: false },
+      explicacion:
+        "Un cable caído puede tener corriente y el agua la conduce. Hay que alejarse de los dos y que un adulto reporte la falla.",
+      dato: "En México, las fallas de luz se reportan a la CFE al 071.",
+      retoSecundaria: {
+        pregunta: "Nivel experto: ¿por qué un charco es peligroso junto a un cable caído?",
+        opciones: [
+          { texto: "El agua con sales disueltas conduce la electricidad", ok: true },
+          { texto: "El agua apaga la corriente del cable", ok: false },
+          { texto: "Solo es peligroso si el agua está fría", ok: false },
+        ],
+        explicacion:
+          "El agua de la calle trae sales disueltas y conduce la corriente: tocar el charco puede ser como tocar el cable.",
+      },
+    },
+    {
+      id: "s5c",
+      titulo: "El mensaje falso",
+      lugar: "El chat de la familia",
+      escenario:
+        "Después del sismo llega un mensaje: «Mañana a las 3 viene uno más fuerte. ¡Compártelo!». ¿Qué haces?",
+      opciones: [
+        { texto: "No compartirlo: los sismos no se pueden predecir; reviso fuentes oficiales", ok: true },
+        { texto: "Reenviarlo a todos, por si acaso", ok: false },
+        { texto: "Salir a dormir a la calle mañana", ok: false },
+      ],
+      opcionExtra: { texto: "Creerle, porque lo mandó alguien conocido", ok: false },
+      explicacion:
+        "Nadie puede decir el día ni la hora de un sismo. La información confiable viene de Protección Civil y del Servicio Sismológico Nacional.",
+      dato: "El Servicio Sismológico Nacional, de la UNAM, informa la magnitud y el epicentro minutos después de cada sismo.",
+      retoSecundaria: {
+        pregunta: "Nivel experto: si no se pueden predecir, ¿qué sí se puede hacer?",
+        opciones: [
+          { texto: "Detectar el sismo cuando ya empezó y avisar segundos antes con la alerta", ok: true },
+          { texto: "Medir el nivel del mar para saber la fecha", ok: false },
+          { texto: "Observar a los animales del zoológico", ok: false },
+        ],
+        explicacion:
+          "La alerta sísmica no predice: detecta el sismo cerca de donde empieza y avisa antes de que lleguen las ondas fuertes.",
+      },
+    },
+  ],
+  g1: [
+    {
+      id: "g1b",
+      titulo: "Aceite en el fregadero",
+      lugar: "La cocina de tu casa",
+      escenario:
+        "Sobró aceite de freír quesadillas y alguien quiere echarlo al fregadero con agua caliente. ¿Qué hacemos?",
+      opciones: [
+        { texto: "Dejarlo enfriar, guardarlo en una botella cerrada y llevarlo a acopio", ok: true },
+        { texto: "Echarlo al fregadero con agua caliente", ok: false },
+        { texto: "Tirarlo en el jardín, es natural", ok: false },
+      ],
+      opcionExtra: { texto: "Echarlo al escusado y jalarle dos veces", ok: false },
+      explicacion:
+        "El aceite tapa las tuberías y en el agua forma una capa que no deja pasar el oxígeno. Se junta en una botella y se lleva a un centro de acopio.",
+      dato: "Un solo litro de aceite usado puede contaminar miles de litros de agua.",
+      retoSecundaria: {
+        pregunta: "Nivel experto: ¿en qué se puede convertir el aceite de cocina que se recolecta?",
+        opciones: [
+          { texto: "En biodiésel o en jabón", ok: true },
+          { texto: "En agua potable", ok: false },
+          { texto: "En aceite para cocinar otra vez, sin tratarlo", ok: false },
+        ],
+        explicacion:
+          "Con el proceso adecuado se vuelve biodiésel o jabón. Por eso vale la pena juntarlo en vez de tirarlo.",
+      },
+    },
+    {
+      id: "g1c",
+      titulo: "El celular viejo",
+      lugar: "Tu casa",
+      escenario:
+        "El celular viejo de tu tía ya no prende y tiene la batería hinchada. ¿Qué hacemos con él?",
+      opciones: [
+        { texto: "Llevarlo a un centro de reciclaje de electrónicos", ok: true },
+        { texto: "Tirarlo con la basura orgánica", ok: false },
+        { texto: "Desarmarlo y quemar los cables para sacar el cobre", ok: false },
+      ],
+      opcionExtra: { texto: "Aventarlo al río, ahí nadie lo ve", ok: false },
+      explicacion:
+        "Los aparatos electrónicos tienen metales tóxicos y otros valiosos que se pueden recuperar. Van a un reciclaje especial, nunca a la basura común.",
+      dato: "En la Ciudad de México, el Reciclatrón recibe gratis aparatos eléctricos y electrónicos viejos.",
+      retoSecundaria: {
+        pregunta: "Nivel experto: ¿qué metal valioso se recupera de las tarjetas de los celulares?",
+        opciones: [
+          { texto: "Oro", ok: true },
+          { texto: "Uranio", ok: false },
+          { texto: "Hierro de la pantalla", ok: false },
+        ],
+        explicacion:
+          "Las tarjetas electrónicas llevan pequeñas cantidades de oro, plata y cobre. Juntando muchos aparatos, recuperarlos vale la pena.",
+      },
+    },
+  ],
+  g3: [
+    {
+      id: "g3b",
+      titulo: "Plaga en el huerto",
+      lugar: "Huerto de la escuela",
+      escenario:
+        "Unos pulgones se están comiendo las hojas de los jitomates del huerto. ¿Cómo los frenamos?",
+      opciones: [
+        { texto: "Quitarlos a mano y sembrar albahaca y caléndulas cerca", ok: true },
+        { texto: "Echar mucho insecticida químico a todo", ok: false },
+        { texto: "Arrancar todas las plantas y empezar de nuevo", ok: false },
+      ],
+      opcionExtra: { texto: "Acabar también con las catarinas del huerto", ok: false },
+      explicacion:
+        "Quitar los pulgones a mano y sembrar plantas que los alejan. Las catarinas son aliadas: se comen a los pulgones.",
+      dato: "Una sola catarina puede comerse decenas de pulgones en un día.",
+      retoSecundaria: {
+        pregunta: "Nivel experto: ¿por qué los insecticidas fuertes dañan el huerto a la larga?",
+        opciones: [
+          { texto: "Matan también a los polinizadores y a los que se comen las plagas", ok: true },
+          { texto: "Hacen que las plantas crezcan demasiado", ok: false },
+          { texto: "Cambian el color de los frutos", ok: false },
+        ],
+        explicacion:
+          "Acaban con abejas, catarinas y otros aliados. Sin ellos, la plaga regresa más fuerte y las flores no se polinizan.",
+      },
+    },
+    {
+      id: "g3c",
+      titulo: "Fogata en el bosque",
+      lugar: "Bosque cerca de tu comunidad",
+      escenario:
+        "Fueron de día de campo al bosque. Hace mucho viento, el pasto está seco y alguien quiere hacer una fogata para asar elotes. ¿Qué dices?",
+      opciones: [
+        { texto: "Mejor no: con viento y pasto seco el fuego se escapa fácil", ok: true },
+        { texto: "Hacerla junto a los árboles para que nos den sombra", ok: false },
+        { texto: "Hacerla y, si crece, echarle un poco de refresco", ok: false },
+      ],
+      opcionExtra: { texto: "Tirar una colilla de cigarro en el pasto: ya está apagada", ok: false },
+      explicacion:
+        "Con viento y pasto seco, una chispa basta para un incendio. Casi todos los incendios forestales empiezan por un descuido de las personas.",
+      dato: "En México, la gran mayoría de los incendios forestales los provocan actividades humanas: fogatas, quemas agrícolas y colillas.",
+      retoSecundaria: {
+        pregunta: "Nivel experto: ¿por qué después de un incendio forestal hay más deslaves en las lluvias?",
+        opciones: [
+          { texto: "Sin plantas ni raíces, el suelo queda suelto y el agua lo arrastra", ok: true },
+          { texto: "Porque la ceniza atrae más lluvia", ok: false },
+          { texto: "Porque el fuego derrite las piedras del cerro", ok: false },
+        ],
+        explicacion:
+          "Las raíces amarran el suelo. Cuando se queman, la lluvia arrastra la tierra cerro abajo y llegan los deslaves.",
+      },
+    },
+  ],
+  g5: [
+    {
+      id: "g5b",
+      titulo: "Baños eternos",
+      lugar: "El baño de tu casa",
+      escenario:
+        "Tu hermano se baña 25 minutos y deja la regadera abierta mientras se enjabona. ¿Qué le propones?",
+      opciones: [
+        { texto: "Cerrar la llave al enjabonarse y bañarse en unos 5 minutos", ok: true },
+        { texto: "Nada: el agua siempre regresa", ok: false },
+        { texto: "Llenar la tina todos los días mejor", ok: false },
+      ],
+      opcionExtra: { texto: "Bañarse dos veces al día para estar más limpio", ok: false },
+      explicacion:
+        "Cerrar la llave al enjabonarse y bañarse rápido. Una regadera común gasta alrededor de 10 litros por minuto.",
+      dato: "El agua fría que sale antes de que llegue la caliente se puede juntar en una cubeta y usar para el escusado o las plantas.",
+      retoSecundaria: {
+        pregunta: "Nivel experto: ¿cuánta agua puede gastar un baño de 20 minutos con regadera común?",
+        opciones: [
+          { texto: "Unos 200 litros o más", ok: true },
+          { texto: "Unos 10 litros", ok: false },
+          { texto: "Unos 2 litros", ok: false },
+        ],
+        explicacion:
+          "A unos 10 litros por minuto, 20 minutos son cerca de 200 litros: el agua que una persona toma en más de tres meses.",
+      },
+    },
+    {
+      id: "g5c",
+      titulo: "Jabón en el arroyo",
+      lugar: "Arroyo cerca de la escuela",
+      escenario:
+        "Alguien quiere lavar su camioneta junto al arroyo y echar el agua con jabón directo al cauce. ¿Qué le dices?",
+      opciones: [
+        { texto: "Que lave lejos, sin que el agua con jabón llegue al arroyo", ok: true },
+        { texto: "Que está bien: el arroyo se limpia solo", ok: false },
+        { texto: "Que le eche cloro al arroyo para que quede limpio", ok: false },
+      ],
+      opcionExtra: { texto: "Que no pasa nada porque es poquito jabón", ok: false },
+      explicacion:
+        "El jabón y el detergente alimentan algas que llenan el agua y le quitan el oxígeno. Los peces y las ranas se quedan sin aire.",
+      dato: "Un arroyo limpio tiene más vida de la que se ve: insectos, ranas y peces chiquitos que dependen del oxígeno del agua.",
+      retoSecundaria: {
+        pregunta: "Nivel experto: ¿cómo se llama cuando el exceso de nutrientes llena un río o lago de algas?",
+        opciones: [
+          { texto: "Eutrofización", ok: true },
+          { texto: "Erosión", ok: false },
+          { texto: "Evaporación", ok: false },
+        ],
+        explicacion:
+          "Eutrofización: los nutrientes de más (de jabones y fertilizantes) hacen crecer algas que, al morir, gastan el oxígeno del agua.",
+      },
+    },
+  ],
+};
+
+for (const mision of [...MISIONES_SISMO, ...MISIONES_GREEN]) {
+  if (mision.tipo === "reto") mision.variantes = VARIANTES[mision.id] || [];
+}
+
+/** Todos los retos de un personaje: los originales y sus variantes (para calificar y repasar). */
+export function retosDe(p) {
+  return p.misiones
+    .filter((m) => m.tipo === "reto")
+    .flatMap((m) => [m, ...m.variantes].map((r) => ({ ...m, ...r, variantes: undefined, insignia: m.titulo, tipo: "reto" })));
+}
+
+/** Busca un reto (original o variante) por su id. */
+export function buscarReto(p, id) {
+  return p ? retosDe(p).find((r) => r.id === id) || null : null;
+}
+
+/** Las misiones de una partida: en cada lugar de reto, el original o una de sus variantes al azar. */
+export function armarPartida(p, azar = Math.random) {
+  return p.misiones.map((m) => {
+    if (m.tipo !== "reto" || !m.variantes.length) return { ...m, insignia: m.titulo };
+    const opciones = [m, ...m.variantes];
+    const r = opciones[Math.min(opciones.length - 1, Math.floor(azar() * opciones.length))];
+    return { ...m, ...r, variantes: undefined, insignia: m.titulo, tipo: "reto" };
+  });
+}
+
 export const PERSONAJES = {
   sismo: {
     id: "sismo",

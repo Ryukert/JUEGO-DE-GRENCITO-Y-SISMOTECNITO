@@ -1,3 +1,5 @@
+import TareaAlumno from "./TareaAlumno.jsx";
+import { pendientesDeRepaso } from "../lib/repaso.js";
 import { useState } from "react";
 import { PERSONAJES, GRADOS } from "../data/personajes.js";
 import { rangoPara } from "../lib/progreso.js";
@@ -59,7 +61,7 @@ function Barra({ onLogros, onAjustes, onGrupo, cuenta, jugador, onQuien, tema, o
   );
 }
 
-export default function Portada({ progreso, ultimo, onElegir, onCentro, onLogros, onAjustes, onGrupo, cuenta, jugador, onQuien, tema, onTema }) {
+export default function Portada({ progreso, ultimo, onElegir, onCentro, onLogros, onAjustes, onGrupo, cuenta, jugador, onQuien, tema, onTema, onRepaso, onJugar }) {
   const [grado, setGrado] = useState(progreso.grado || null);
   const barra = (
     <Barra
@@ -70,6 +72,17 @@ export default function Portada({ progreso, ultimo, onElegir, onCentro, onLogros
   // tarjeta grande para escribir el nombre (no aparece si el alumno entró con cuenta de grupo)
   const nombre = onQuien ? <TarjetaNombre jugador={jugador} onVerTodos={onQuien} /> : null;
   const quienSigue = ultimo && PERSONAJES[ultimo.personaje] && GRADOS[ultimo.grado] ? ultimo : null;
+  // tarea del maestro (solo con cuenta de grupo) y preguntas que quedan por repasar
+  const tarea = cuenta?.grupo?.tarea && onJugar ? (
+    <TareaAlumno tarea={cuenta.grupo.tarea} progreso={progreso} onJugar={onJugar} />
+  ) : null;
+  const porRepasar = pendientesDeRepaso(progreso).length;
+  const repaso = porRepasar > 0 && onRepaso ? (
+    <button className="boton-repaso" onClick={onRepaso}>
+      <Icono nombre="foco" /> Repasar lo que fallé
+      <span className="boton-repaso__cuenta">{porRepasar} {porRepasar === 1 ? "pregunta" : "preguntas"}</span>
+    </button>
+  ) : null;
 
   function elegirGrado(id) {
     sonido.despertar();
@@ -82,6 +95,7 @@ export default function Portada({ progreso, ultimo, onElegir, onCentro, onLogros
       <div className="pantalla portada">
         {barra}
         {nombre}
+        {tarea}
         <div className="portada__duo" aria-hidden="true">
           <img className="portada__mini flota" src={PERSONAJES.sismo.cuerpo} alt="" />
           <img className="portada__mini flota flota--tarde" src={PERSONAJES.green.cuerpo} alt="" />
@@ -108,6 +122,7 @@ export default function Portada({ progreso, ultimo, onElegir, onCentro, onLogros
         <button className="boton-centro" onClick={onCentro}>
           <Icono nombre="control" /> Centro de entrenamiento
         </button>
+        {repaso}
 
         <p className="portada__pie">
           Secundaria tiene menos tiempo y retos dobles. En el Centro hay {JUEGOS.length} minijuegos sueltos.
@@ -122,6 +137,7 @@ export default function Portada({ progreso, ultimo, onElegir, onCentro, onLogros
     <div className="pantalla portada">
       {barra}
       {nombre}
+      {tarea}
       {quienSigue && (
         <button
           className={`seguir seguir--${quienSigue.personaje}`}
@@ -180,6 +196,7 @@ export default function Portada({ progreso, ultimo, onElegir, onCentro, onLogros
       <button className="boton-centro" onClick={onCentro}>
         <Icono nombre="control" /> Centro de entrenamiento
       </button>
+      {repaso}
 
       <p className="portada__pie">
         Preguntas contra reloj y minijuegos. Encadena aciertos para multiplicar tus puntos.

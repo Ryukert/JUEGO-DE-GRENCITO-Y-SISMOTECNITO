@@ -15,6 +15,7 @@ import {
   resumirClave, claveCorrecta, limpiarApodo, pinValido, limpiarCodigo,
 } from "./_comun.js";
 import { revisarIntentos, anotarFallo } from "./_limites.js";
+import { leerTarea } from "./_tareas.js";
 import { limpiarProgreso } from "../src/lib/mezcla.js";
 
 const AVATARES = ["sismo", "green"];
@@ -89,7 +90,7 @@ export default async function handler(req, res) {
     return responderJson(res, 200, {
       pase,
       alumno,
-      grupo: { codigo: grupo.codigo, nombre: grupo.nombre, grado: grupo.grado },
+      grupo: { codigo: grupo.codigo, nombre: grupo.nombre, grado: grupo.grado, tarea: await leerTarea(grupo.id) },
       progreso,
     });
   } catch (e) {
