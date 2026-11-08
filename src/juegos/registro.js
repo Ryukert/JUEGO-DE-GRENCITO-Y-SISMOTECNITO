@@ -11,26 +11,32 @@
  *   familia      "tecnito" | "greencito" | "general"  → decide la moneda
  *   categoria    subsección dentro del centro
  *   personaje    "sismo" | "green"  → tema visual y mascota
- *   motor        componente que lo juega
+ *   motor        componente que lo juega (diferido: se descarga al abrir el juego)
  *   xp           XP necesaria para desbloquearlo (0 = disponible desde el inicio)
  *   dificultades cuáles se ofrecen (por omisión, las tres)
  *   + los datos que necesite su motor (banco, escenas, rutas, cultivo...)
  */
 
-import Quiz from "./motores/Quiz.jsx";
-import Busca from "./motores/Busca.jsx";
-import Clasifica from "./motores/Clasifica.jsx";
-import Ruta from "./motores/Ruta.jsx";
-import Cultiva from "./motores/Cultiva.jsx";
-import Simulacion from "./motores/Simulacion.jsx";
-import Construye from "./motores/Construye.jsx";
-import Coloca from "./motores/Coloca.jsx";
-import Codigo from "./motores/Codigo.jsx";
-import Sopa from "./motores/Sopa.jsx";
-import Puzzle from "./motores/Puzzle.jsx";
-import Ruleta from "./motores/Ruleta.jsx";
-import Atrapa from "./motores/Atrapa.jsx";
-import { MemoramaCentro, SimulacroCentro, BasuraCentro } from "./motores/Clasicos.jsx";
+import { diferido } from "./diferido.jsx";
+
+/* Cada motor (y el contenido que lee) viaja en su propio archivo y se descarga la primera vez
+   que alguien abre uno de sus juegos: la portada y las misiones cargan sin ellos. */
+const Quiz = diferido(() => import("./motores/Quiz.jsx"));
+const Busca = diferido(() => import("./motores/Busca.jsx"));
+const Clasifica = diferido(() => import("./motores/Clasifica.jsx"));
+const Ruta = diferido(() => import("./motores/Ruta.jsx"));
+const Cultiva = diferido(() => import("./motores/Cultiva.jsx"));
+const Simulacion = diferido(() => import("./motores/Simulacion.jsx"));
+const Construye = diferido(() => import("./motores/Construye.jsx"));
+const Coloca = diferido(() => import("./motores/Coloca.jsx"));
+const Codigo = diferido(() => import("./motores/Codigo.jsx"));
+const Sopa = diferido(() => import("./motores/Sopa.jsx"));
+const Puzzle = diferido(() => import("./motores/Puzzle.jsx"));
+const Ruleta = diferido(() => import("./motores/Ruleta.jsx"));
+const Atrapa = diferido(() => import("./motores/Atrapa.jsx"));
+const MemoramaCentro = diferido(() => import("./motores/Clasicos.jsx"), "MemoramaCentro");
+const SimulacroCentro = diferido(() => import("./motores/Clasicos.jsx"), "SimulacroCentro");
+const BasuraCentro = diferido(() => import("./motores/Clasicos.jsx"), "BasuraCentro");
 
 export const FAMILIAS = {
   tecnito: { id: "tecnito", nombre: "Tecnito", icono: "🛡️", moneda: "escudos", monedaIcono: "🛡️" },
@@ -726,3 +732,6 @@ export function siguienteEnDesbloquear(progreso) {
   const xp = progreso?.xp || 0;
   return JUEGOS.filter((j) => j.xp > xp).sort((a, b) => a.xp - b.xp)[0] || null;
 }
+
+/** Descarga todos los motores (las pruebas los montan sin esperar). */
+export const precargarMotores = () => Promise.all([...new Set(JUEGOS.map((j) => j.motor))].map((m) => m.precargar()));

@@ -10,7 +10,7 @@
     "build": "vite build",
     "preview": "vite preview",
     "lint": "eslint . --max-warnings 0",
-    "test": "vitest run --environment jsdom pruebas/",
+    "test": "vitest run",
     "version": "node scripts/version-changelog.js && git add CHANGELOG.md",
     "postversion": "git push --follow-tags"
   },
