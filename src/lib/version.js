@@ -6,6 +6,10 @@
  * nombre del script principal: Vite le pone un hash distinto en cada versión. Si cambió, el
  * juego se recarga en el próximo momento en que nadie está jugando (el reinicio por inactividad).
  */
+/** Número de versión del juego (MAYOR.MENOR.PARCHE). Sale de package.json: ahí se cambia,
+ *  con `npm version`, y CHANGELOG.md dice qué trae cada una. */
+export { version as VERSION } from "../../package.json";
+
 export const REVISAR_CADA = 10 * 60_000;
 
 const PATRON = /\/assets\/index-[\w-]+\.js/;
