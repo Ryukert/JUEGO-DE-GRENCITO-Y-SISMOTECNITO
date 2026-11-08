@@ -1,5 +1,7 @@
 # Escuadrón Tecnito y Greencito
 
+Autor: **Marco Antonio Adame Rodriguez**
+
 Juego educativo por turnos con dos mascotas que hablan con Claude. Pensado para
 que un grupo de primaria o secundaria lo juegue en el salón, en el celular o en
 la computadora.
@@ -315,6 +317,11 @@ Las variables están explicadas en `.env.example`. `.env` y `.env.local` están 
 - **Tablet:** fichas y botes más grandes, tarjetas en dos columnas.
 - **Escritorio:** desde 900 px el juego se centra como una consola de 760 px con
   marco, en vez de estirarse.
+
+**Fondo de la página:** la ilustración de Greencito y Sismo Tecnito (`public/fondo.webp`,
+y `fondo-movil.webp` más ligera para teléfonos) va en una capa fija detrás de todo, con un
+velo de los colores del personaje encima para que el texto se lea. Qué tanto tapa el velo
+se ajusta con `--velo-fondo` en `styles.css` (0.7 en tema claro, 0.84 en oscuro).
 
 `prefers-reduced-motion` apaga el temblor, el confeti y las animaciones. El
 sonido se puede silenciar desde el altavoz del HUD y la preferencia se guarda.

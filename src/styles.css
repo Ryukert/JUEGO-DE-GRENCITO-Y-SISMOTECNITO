@@ -58,6 +58,7 @@
   --tecnito-texto: #0f6fc4;
   --green-texto: #3d7d1e;
   --rayo: rgba(255, 196, 0, 0.32);
+  --velo-fondo: 0.7;   /* cuánto tapa el color del personaje a la ilustración del fondo */
 
   --borde: 3px;
   --toque: 46px;
@@ -92,6 +93,7 @@
   --tecnito-texto: #7cc0ff;
   --green-texto: #9bd468;
   --rayo: rgba(255, 196, 0, 0.16);
+  --velo-fondo: 0.84;
 
   color-scheme: dark;
 }
@@ -105,11 +107,33 @@ body {
   font-family: "Nunito", "Trebuchet MS", "Segoe UI", Verdana, system-ui, sans-serif;
   font-size: var(--texto);
   color: var(--tinta);
-  background: linear-gradient(170deg, var(--fondo) 0%, var(--fondo2) 100%);
+  background: none; /* el fondo lo pintan las dos capas fijas de abajo */
   -webkit-font-smoothing: antialiased;
   -webkit-text-size-adjust: 100%;
   overscroll-behavior-y: none;
-  transition: background 0.4s ease;
+}
+
+/* Fondo de la página: la ilustración de Greencito y Sismo Tecnito, quieta aunque la página se
+   desplace (capa fija, no background-attachment: fixed, que iOS ignora). Encima va un velo con
+   los colores del personaje para que el texto se lea; su opacidad cambia con el tema. */
+body::before,
+body::after {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+}
+body::before {
+  background: var(--fondo2) url("/fondo-movil.webp") center 40% / cover no-repeat;
+}
+body::after {
+  background: linear-gradient(170deg, var(--fondo) 0%, var(--fondo2) 100%);
+  opacity: var(--velo-fondo);
+  transition: background 0.4s ease, opacity 0.4s ease;
+}
+@media (min-width: 900px), (min-resolution: 2dppx) and (min-width: 500px) {
+  body::before { background-image: url("/fondo.webp"); }
 }
 
 img { max-width: 100%; }
@@ -147,8 +171,7 @@ button, input { font: inherit; color: inherit; }
   text-align: center;
   background:
     repeating-linear-gradient(0deg, transparent 0 39px, var(--cuadricula) 39px 40px),
-    repeating-linear-gradient(90deg, transparent 0 39px, var(--cuadricula) 39px 40px),
-    linear-gradient(165deg, var(--fondo) 0%, var(--fondo2) 100%);
+    repeating-linear-gradient(90deg, transparent 0 39px, var(--cuadricula) 39px 40px);
 }
 
 .portada__duo { display: flex; justify-content: center; align-items: flex-end; gap: 16px; }
@@ -259,7 +282,7 @@ button, input { font: inherit; color: inherit; }
   height: 100dvh;
   max-height: 100dvh;
   overflow: hidden;
-  background: linear-gradient(170deg, var(--fondo) 0%, var(--fondo2) 100%);
+  background: none; /* se ve el fondo de la página */
 }
 
 .hud {

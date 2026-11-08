@@ -15,7 +15,7 @@
   max-height: 100dvh;
   overflow-y: auto;
   overscroll-behavior: contain;
-  background: linear-gradient(170deg, var(--fondo) 0%, var(--fondo2) 100%);
+  background: none; /* se ve el fondo de la página */
 }
 
 /* ==================================================================
@@ -532,8 +532,7 @@
   padding: clamp(14px, 4vw, 26px) clamp(12px, 4vw, 26px) 30px;
   background:
     repeating-linear-gradient(0deg, transparent 0 39px, var(--cuadricula) 39px 40px),
-    repeating-linear-gradient(90deg, transparent 0 39px, var(--cuadricula) 39px 40px),
-    linear-gradient(165deg, var(--fondo) 0%, var(--fondo2) 100%);
+    repeating-linear-gradient(90deg, transparent 0 39px, var(--cuadricula) 39px 40px);
 }
 
 .centro__cabeza { text-align: center; max-width: 760px; margin-inline: auto; width: 100%; }
@@ -1996,8 +1995,7 @@ kbd {
   padding: clamp(14px, 4vw, 26px) clamp(12px, 4vw, 26px) 30px;
   background:
     repeating-linear-gradient(0deg, transparent 0 39px, var(--cuadricula) 39px 40px),
-    repeating-linear-gradient(90deg, transparent 0 39px, var(--cuadricula) 39px 40px),
-    linear-gradient(165deg, var(--fondo) 0%, var(--fondo2) 100%);
+    repeating-linear-gradient(90deg, transparent 0 39px, var(--cuadricula) 39px 40px);
 }
 .logros__cabeza, .logros__seccion { width: 100%; max-width: 900px; margin-inline: auto; }
 .logros__cabeza { text-align: center; }
@@ -2340,7 +2338,7 @@ kbd {
 .d1 { background: var(--d1); } .d2 { background: var(--d2); } .d3 { background: var(--d3); }
 
 .editores { min-height: 100dvh; }
-.editores--entrar { display: grid; place-items: center; padding: 16px; background: linear-gradient(165deg, var(--fondo) 0%, var(--fondo2) 100%); }
+.editores--entrar { display: grid; place-items: center; padding: 16px; }
 .ed-entrar { display: grid; gap: 10px; }
 .ed-entrar h1 { display: flex; align-items: center; gap: 8px; margin: 0; font-size: 22px; }
 .ed-volver { text-align: center; color: var(--texto-suave); font-weight: 700; }
