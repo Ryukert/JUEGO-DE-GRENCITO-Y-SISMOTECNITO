@@ -14,6 +14,8 @@ en **Ajustes**. Cómo sacar una versión nueva: ver «Versiones» en el README.
 
 ## [Sin publicar]
 
+## [2.6.0] - 2026-11-15
+
 ### Agregado
 - **Cada quien crea su cuenta de administración** con su correo institucional (`@uabc.edu.mx`
   y sus subdominios; la lista está en `src/data/institucion.js`). Entra después de confirmar su
@@ -280,6 +282,7 @@ en **Ajustes**. Cómo sacar una versión nueva: ver «Versiones» en el README.
 - Chat con los personajes.
 - Centro de entrenamiento con 46 minijuegos en 13 motores, tres dificultades y jefes finales.
 
+[2.6.0]: https://github.com/Ryukert/JUEGO-DE-GRENCITO-Y-SISMOTECNITO/compare/v2.5.0...v2.6.0
 [2.5.0]: https://github.com/Ryukert/JUEGO-DE-GRENCITO-Y-SISMOTECNITO/compare/v2.4.0...v2.5.0
 [2.4.0]: https://github.com/Ryukert/JUEGO-DE-GRENCITO-Y-SISMOTECNITO/compare/v2.3.0...v2.4.0
 [2.3.0]: https://github.com/Ryukert/JUEGO-DE-GRENCITO-Y-SISMOTECNITO/compare/v2.2.3...v2.3.0
