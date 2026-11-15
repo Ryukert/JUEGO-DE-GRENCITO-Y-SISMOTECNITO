@@ -14,6 +14,8 @@ en **Ajustes**. Cómo sacar una versión nueva: ver «Versiones» en el README.
 
 ## [Sin publicar]
 
+## [2.2.2] - 2026-11-15
+
 ### Corregido
 - Se quita la precarga de la fuente de la 2.2.1: con ella el navegador dejaba de reportar el
   LCP (Lighthouse daba «NO_LCP» y el rendimiento salía en 0), y casi no ayudaba (0.1 s en el
@@ -221,6 +223,7 @@ en **Ajustes**. Cómo sacar una versión nueva: ver «Versiones» en el README.
 - Chat con los personajes.
 - Centro de entrenamiento con 46 minijuegos en 13 motores, tres dificultades y jefes finales.
 
+[2.2.2]: https://github.com/Ryukert/JUEGO-DE-GRENCITO-Y-SISMOTECNITO/compare/v2.2.1...v2.2.2
 [2.2.1]: https://github.com/Ryukert/JUEGO-DE-GRENCITO-Y-SISMOTECNITO/compare/v2.2.0...v2.2.1
 [2.2.0]: https://github.com/Ryukert/JUEGO-DE-GRENCITO-Y-SISMOTECNITO/compare/v2.1.0...v2.2.0
 [2.1.0]: https://github.com/Ryukert/JUEGO-DE-GRENCITO-Y-SISMOTECNITO/compare/v2.0.0...v2.1.0
