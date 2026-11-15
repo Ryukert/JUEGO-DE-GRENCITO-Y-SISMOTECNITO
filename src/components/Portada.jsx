@@ -61,6 +61,15 @@ function Barra({ onLogros, onAjustes, onGrupo, cuenta, jugador, onQuien, tema, o
   );
 }
 
+/** Entrada a la administración de encuestas (/admin). Pide la clave de administración. */
+function BotonAdmin() {
+  return (
+    <a className="boton-admin" href="/admin">
+      <Icono nombre="candado" /> Administración
+    </a>
+  );
+}
+
 export default function Portada({ progreso, ultimo, onElegir, onCentro, onLogros, onAjustes, onGrupo, cuenta, jugador, onQuien, tema, onTema, onRepaso, onJugar }) {
   const [grado, setGrado] = useState(progreso.grado || null);
   const barra = (
@@ -129,6 +138,7 @@ export default function Portada({ progreso, ultimo, onElegir, onCentro, onLogros
         </p>
 
         <Creditos />
+        <BotonAdmin />
       </div>
     );
   }
@@ -203,6 +213,7 @@ export default function Portada({ progreso, ultimo, onElegir, onCentro, onLogros
       </p>
 
       <Creditos />
+      <BotonAdmin />
     </div>
   );
 }
