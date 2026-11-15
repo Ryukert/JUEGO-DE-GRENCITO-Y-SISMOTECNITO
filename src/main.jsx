@@ -14,9 +14,9 @@ if (import.meta.env.PROD && "serviceWorker" in navigator) {
   window.addEventListener("load", () => navigator.serviceWorker.register("/sw.js").catch(() => {}));
 }
 
-// /editores: resultados de las encuestas para quienes hacen el juego (se carga aparte)
+// administración de encuestas: /admin, /administradores o /editores (se carga aparte)
 const Editores = React.lazy(() => import("./pages/Editores.jsx"));
-const esEditores = /^\/editores\/?$/.test(window.location.pathname);
+const esEditores = /^\/(editores|admin|administradores)\/?$/.test(window.location.pathname);
 
 createRoot(document.getElementById("root")).render(
   <React.StrictMode>

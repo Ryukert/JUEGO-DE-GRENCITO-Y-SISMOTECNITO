@@ -14,6 +14,14 @@ en **Ajustes**. Cómo sacar una versión nueva: ver «Versiones» en el README.
 
 ## [Sin publicar]
 
+### Agregado
+- **Administración de encuestas en vivo** (`/admin`, `/administradores` o `/editores`, con la
+  clave `EDITORES_CLAVE`): las gráficas se actualizan solas cada 30 segundos, sin parpadear, y
+  las barras se deslizan a su nuevo tamaño. Indicador «En vivo · actualizado hace 12 s» con
+  botón de pausa. Cuando llegan respuestas aparece «+N» en el total, se iluminan los juegos que
+  las recibieron y un lector de pantalla lo anuncia. Con la pestaña oculta no consulta; al
+  volver, se actualiza en seguida.
+
 ## [2.2.3] - 2026-11-15
 
 ### Corregido
