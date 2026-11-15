@@ -212,3 +212,15 @@
   border-radius: 999px;
 }
 .boton-admin:hover { background: var(--superficie); }
+
+/* ---- entrar a la administración con correo y contraseña ---- */
+.ed-otra-forma {
+  min-height: var(--toque);
+  background: none;
+  border: none;
+  color: var(--acento-texto);
+  font-weight: 700;
+  text-decoration: underline;
+  cursor: pointer;
+}
+.ed-quien { margin: 2px 0 0; font-size: 13.5px; color: var(--texto-suave); overflow-wrap: anywhere; }

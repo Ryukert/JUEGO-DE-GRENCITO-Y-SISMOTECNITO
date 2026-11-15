@@ -1,7 +1,9 @@
 /**
  * Ventana de editores: resultados de las encuestas de satisfacción de los juegos.
  *
- *   POST /api/editores { clave }                      → { pase }       (dura 8 horas)
+ *   POST /api/editores { correo, contrasena }         → { pase, correo }   (dura 8 horas)
+ *        cuentas de Supabase Auth con app_metadata.rol = "admin" (ver api/_admin.js)
+ *   POST /api/editores { clave }                      → { pase }   respaldo: EDITORES_CLAVE
  *   GET  /api/editores?desde=AAAA-MM-DD&hasta=…  (pase de editor)
  *     → { filas: [{ juego, tipo, grado, dia, gusto, dificultad, respuestas }] }
  *
@@ -9,12 +11,14 @@
  * nunca dicen quién contestó. Se leen con la llave secreta si está; si no, con la función
  * public.resumen_encuestas (llave publicable + llave de la API derivada de JUEGO_SECRETO).
  *
- * Variable requerida: EDITORES_CLAVE (la clave que escriben los editores, 10 caracteres o más).
+ * Para entrar hace falta al menos una de las dos: cuentas de administrador en Supabase Auth
+ * (con SUPABASE_URL y la llave publicable) o EDITORES_CLAVE (10 caracteres o más).
  */
 import { createHash, timingSafeEqual } from "node:crypto";
 import { db, configuracionDb, configuracionRpc, rpc } from "./_db.js";
 import { responderJson, quienEs, leerCuerpo, crearPase, paseDe, secreto } from "./_comun.js";
 import { revisarIntentos, anotarFallo } from "./_limites.js";
+import { entrarAdministrador, limpiarCorreo, contrasenaValida, configuracionAuth } from "./_admin.js";
 
 const FECHA = /^\d{4}-\d{2}-\d{2}$/;
 const zonaEditores = (env = process.env) => env.EVALUACION_ZONA || "America/Tijuana";
@@ -68,17 +72,40 @@ export default async function handler(req, res) {
   if (!secreto() || !(configuracionDb() || configuracionRpc())) {
     return responderJson(res, 503, { error: "La ventana de editores no está configurada en el servidor." });
   }
-  if (!process.env.EDITORES_CLAVE) return responderJson(res, 503, { error: "Falta EDITORES_CLAVE en el servidor." });
+  if (!process.env.EDITORES_CLAVE && !configuracionAuth()) {
+    return responderJson(res, 503, { error: "La administración no tiene cómo revisar quién entra (faltan las cuentas o EDITORES_CLAVE)." });
+  }
 
   if (req.method === "POST") {
-    if (await revisarIntentos(quienEs(req), "editores")) {
-      return responderJson(res, 429, { error: "Demasiados intentos. Espera un rato." }, { "Retry-After": "600" });
-    }
+    const ip = quienEs(req);
     let d;
     try { d = await leerCuerpo(req, 1_000); }
     catch { return responderJson(res, 400, { error: "No entendí el mensaje" }); }
+
+    // con correo y contraseña (cuentas de Supabase Auth marcadas como administrador)
+    if (d?.correo !== undefined) {
+      const correo = limpiarCorreo(d.correo);
+      if (!correo || !contrasenaValida(d.contrasena)) return responderJson(res, 400, { error: "Escribe tu correo y tu contraseña." });
+      if (await revisarIntentos(ip, `admin|${correo}`)) {
+        return responderJson(res, 429, { error: "Demasiados intentos. Espera un rato." }, { "Retry-After": "600" });
+      }
+      const r = await entrarAdministrador(correo, d.contrasena);
+      if (r.ok) return responderJson(res, 200, { pase: crearPase({ rol: "editor", correo: r.correo }), correo: r.correo });
+      if (r.motivo === "sin-servicio") {
+        console.error("[editores] Supabase Auth no respondió");
+        return responderJson(res, 503, { error: "No se pudo revisar la cuenta ahorita. Intenta en un momento." });
+      }
+      await anotarFallo(ip);
+      // mismo mensaje si la contraseña está mal o si la cuenta no es de administrador
+      return responderJson(res, 401, { error: "Correo o contraseña incorrectos, o la cuenta no es de administración." });
+    }
+
+    // respaldo: la clave de administración
+    if (await revisarIntentos(ip, "editores|clave")) {
+      return responderJson(res, 429, { error: "Demasiados intentos. Espera un rato." }, { "Retry-After": "600" });
+    }
     if (!claveEditorCorrecta(d?.clave)) {
-      await anotarFallo(quienEs(req));
+      await anotarFallo(ip);
       return responderJson(res, 401, { error: "Clave incorrecta." });
     }
     return responderJson(res, 200, { pase: crearPase({ rol: "editor" }) });

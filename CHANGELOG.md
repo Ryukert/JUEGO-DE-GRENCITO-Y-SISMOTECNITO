@@ -14,6 +14,18 @@ en **Ajustes**. Cómo sacar una versión nueva: ver «Versiones» en el README.
 
 ## [Sin publicar]
 
+### Agregado
+- **Entrar a la administración con correo y contraseña.** Las cuentas son de Supabase Auth
+  (Authentication → Users) y solo entran las marcadas con `app_metadata.rol = "admin"`.
+  El navegador no recibe los tokens de Supabase, solo el pase de 8 horas; arriba se ve con
+  qué correo entraste. La clave `EDITORES_CLAVE` queda como respaldo («Entrar con la clave
+  de administración»).
+
+### Corregido
+- El tope de intentos para entrar a la administración era uno solo para todos: 10 fallos de
+  cualquiera bloqueaban a todos una hora. Ahora es por correo (y la clave tiene el suyo), además
+  del de 20 fallos por IP.
+
 ## [2.4.0] - 2026-11-15
 
 ### Agregado

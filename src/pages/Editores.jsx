@@ -18,6 +18,7 @@ import { useEnVivo, novedades, haceCuanto, CADA, RESALTE } from "../lib/enVivo.j
  */
 
 const LLAVE_PASE = "escuadron-editor";
+const LLAVE_CORREO = "escuadron-editor-correo";
 const PERIODOS = [
   { id: "7", texto: "7 días", dias: 7 },
   { id: "30", texto: "30 días", dias: 30 },
@@ -29,6 +30,8 @@ const TIPOS = [["todos", "Todos"], ["minijuego", "Minijuegos"], ["mision", "Misi
 
 const leerPase = () => { try { return sessionStorage.getItem(LLAVE_PASE); } catch { return null; } };
 const guardarPase = (p) => { try { p ? sessionStorage.setItem(LLAVE_PASE, p) : sessionStorage.removeItem(LLAVE_PASE); } catch { /* nada */ } };
+const leerCorreo = () => { try { return sessionStorage.getItem(LLAVE_CORREO); } catch { return null; } };
+const guardarCorreo = (c) => { try { c ? sessionStorage.setItem(LLAVE_CORREO, c) : sessionStorage.removeItem(LLAVE_CORREO); } catch { /* nada */ } };
 
 function fechaLocal(d) {
   const p = (n) => String(n).padStart(2, "0");
@@ -139,6 +142,10 @@ function Segmentos({ etiqueta, opciones, valor, onCambiar }) {
 export default function Editores() {
   const [pase, setPase] = useState(() => leerPase());
   const [clave, setClave] = useState("");
+  const [correo, setCorreo] = useState("");
+  const [contrasena, setContrasena] = useState("");
+  const [conClave, setConClave] = useState(false);   // respaldo: entrar con EDITORES_CLAVE
+  const [quien, setQuien] = useState(() => leerCorreo());
   const [error, setError] = useState("");
   const [cargando, setCargando] = useState(false);
   const [filas, setFilas] = useState(null);
@@ -221,12 +228,16 @@ export default function Editores() {
     setError("");
     setCargando(true);
     try {
-      const r = await fetch("/api/editores", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ clave }) });
+      const cuerpo = conClave ? { clave } : { correo, contrasena };
+      const r = await fetch("/api/editores", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(cuerpo) });
       const d = await r.json().catch(() => ({}));
       if (!r.ok) throw new Error(d.error || "No se pudo entrar.");
       guardarPase(d.pase);
+      guardarCorreo(d.correo || null);
+      setQuien(d.correo || null);
       setPase(d.pase);
       setClave("");
+      setContrasena("");
     } catch (err) {
       setError(err.message === "Failed to fetch" ? "Sin conexión. Revisa el internet." : err.message);
     } finally {
@@ -269,13 +280,32 @@ export default function Editores() {
       <main className="pantalla editores editores--entrar">
         <form className="ajustes cuenta ed-entrar" onSubmit={entrar}>
           <h1><Icono nombre="candado" /> Administración de encuestas</h1>
-          <p className="cuenta__nota">Resultados de las encuestas de los juegos, en vivo. Escribe la clave de administración.</p>
-          <label className="cuenta__campo" htmlFor="ed-clave">
-            <span>Clave</span>
-            <input id="ed-clave" type="password" value={clave} onChange={(e) => setClave(e.target.value)} autoComplete="current-password" required autoFocus />
-          </label>
+          <p className="cuenta__nota">
+            Resultados de las encuestas de los juegos, en vivo.{" "}
+            {conClave ? "Escribe la clave de administración." : "Entra con tu cuenta de administración."}
+          </p>
+          {conClave ? (
+            <label className="cuenta__campo" htmlFor="ed-clave">
+              <span>Clave</span>
+              <input id="ed-clave" type="password" value={clave} onChange={(e) => setClave(e.target.value)} autoComplete="current-password" required autoFocus />
+            </label>
+          ) : (
+            <>
+              <label className="cuenta__campo" htmlFor="ed-correo">
+                <span>Correo electrónico</span>
+                <input id="ed-correo" type="email" value={correo} onChange={(e) => setCorreo(e.target.value)} autoComplete="username" inputMode="email" maxLength={254} required autoFocus />
+              </label>
+              <label className="cuenta__campo" htmlFor="ed-contrasena">
+                <span>Contraseña</span>
+                <input id="ed-contrasena" type="password" value={contrasena} onChange={(e) => setContrasena(e.target.value)} autoComplete="current-password" minLength={6} maxLength={128} required />
+              </label>
+            </>
+          )}
           {error && <p className="cuenta__error" role="alert">{error}</p>}
           <button className="boton-grande" type="submit" disabled={cargando}>{cargando ? "Entrando…" : "Entrar"}</button>
+          <button type="button" className="ed-otra-forma" onClick={() => { setConClave((v) => !v); setError(""); }}>
+            {conClave ? "Entrar con correo y contraseña" : "Entrar con la clave de administración"}
+          </button>
           <a className="ed-volver" href="/">Volver al juego</a>
         </form>
       </main>
@@ -293,6 +323,7 @@ export default function Editores() {
           <BotonTema tema={tema} onTema={alternarTema} />
         </span>
         <h1>Resultados de las encuestas</h1>
+        {quien && <p className="ed-quien">Entraste como <strong>{quien}</strong></p>}
         <p className="logros__nota">Lo que contestan los niños al terminar cada juego: «¿Te gustó?» y «¿Cómo estuvo de difícil?».</p>
         <p className={`ed-vivo ${enVivo ? "ed-vivo--on" : ""}`}>
           <span className="ed-vivo__punto" aria-hidden="true" />
@@ -323,7 +354,7 @@ export default function Editores() {
           <button type="button" onClick={descargarCsv} disabled={!resumen?.juegos.length}>
             <Icono nombre="descargar" /> Excel (CSV)
           </button>
-          <button type="button" onClick={() => { guardarPase(null); setPase(null); setFilas(null); anteriores.current = null; }}>Salir</button>
+          <button type="button" onClick={() => { guardarPase(null); guardarCorreo(null); setQuien(null); setPase(null); setFilas(null); anteriores.current = null; }}>Salir</button>
         </span>
       </section>
 

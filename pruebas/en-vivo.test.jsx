@@ -118,3 +118,33 @@ describe("botón de la portada para entrar a la administración", () => {
     vi.unstubAllGlobals();
   });
 });
+
+describe("entrar a la administración con correo y contraseña", () => {
+  afterEach(() => { cleanup(); vi.unstubAllGlobals(); sessionStorage.clear(); });
+
+  it("pide correo y contraseña, los manda y muestra con qué correo entraste", async () => {
+    window.matchMedia = () => ({ matches: false, addListener() {}, removeListener() {}, addEventListener() {}, removeEventListener() {} });
+    sessionStorage.clear();
+    const fetchFalso = vi.fn(async (url, op = {}) =>
+      op.method === "POST"
+        ? { ok: true, status: 200, json: async () => ({ pase: "p", correo: "directora@escuela.mx" }) }
+        : { ok: true, status: 200, json: async () => ({ filas: [] }) });
+    vi.stubGlobal("fetch", fetchFalso);
+    render(<Editores />);
+    fireEvent.change(screen.getByLabelText("Correo electrónico"), { target: { value: "directora@escuela.mx" } });
+    fireEvent.change(screen.getByLabelText("Contraseña"), { target: { value: "secreta-123" } });
+    fireEvent.click(screen.getByRole("button", { name: "Entrar" }));
+    await screen.findByText("Resultados de las encuestas");
+    expect(JSON.parse(fetchFalso.mock.calls[0][1].body)).toEqual({ correo: "directora@escuela.mx", contrasena: "secreta-123" });
+    expect(screen.getByText("directora@escuela.mx")).toBeTruthy();
+  });
+
+  it("se puede cambiar a la clave de administración como respaldo", () => {
+    window.matchMedia = () => ({ matches: false, addListener() {}, removeListener() {}, addEventListener() {}, removeEventListener() {} });
+    sessionStorage.clear();
+    render(<Editores />);
+    fireEvent.click(screen.getByRole("button", { name: "Entrar con la clave de administración" }));
+    expect(screen.getByLabelText("Clave")).toBeTruthy();
+    expect(screen.queryByLabelText("Correo electrónico")).toBeNull();
+  });
+});
