@@ -8,6 +8,7 @@ import { temaInicial, guardarTema, aplicarTema } from "../lib/tema.js";
 import Icono from "../components/Icono.jsx";
 import BotonTema from "../components/BotonTema.jsx";
 import { useEnVivo, novedades, haceCuanto, CADA, RESALTE } from "../lib/enVivo.js";
+import { esCorreoInstitucional, dominiosEnTexto, DOMINIOS_INSTITUCIONALES } from "../data/institucion.js";
 
 /**
  * Administración de encuestas (/admin, /administradores o /editores): resultados de las
@@ -226,6 +227,10 @@ export default function Editores() {
   async function entrar(e) {
     e.preventDefault();
     setError("");
+    if (!conClave && !esCorreoInstitucional(correo)) {
+      setError(`Entra con tu correo institucional (${dominiosEnTexto()}).`);
+      return;
+    }
     setCargando(true);
     try {
       const cuerpo = conClave ? { clave } : { correo, contrasena };
@@ -292,8 +297,13 @@ export default function Editores() {
           ) : (
             <>
               <label className="cuenta__campo" htmlFor="ed-correo">
-                <span>Correo electrónico</span>
-                <input id="ed-correo" type="email" value={correo} onChange={(e) => setCorreo(e.target.value)} autoComplete="username" inputMode="email" maxLength={254} required autoFocus />
+                <span>Correo institucional</span>
+                <input
+                  id="ed-correo" type="email" value={correo} onChange={(e) => setCorreo(e.target.value)}
+                  autoComplete="username" inputMode="email" maxLength={254} required autoFocus
+                  placeholder={`nombre@${DOMINIOS_INSTITUCIONALES[0]}`} aria-describedby="ed-correo-ayuda"
+                />
+                <small id="ed-correo-ayuda" className="ed-ayuda">Solo correos {dominiosEnTexto()}</small>
               </label>
               <label className="cuenta__campo" htmlFor="ed-contrasena">
                 <span>Contraseña</span>

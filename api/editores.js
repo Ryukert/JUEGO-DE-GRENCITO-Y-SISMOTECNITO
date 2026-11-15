@@ -18,7 +18,8 @@ import { createHash, timingSafeEqual } from "node:crypto";
 import { db, configuracionDb, configuracionRpc, rpc } from "./_db.js";
 import { responderJson, quienEs, leerCuerpo, crearPase, paseDe, secreto } from "./_comun.js";
 import { revisarIntentos, anotarFallo } from "./_limites.js";
-import { entrarAdministrador, limpiarCorreo, contrasenaValida, configuracionAuth } from "./_admin.js";
+import { entrarAdministrador, limpiarCorreo, contrasenaValida, configuracionAuth, esCorreoInstitucional } from "./_admin.js";
+import { dominiosEnTexto } from "../src/data/institucion.js";
 
 const FECHA = /^\d{4}-\d{2}-\d{2}$/;
 const zonaEditores = (env = process.env) => env.EVALUACION_ZONA || "America/Tijuana";
@@ -86,6 +87,9 @@ export default async function handler(req, res) {
     if (d?.correo !== undefined) {
       const correo = limpiarCorreo(d.correo);
       if (!correo || !contrasenaValida(d.contrasena)) return responderJson(res, 400, { error: "Escribe tu correo y tu contraseña." });
+      if (!esCorreoInstitucional(correo)) {
+        return responderJson(res, 400, { error: `Entra con tu correo institucional (${dominiosEnTexto()}).` });
+      }
       if (await revisarIntentos(ip, `admin|${correo}`)) {
         return responderJson(res, 429, { error: "Demasiados intentos. Espera un rato." }, { "Retry-After": "600" });
       }

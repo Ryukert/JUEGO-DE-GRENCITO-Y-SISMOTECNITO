@@ -127,16 +127,16 @@ describe("entrar a la administración con correo y contraseña", () => {
     sessionStorage.clear();
     const fetchFalso = vi.fn(async (url, op = {}) =>
       op.method === "POST"
-        ? { ok: true, status: 200, json: async () => ({ pase: "p", correo: "directora@escuela.mx" }) }
+        ? { ok: true, status: 200, json: async () => ({ pase: "p", correo: "directora@uabc.edu.mx" }) }
         : { ok: true, status: 200, json: async () => ({ filas: [] }) });
     vi.stubGlobal("fetch", fetchFalso);
     render(<Editores />);
-    fireEvent.change(screen.getByLabelText("Correo electrónico"), { target: { value: "directora@escuela.mx" } });
+    fireEvent.change(screen.getByLabelText(/Correo institucional/), { target: { value: "directora@uabc.edu.mx" } });
     fireEvent.change(screen.getByLabelText("Contraseña"), { target: { value: "secreta-123" } });
     fireEvent.click(screen.getByRole("button", { name: "Entrar" }));
     await screen.findByText("Resultados de las encuestas");
-    expect(JSON.parse(fetchFalso.mock.calls[0][1].body)).toEqual({ correo: "directora@escuela.mx", contrasena: "secreta-123" });
-    expect(screen.getByText("directora@escuela.mx")).toBeTruthy();
+    expect(JSON.parse(fetchFalso.mock.calls[0][1].body)).toEqual({ correo: "directora@uabc.edu.mx", contrasena: "secreta-123" });
+    expect(screen.getByText("directora@uabc.edu.mx")).toBeTruthy();
   });
 
   it("se puede cambiar a la clave de administración como respaldo", () => {
@@ -145,6 +145,23 @@ describe("entrar a la administración con correo y contraseña", () => {
     render(<Editores />);
     fireEvent.click(screen.getByRole("button", { name: "Entrar con la clave de administración" }));
     expect(screen.getByLabelText("Clave")).toBeTruthy();
-    expect(screen.queryByLabelText("Correo electrónico")).toBeNull();
+    expect(screen.queryByLabelText(/Correo institucional/)).toBeNull();
+  });
+});
+
+describe("la pantalla pide el correo institucional", () => {
+  afterEach(() => { cleanup(); vi.unstubAllGlobals(); sessionStorage.clear(); });
+  it("avisa sin mandar nada si el correo no es institucional", () => {
+    window.matchMedia = () => ({ matches: false, addListener() {}, removeListener() {}, addEventListener() {}, removeEventListener() {} });
+    sessionStorage.clear();
+    const fetchFalso = vi.fn(async () => ({ ok: true, status: 200, json: async () => ({ filas: [] }) }));
+    vi.stubGlobal("fetch", fetchFalso);
+    render(<Editores />);
+    expect(screen.getByText("Solo correos @uabc.edu.mx")).toBeTruthy();
+    fireEvent.change(screen.getByLabelText(/Correo institucional/), { target: { value: "alguien@gmail.com" } });
+    fireEvent.change(screen.getByLabelText("Contraseña"), { target: { value: "secreta-123" } });
+    fireEvent.submit(screen.getByRole("button", { name: "Entrar" }).closest("form"));
+    expect(screen.getByRole("alert").textContent).toMatch(/correo institucional/);
+    expect(fetchFalso).not.toHaveBeenCalled();
   });
 });

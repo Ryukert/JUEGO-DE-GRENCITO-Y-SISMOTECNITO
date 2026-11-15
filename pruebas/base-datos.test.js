@@ -683,39 +683,54 @@ describe("administración con correo y contraseña (Supabase Auth)", () => {
   const editores = async () => (await import("../api/editores.js")).default;
   beforeEach(() => {
     cuentasAuth = [
-      { email: "directora@escuela.mx", password: "secreta-123", rol: "admin" },
-      { email: "alguien@escuela.mx", password: "otra-clave-9" },   // cuenta sin rol de administración
+      { email: "directora@uabc.edu.mx", password: "secreta-123", rol: "admin" },
+      { email: "alguien@uabc.edu.mx", password: "otra-clave-9" },   // cuenta sin rol de administración
     ];
   });
 
   it("un administrador entra con su correo (sin importar mayúsculas) y su pase abre los resultados", async () => {
     const api = await editores();
-    const r = await llamar(api, { correo: "  Directora@Escuela.MX ", contrasena: "secreta-123" });
+    const r = await llamar(api, { correo: "  Directora@UABC.EDU.MX ", contrasena: "secreta-123" });
     expect(r.statusCode).toBe(200);
-    expect(r.json().correo).toBe("directora@escuela.mx");
+    expect(r.json().correo).toBe("directora@uabc.edu.mx");
     expect(r.json()).not.toHaveProperty("access_token");   // los tokens de Supabase no salen del servidor
-    expect(leerPase(r.json().pase)).toMatchObject({ rol: "editor", correo: "directora@escuela.mx" });
+    expect(leerPase(r.json().pase)).toMatchObject({ rol: "editor", correo: "directora@uabc.edu.mx" });
     expect((await llamar(api, undefined, { metodo: "GET", pase: r.json().pase })).statusCode).toBe(200);
   });
 
   it("contraseña mala, o una cuenta que no es de administración: no entra, con el mismo mensaje", async () => {
     const api = await editores();
-    const mala = await llamar(api, { correo: "directora@escuela.mx", contrasena: "no-es-esta" });
-    const noAdmin = await llamar(api, { correo: "alguien@escuela.mx", contrasena: "otra-clave-9" });
+    const mala = await llamar(api, { correo: "directora@uabc.edu.mx", contrasena: "no-es-esta" });
+    const noAdmin = await llamar(api, { correo: "alguien@uabc.edu.mx", contrasena: "otra-clave-9" });
     expect(mala.statusCode).toBe(401);
     expect(noAdmin.statusCode).toBe(401);
     expect(mala.json().error).toBe(noAdmin.json().error);
     expect((await llamar(api, { correo: "no-es-correo", contrasena: "secreta-123" })).statusCode).toBe(400);
-    expect((await llamar(api, { correo: "directora@escuela.mx", contrasena: "corta" })).statusCode).toBe(400);
+    expect((await llamar(api, { correo: "directora@uabc.edu.mx", contrasena: "corta" })).statusCode).toBe(400);
   });
 
   it("20 fallos desde una IP la frenan, aunque luego traiga la contraseña buena", async () => {
     const api = await editores();
     for (let i = 0; i < 20; i++) {
-      expect((await llamar(api, { correo: `prueba${i}@escuela.mx`, contrasena: "adivinando" }, { ip: "5.5.5.5" })).statusCode).toBe(401);
+      expect((await llamar(api, { correo: `prueba${i}@uabc.edu.mx`, contrasena: "adivinando" }, { ip: "5.5.5.5" })).statusCode).toBe(401);
     }
-    expect((await llamar(api, { correo: "directora@escuela.mx", contrasena: "secreta-123" }, { ip: "5.5.5.5" })).statusCode).toBe(429);
-    expect((await llamar(api, { correo: "directora@escuela.mx", contrasena: "secreta-123" }, { ip: "6.6.6.6" })).statusCode).toBe(200);
+    expect((await llamar(api, { correo: "directora@uabc.edu.mx", contrasena: "secreta-123" }, { ip: "5.5.5.5" })).statusCode).toBe(429);
+    expect((await llamar(api, { correo: "directora@uabc.edu.mx", contrasena: "secreta-123" }, { ip: "6.6.6.6" })).statusCode).toBe(200);
+  });
+
+  it("solo con correo institucional: otro dominio se rechaza sin preguntar a Supabase", async () => {
+    const api = await editores();
+    cuentasAuth.push({ email: "admin@gmail.com", password: "secreta-123", rol: "admin" });
+    fetch.mockClear();
+    const r = await llamar(api, { correo: "admin@gmail.com", contrasena: "secreta-123" });
+    expect(r.statusCode).toBe(400);
+    expect(r.json().error).toMatch(/correo institucional \(@uabc\.edu\.mx\)/);
+    expect(fetch.mock.calls.some(([url]) => String(url).includes("/auth/v1/"))).toBe(false);
+    // también se aceptan subdominios de la institución, pero no dominios que solo se parecen
+    const { esCorreoInstitucional } = await import("../src/data/institucion.js");
+    expect(esCorreoInstitucional("ana@fcitec.uabc.edu.mx")).toBe(true);
+    expect(esCorreoInstitucional("ana@uabc.edu.mx.falso.com")).toBe(false);
+    expect(esCorreoInstitucional("ana@notuabc.edu.mx")).toBe(false);
   });
 
   it("la clave de administración sigue sirviendo de respaldo", async () => {

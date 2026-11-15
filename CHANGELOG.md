@@ -14,6 +14,11 @@ en **Ajustes**. Cómo sacar una versión nueva: ver «Versiones» en el README.
 
 ## [Sin publicar]
 
+### Cambiado
+- A la administración solo se entra con **correo institucional** (`@uabc.edu.mx` y sus
+  subdominios; la lista está en `src/data/institucion.js`). Otro dominio se rechaza sin
+  preguntar a Supabase, y la pantalla lo indica desde el principio.
+
 ## [2.5.0] - 2026-11-15
 
 ### Agregado
