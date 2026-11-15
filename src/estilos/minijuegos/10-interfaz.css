@@ -37,8 +37,11 @@ kbd {
 .mesa > .pantalla:not(.tiembla) {
   animation: pantalla-entra 0.28s ease-out;
 }
+/* desde 0.01 y no 0: Chrome no cuenta como «lo más grande visible» (LCP) lo que se dibuja
+   con opacidad 0, y si el texto de la portada se pinta en ese cuadro, ya no lo vuelve a contar
+   (Lighthouse daba NO_LCP en la mitad de las corridas). A la vista es lo mismo. */
 @keyframes pantalla-entra {
-  from { opacity: 0; transform: translateY(10px); }
+  from { opacity: 0.01; transform: translateY(10px); }
   to { opacity: 1; transform: none; }
 }
 

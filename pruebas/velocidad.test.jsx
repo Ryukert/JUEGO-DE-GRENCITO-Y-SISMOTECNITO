@@ -95,10 +95,13 @@ describe("rendimiento y SEO (Lighthouse)", () => {
     expect(robots).toMatch(/^Disallow: \/api\/$/m);
   });
 
-  it("la fuente NO se precarga: con <link rel=preload> el navegador dejaba de reportar el LCP", () => {
-    // medido en 2.2.1: con la precarga, Lighthouse daba NO_LCP; sin ella, LCP 3.2 s (y el primer
-    // dibujo solo mejoraba 0.1 s). Si se vuelve a intentar, hay que medir el LCP antes de publicar.
-    expect(readFileSync(raiz("vite.config.js"), "utf8")).not.toMatch(/precargarFuente|as: "font"/);
+  it("la animación de entrada no arranca en opacidad 0 (si no, el navegador no reporta el LCP)", () => {
+    // Chrome no cuenta lo que se pinta con opacidad 0; si el texto de la portada se pintaba en
+    // ese cuadro, ya no había LCP (Lighthouse: NO_LCP en la mitad de las corridas).
+    const css = readFileSync(raiz("src/estilos/minijuegos/10-interfaz.css"), "utf8");
+    const entra = css.match(/@keyframes pantalla-entra \{\s*from \{([^}]*)\}/)[1];
+    expect(entra).not.toMatch(/opacity:\s*0\s*;/);
+    expect(entra).toMatch(/opacity:\s*0\.01/);
   });
 
   it("Mis logros, el panel del maestro y el repaso no viajan con la portada", () => {
