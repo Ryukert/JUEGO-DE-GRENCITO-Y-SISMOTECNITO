@@ -4,8 +4,13 @@
  *
  * Cualquiera con correo institucional (src/data/institucion.js) puede crear su cuenta, pero
  * solo entra después de CONFIRMAR su correo: así nadie se registra con la dirección de otro.
- * Las cuentas viven en Supabase Auth (Authentication → Users). Para quitarle el acceso a
- * alguien sin borrar su cuenta:
+ * Las cuentas viven en Supabase Auth (Authentication → Users).
+ *
+ * Superusuario: una cuenta con `app_metadata.rol = "superusuario"` entra aunque su correo no
+ * sea institucional (p. ej. el de quien mantiene el juego). Esa marca solo se pone desde la base
+ * de datos o con la llave secreta; el correo no se escribe en el código (el repositorio es público).
+ *
+ * Para quitarle el acceso a alguien sin borrar su cuenta:
  *
  *   update auth.users set raw_app_meta_data = raw_app_meta_data || '{"rol":"bloqueado"}'
  *   where email = 'correo@uabc.edu.mx';
@@ -54,7 +59,7 @@ const codigo = (d) => String(d?.error_code || d?.code || d?.error || "").toLower
 /**
  * Revisa correo y contraseña. Entra quien tiene correo institucional confirmado y no está
  * bloqueado. → { ok: true, correo } | { ok: false, motivo }
- *   motivo: "credenciales" | "sin-confirmar" | "bloqueado" | "sin-servicio"
+ *   motivo: "credenciales" | "sin-confirmar" | "bloqueado" | "no-institucional" | "sin-servicio"
  */
 export async function entrarAdministrador(correo, contrasena, { env } = {}) {
   const { estado, datos } = await auth("token?grant_type=password", { cuerpo: { email: correo, password: contrasena }, env });
@@ -66,9 +71,11 @@ export async function entrarAdministrador(correo, contrasena, { env } = {}) {
   const u = datos?.user || {};
   // aunque el proyecto tuviera apagada la confirmación de correo, aquí se exige
   if (!(u.email_confirmed_at || u.confirmed_at)) return { ok: false, motivo: "sin-confirmar" };
-  if (u.app_metadata?.rol === "bloqueado") return { ok: false, motivo: "bloqueado" };
-  if (!esCorreoInstitucional(u.email || correo)) return { ok: false, motivo: "credenciales" };
-  return { ok: true, correo: String(u.email || correo).toLowerCase() };
+  const rol = u.app_metadata?.rol;
+  if (rol === "bloqueado") return { ok: false, motivo: "bloqueado" };
+  const superusuario = rol === "superusuario";
+  if (!superusuario && !esCorreoInstitucional(u.email || correo)) return { ok: false, motivo: "no-institucional" };
+  return { ok: true, correo: String(u.email || correo).toLowerCase(), superusuario };
 }
 
 /**
