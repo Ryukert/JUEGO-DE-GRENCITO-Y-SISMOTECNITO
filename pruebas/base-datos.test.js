@@ -153,7 +153,11 @@ describe("pases firmados", () => {
     const [cuerpo, firma] = pase.split(".");
     const otro = Buffer.from(JSON.stringify({ rol: "maestro", g: "2", exp: Date.now() + 1e9 })).toString("base64url");
     expect(leerPase(otro + "." + firma)).toBeNull();
-    expect(leerPase(cuerpo + "." + firma.slice(0, -2) + "AA")).toBeNull();
+    // se cambia el último carácter por otro que seguro es distinto (antes se ponía «AA» y, si la
+    // firma ya terminaba así, no se alteraba nada: fallaba ~1 de cada 1,000 corridas)
+    const alterada = firma.slice(0, -1) + (firma.at(-1) === "A" ? "B" : "A");
+    expect(alterada).not.toBe(firma);
+    expect(leerPase(cuerpo + "." + alterada)).toBeNull();
     expect(leerPase(pase, { ahora: Date.now() + 400 * 86_400_000 })).toBeNull();
     expect(leerPase(pase, { env: { JUEGO_SECRETO: "corto" } })).toBeNull();
   });
