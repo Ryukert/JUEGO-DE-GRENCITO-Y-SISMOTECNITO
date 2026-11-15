@@ -137,7 +137,7 @@ export function Instrucciones({
         <Icono nombre="volver" /> Centro de entrenamiento
       </button>
 
-      {personaje?.cuerpo && <img className="mini__figura flota" src={personaje.cuerpo} alt="" />}
+      {personaje?.cuerpo && <img className="mini__figura flota" src={personaje.cuerpo} {...personaje.medidas} alt="" />}
 
       <h2>
         <IconoJuego juego={juego} /> {juego.nombre}
@@ -201,7 +201,7 @@ export function SelectorDificultad({ valor, opciones, onCambiar }) {
 export function Resultado({ juego, personaje, resultado, estrellas, nuevoRecord, onOtra, onSalir, children }) {
   return (
     <div className="mini mini--intro jm__resultado">
-      {personaje?.cuerpo && <img className="mini__figura flota" src={personaje.cuerpo} alt="" />}
+      {personaje?.cuerpo && <img className="mini__figura flota" src={personaje.cuerpo} {...personaje.medidas} alt="" />}
 
       <p className="jm__estrellas" aria-label={`${estrellas} de 3 estrellas`}>
         {[0, 1, 2].map((i) => (

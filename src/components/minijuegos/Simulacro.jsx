@@ -134,7 +134,7 @@ export default function Simulacro({ personaje: p, vidas: vidasIniciales, onTermi
   if (fase === "instrucciones") {
     return (
       <div className="mini mini--intro">
-        <img className="mini__figura flota" src={p.cuerpo} alt="" />
+        <img className="mini__figura flota" src={p.cuerpo} {...p.medidas} alt="" />
         <h2>Simulacro relámpago</h2>
         <p className="mini__texto">
           Está temblando. Toca las tres acciones <strong>en este orden</strong>:

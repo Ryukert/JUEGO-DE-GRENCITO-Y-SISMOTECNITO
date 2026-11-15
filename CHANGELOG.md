@@ -14,6 +14,21 @@ en **Ajustes**. Cómo sacar una versión nueva: ver «Versiones» en el README.
 
 ## [Sin publicar]
 
+### Cambiado
+- **Carga más rápida en teléfonos** (Lighthouse en móvil: rendimiento 96, accesibilidad 100,
+  buenas prácticas 100):
+  - Logotipos al doble del tamaño en que se ven: de 106 KB a 26 KB entre los cuatro.
+  - Fondo del teléfono de 98 KB a 54 KB (va detrás de un velo, se ve igual); personajes
+    recomprimidos (−6 KB).
+  - Las imágenes de los personajes declaran su tamaño, para que el navegador aparte el lugar.
+  - La fuente Nunito se pide junto con el CSS (`<link rel="preload">`, `precarga-fuente.js`).
+  - Mis logros, el panel del maestro y el repaso se descargan al abrirse (`src/paginas.js`):
+    el script principal baja de 102 a 97 KB comprimido. El service worker también los guarda.
+
+### Corregido
+- Faltaba `robots.txt`: la ruta devolvía el HTML del juego y Lighthouse marcaba 43 errores de
+  SEO. Ahora permite todo menos `/editores` y `/api/`.
+
 ## [2.2.0] - 2026-11-08
 
 ### Agregado

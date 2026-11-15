@@ -6,7 +6,6 @@ import Final from "./components/Final.jsx";
 import Tutorial from "./components/Tutorial.jsx";
 import Ajustes from "./components/Ajustes.jsx";
 import Centro from "./pages/Centro.jsx";
-import Logros from "./pages/Logros.jsx";
 import PantallaMinijuego from "./juegos/PantallaMinijuego.jsx";
 import { POR_ID } from "./juegos/registro.js";
 import { sonido, sonidoActivo, alternarSonido } from "./lib/sonido.js";
@@ -15,8 +14,7 @@ import { temaInicial, temaGuardado, guardarTema, TEMA_NEUTRO, TEMA_NEUTRO_OSCURO
 import { leerPreferencias, guardarPreferencia, aplicarPreferencias } from "./lib/preferencias.js";
 import { useAtajos } from "./lib/atajos.js";
 import Cuenta from "./components/Cuenta.jsx";
-import Maestro from "./pages/Maestro.jsx";
-import Repaso from "./pages/Repaso.jsx";
+import { Logros, Maestro, Repaso } from "./paginas.js";   // se descargan al abrirse
 import QuienJuega from "./components/QuienJuega.jsx";
 import {
   jugadorActual, listarJugadores, alCambiarJugador, yaSePregunto, marcarPreguntado as marcarQuienPreguntado,
@@ -436,7 +434,7 @@ export default function App() {
   } else if (pantalla === "caido") {
     vista = (
       <div className="pantalla final final--caido">
-        <img className="final__figura" src={p.cuerpo} alt="" />
+        <img className="final__figura" src={p.cuerpo} {...p.medidas} alt="" />
         <h2>Se acabaron las vidas</h2>
         <p className="final__record">
           Llevas {puntos} {p.moneda}. Nadie aprende a la primera: repite esta

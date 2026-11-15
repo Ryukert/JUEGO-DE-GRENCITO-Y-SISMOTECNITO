@@ -117,7 +117,7 @@ export default function Basura({ personaje: p, grado, vidas: vidasIniciales, onT
   if (fase === "instrucciones") {
     return (
       <div className="mini mini--intro">
-        <img className="mini__figura flota" src={p.cuerpo} alt="" />
+        <img className="mini__figura flota" src={p.cuerpo} {...p.medidas} alt="" />
         <h2>Separa o pierde</h2>
         <p className="mini__texto">
           Llegan diez residuos, uno por uno. Mándalos al bote correcto antes de

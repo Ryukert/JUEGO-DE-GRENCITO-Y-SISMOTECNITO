@@ -45,7 +45,7 @@ export default [
   },
 
   {
-    files: ["api/**/*.js", "*.config.js", "version-sw.js", "scripts/**/*.js"],
+    files: ["api/**/*.js", "*.config.js", "version-sw.js", "precarga-fuente.js", "scripts/**/*.js"],
     languageOptions: { globals: globals.node },
   },
 

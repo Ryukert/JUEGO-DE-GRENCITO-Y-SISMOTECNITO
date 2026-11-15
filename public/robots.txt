@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+Disallow: /editores
+Disallow: /api/

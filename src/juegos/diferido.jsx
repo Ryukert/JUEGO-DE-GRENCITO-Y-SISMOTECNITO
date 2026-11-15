@@ -15,7 +15,7 @@ import { useState, useEffect } from "react";
  * render, sin pasar por «Cargando» (y las pruebas no tienen que esperar). Si la descarga
  * falla (sin internet y sin caché), ofrece reintentar en vez de dejar la pantalla en blanco.
  */
-export function diferido(cargar, nombre = "default") {
+export function diferido(cargar, nombre = "default", { cargando = "Cargando el juego…" } = {}) {
   let Componente = null;
   let promesa = null;
 
@@ -53,7 +53,7 @@ export function diferido(cargar, nombre = "default") {
     if (fallo) {
       return (
         <div className="cargando-juego" role="alert">
-          <p>No se pudo abrir el juego. Revisa la conexión a internet.</p>
+          <p>No se pudo abrir. Revisa la conexión a internet.</p>
           <button
             className="boton-grande"
             onClick={() => {
@@ -68,7 +68,7 @@ export function diferido(cargar, nombre = "default") {
     }
     return (
       <p className="cargando-juego" role="status">
-        Cargando el juego…
+        {cargando}
       </p>
     );
   }

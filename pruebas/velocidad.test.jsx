@@ -45,7 +45,7 @@ describe("componente diferido", () => {
       .mockResolvedValueOnce({ default: Hola });
     const Comp = diferido(cargar);
     await act(async () => { render(<Comp nombre="Sol" />); });
-    expect(screen.getByRole("alert").textContent).toMatch(/No se pudo abrir el juego/);
+    expect(screen.getByRole("alert").textContent).toMatch(/No se pudo abrir/);
     await act(async () => { fireEvent.click(screen.getByRole("button", { name: "Intentar de nuevo" })); });
     expect(screen.getByText("Hola, Sol")).toBeTruthy();
     expect(cargar).toHaveBeenCalledTimes(2);
@@ -84,5 +84,57 @@ describe("el service worker guarda los motores para jugar sin internet", () => {
     const sw = readFileSync(raiz("public/sw.js"), "utf8");
     expect(sw).toContain('"__DIFERIDOS_BUILD__".split(",")');
     expect(sw).toMatch(/cache\.addAll\(DIFERIDOS\)/);
+  });
+});
+
+describe("rendimiento y SEO (Lighthouse)", () => {
+  it("hay un robots.txt de verdad (sin él, la ruta devolvía el HTML del juego)", () => {
+    const robots = readFileSync(raiz("public/robots.txt"), "utf8");
+    expect(robots).toMatch(/^User-agent: \*$/m);
+    expect(robots).toMatch(/^Disallow: \/editores$/m);
+    expect(robots).toMatch(/^Disallow: \/api\/$/m);
+  });
+
+  it("la fuente se precarga desde el <head> con el nombre que tenga en cada versión", async () => {
+    const { precargarFuente } = await import("../precarga-fuente.js");
+    const p = precargarFuente();
+    const etiquetas = p.transformIndexHtml.handler("", { bundle: { "assets/index-1.js": {}, "assets/nunito-variable-abc.woff2": {} } });
+    expect(etiquetas).toEqual([{
+      tag: "link",
+      attrs: { rel: "preload", href: "/assets/nunito-variable-abc.woff2", as: "font", type: "font/woff2", crossorigin: "" },
+      injectTo: "head-prepend",
+    }]);
+    expect(p.transformIndexHtml.handler("", {})).toEqual([]);   // en desarrollo no hay bundle
+  });
+
+  it("Mis logros, el panel del maestro y el repaso no viajan con la portada", () => {
+    const app = readFileSync(raiz("src/App.jsx"), "utf8");
+    expect(app).not.toMatch(/^import .* from "\.\/pages\/(Logros|Maestro|Repaso)\.jsx";/m);
+    expect(app).toMatch(/from "\.\/paginas\.js"/);
+  });
+
+  it("el service worker también guarda las páginas diferidas", () => {
+    const pagina = { type: "chunk", fileName: "assets/Logros-1.js", facadeModuleId: "/p/src/pages/Logros.jsx", imports: [] };
+    expect(archivosDiferidos({ a: pagina })).toEqual(["/assets/Logros-1.js"]);
+  });
+
+  it("las imágenes de personajes declaran su tamaño y coincide con el archivo", async () => {
+    const { PERSONAJES } = await import("../src/data/personajes.js");
+    for (const p of Object.values(PERSONAJES)) {
+      const archivo = readFileSync(raiz("public" + p.cuerpo));
+      // WebP con alfa (VP8X): ancho-1 y alto-1 en 3 bytes cada uno, desde el byte 24
+      const ancho = 1 + archivo.readUIntLE(24, 3), alto = 1 + archivo.readUIntLE(27, 3);
+      expect(p.medidas, p.id).toEqual({ width: ancho, height: alto });
+    }
+    const usos = ["src/components/Portada.jsx", "src/components/Reto.jsx", "src/components/Final.jsx", "src/juegos/ui/Marco.jsx"]
+      .map((f) => readFileSync(raiz(f), "utf8"));
+    for (const codigo of usos) expect(codigo).not.toMatch(/\.cuerpo\}(?! \{\.\.\.)/);
+  });
+
+  it("los logotipos pesan poco: miden como máximo el doble de lo que se ven", () => {
+    for (const f of ["fcitec.webp", "bcia.webp", "copits.webp", "uabc-escudo.webp"]) {
+      const archivo = readFileSync(raiz("public/" + f));
+      expect(archivo.length, f).toBeLessThan(12_000);
+    }
   });
 });

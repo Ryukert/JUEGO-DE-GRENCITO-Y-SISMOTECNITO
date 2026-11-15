@@ -64,7 +64,7 @@ export default function Final({ personaje: p, grado, jugador, progreso, puntos, 
     <div className="pantalla final">
       <div className="final__escenario">
         <span className="final__rayos" aria-hidden="true" />
-        <img className="final__figura final__figura--festeja" src={p.cuerpo} alt={p.nombre} />
+        <img className="final__figura final__figura--festeja" src={p.cuerpo} {...p.medidas} alt={p.nombre} />
       </div>
 
       <p className="final__estrellas" aria-label={`${estrellas} de 3 estrellas`}>

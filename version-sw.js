@@ -17,8 +17,9 @@ import path from "node:path";
 export const MARCA = "__VERSION_BUILD__";
 export const MARCA_DIFERIDOS = "__DIFERIDOS_BUILD__";
 
-/** Módulos cuyo archivo (y lo que importa) se guarda para jugar sin internet. */
-const DIFERIDO = /[\\/]src[\\/]juegos[\\/]motores[\\/]/;
+/** Módulos diferidos cuyo archivo (y lo que importa) se guarda para jugar sin internet:
+ *  los motores de minijuegos y las páginas que se cargan al abrirse (src/paginas.js). */
+const DIFERIDO = /[\\/]src[\\/](juegos[\\/]motores|pages)[\\/]/;
 
 /**
  * Del bundle de Rollup/Rolldown: los archivos de los motores y todo lo que importan, sin
