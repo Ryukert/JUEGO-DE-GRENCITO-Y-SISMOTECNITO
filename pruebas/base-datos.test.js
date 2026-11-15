@@ -23,7 +23,8 @@ const MALA = RETO.opciones.find((o) => !o.ok).texto;
 
 /* ---------------- Supabase de mentiras ---------------- */
 let tablas;
-let cuentasAuth = [];   // Supabase Auth: { email, password, rol }
+let cuentasAuth = [];   // Supabase Auth: { email, password, confirmado, rol }
+let correosAuth = [];   // los correos que Supabase «mandó»
 const UNICOS = { grupos: [["codigo"]], alumnos: [["grupo_id", "apodo_normal"]], progreso: [["alumno_id"]], evaluaciones: [["alumno_id", "fecha"]], tareas: [["grupo_id"]] };
 
 function filtrar(filas, params) {
@@ -42,13 +43,37 @@ const choca = (tabla, fila, ignorar) =>
 
 function supabaseFalso(url, op = {}) {
   const u = new URL(url);
-  if (u.pathname === "/auth/v1/token") {
-    const { email, password } = JSON.parse(op.body);
-    const c = cuentasAuth.find((x) => x.email === email && x.password === password);
+  if (u.pathname.startsWith("/auth/v1/")) {
+    // Supabase Auth de mentira: cuentas { email, password, confirmado, rol }, correos mandados y tokens
     const json = (status, cuerpo) => ({ ok: status < 300, status, json: async () => cuerpo, text: async () => JSON.stringify(cuerpo) });
     if (op.headers?.apikey !== "sb_secret_prueba") return json(401, { message: "Invalid API key" });
-    if (!c) return json(400, { error: "invalid_grant", error_description: "Invalid login credentials" });
-    return json(200, { access_token: "x", user: { email: c.email, app_metadata: c.rol ? { rol: c.rol } : {} } });
+    const cuerpo = op.body ? JSON.parse(op.body) : {};
+    const ruta = u.pathname.replace("/auth/v1/", "");
+    if (ruta === "token") {
+      const c = cuentasAuth.find((x) => x.email === cuerpo.email && x.password === cuerpo.password);
+      if (!c) return json(400, { error_code: "invalid_credentials", msg: "Invalid login credentials" });
+      if (!c.confirmado) return json(400, { error_code: "email_not_confirmed", msg: "Email not confirmed" });
+      return json(200, { access_token: "x", user: { email: c.email, email_confirmed_at: "2026-11-15T00:00:00Z", app_metadata: c.rol ? { rol: c.rol } : {} } });
+    }
+    if (ruta === "signup") {
+      if (cuerpo.password.length < 8) return json(422, { error_code: "weak_password" });
+      correosAuth.push({ tipo: "confirmar", email: cuerpo.email, regreso: u.searchParams.get("redirect_to") });
+      if (!cuentasAuth.some((x) => x.email === cuerpo.email)) cuentasAuth.push({ email: cuerpo.email, password: cuerpo.password, confirmado: false });
+      return json(200, { id: "nuevo", email: cuerpo.email });
+    }
+    if (ruta === "recover") {
+      if (cuentasAuth.some((x) => x.email === cuerpo.email)) correosAuth.push({ tipo: "recuperar", email: cuerpo.email, regreso: u.searchParams.get("redirect_to") });
+      return json(200, {});
+    }
+    if (ruta === "user" && op.method === "PUT") {
+      const token = String(op.headers?.Authorization || "").replace("Bearer ", "");
+      const c = cuentasAuth.find((x) => "token-de-" + x.email === token);
+      if (!c) return json(401, { error_code: "bad_jwt" });
+      if (c.password === cuerpo.password) return json(422, { error_code: "same_password" });
+      c.password = cuerpo.password;
+      return json(200, { email: c.email });
+    }
+    return json(404, {});
   }
   const tabla = u.pathname.replace("/rest/v1/", "");
   const metodo = op.method || "GET";
@@ -116,6 +141,7 @@ const ENV = { SUPABASE_URL: "https://falso.supabase.co", SUPABASE_SECRET_KEY: "s
 beforeEach(() => {
   tablas = { grupos: [], alumnos: [], progreso: [], respuestas: [], evaluaciones: [], encuestas: [], tareas: [] };
   cuentasAuth = [];
+  correosAuth = [];
   reiniciarMemoria();
   Object.assign(process.env, ENV);
   for (const k of ["UPSTASH_REDIS_REST_URL", "UPSTASH_REDIS_REST_TOKEN", "SUPABASE_SERVICE_ROLE_KEY"]) delete process.env[k];
@@ -679,34 +705,89 @@ describe("tarea del maestro y avance por tema", () => {
   });
 });
 
-describe("administración con correo y contraseña (Supabase Auth)", () => {
+describe("administración: cuentas propias con correo institucional (Supabase Auth)", () => {
   const editores = async () => (await import("../api/editores.js")).default;
   beforeEach(() => {
     cuentasAuth = [
-      { email: "directora@uabc.edu.mx", password: "secreta-123", rol: "admin" },
-      { email: "alguien@uabc.edu.mx", password: "otra-clave-9" },   // cuenta sin rol de administración
+      { email: "directora@uabc.edu.mx", password: "secreta-123", confirmado: true },
+      { email: "nueva@uabc.edu.mx", password: "todavia-no-1", confirmado: false },
+      { email: "fuera@uabc.edu.mx", password: "bloqueada-1", confirmado: true, rol: "bloqueado" },
     ];
   });
+  const pedir = (api, cuerpo, op) => llamar(api, cuerpo, { ip: "10.1.1.1", ...op });
 
-  it("un administrador entra con su correo (sin importar mayúsculas) y su pase abre los resultados", async () => {
+  it("cualquiera con correo institucional crea su cuenta y le llega el correo para confirmarla", async () => {
     const api = await editores();
-    const r = await llamar(api, { correo: "  Directora@UABC.EDU.MX ", contrasena: "secreta-123" });
+    const r = await pedir(api, { accion: "crear", correo: "Maestro.Perez@UABC.edu.mx", contrasena: "mi-clave-larga" });
     expect(r.statusCode).toBe(200);
-    expect(r.json().correo).toBe("directora@uabc.edu.mx");
-    expect(r.json()).not.toHaveProperty("access_token");   // los tokens de Supabase no salen del servidor
-    expect(leerPase(r.json().pase)).toMatchObject({ rol: "editor", correo: "directora@uabc.edu.mx" });
-    expect((await llamar(api, undefined, { metodo: "GET", pase: r.json().pase })).statusCode).toBe(200);
+    expect(r.json().mensaje).toMatch(/Te mandamos un correo a maestro\.perez@uabc\.edu\.mx/);
+    expect(correosAuth).toEqual([{ tipo: "confirmar", email: "maestro.perez@uabc.edu.mx", regreso: "/admin" }]);
+    // sin confirmar todavía no entra
+    const antes = await pedir(api, { correo: "maestro.perez@uabc.edu.mx", contrasena: "mi-clave-larga" });
+    expect(antes.statusCode).toBe(403);
+    expect(antes.json().error).toMatch(/confirmar tu correo/);
+    // al confirmar, entra
+    cuentasAuth.find((c) => c.email === "maestro.perez@uabc.edu.mx").confirmado = true;
+    const despues = await pedir(api, { correo: "maestro.perez@uabc.edu.mx", contrasena: "mi-clave-larga" });
+    expect(despues.statusCode).toBe(200);
+    expect(leerPase(despues.json().pase)).toMatchObject({ rol: "editor", correo: "maestro.perez@uabc.edu.mx" });
+    expect(despues.json()).not.toHaveProperty("access_token");   // los tokens de Supabase no salen del servidor
   });
 
-  it("contraseña mala, o una cuenta que no es de administración: no entra, con el mismo mensaje", async () => {
+  it("no se crean cuentas con correo de otro dominio ni con contraseña corta", async () => {
     const api = await editores();
-    const mala = await llamar(api, { correo: "directora@uabc.edu.mx", contrasena: "no-es-esta" });
-    const noAdmin = await llamar(api, { correo: "alguien@uabc.edu.mx", contrasena: "otra-clave-9" });
+    const otro = await pedir(api, { accion: "crear", correo: "alguien@gmail.com", contrasena: "mi-clave-larga" });
+    expect(otro.statusCode).toBe(400);
+    expect(otro.json().error).toMatch(/correo institucional \(@uabc\.edu\.mx\)/);
+    expect((await pedir(api, { accion: "crear", correo: "a@uabc.edu.mx", contrasena: "corta" })).statusCode).toBe(400);
+    expect(correosAuth).toEqual([]);
+    // también se aceptan subdominios de la institución, pero no dominios que solo se parecen
+    const { esCorreoInstitucional } = await import("../src/data/institucion.js");
+    expect(esCorreoInstitucional("ana@fcitec.uabc.edu.mx")).toBe(true);
+    expect(esCorreoInstitucional("ana@uabc.edu.mx.falso.com")).toBe(false);
+    expect(esCorreoInstitucional("ana@notuabc.edu.mx")).toBe(false);
+  });
+
+  it("crear una cuenta que ya existe responde igual (no revela quién está registrado)", async () => {
+    const api = await editores();
+    const r = await pedir(api, { accion: "crear", correo: "directora@uabc.edu.mx", contrasena: "otra-clave-larga" });
+    expect(r.statusCode).toBe(200);
+    expect(cuentasAuth.find((c) => c.email === "directora@uabc.edu.mx").password).toBe("secreta-123");
+  });
+
+  it("entrar: contraseña mala no; cuenta bloqueada no; otro dominio no (sin preguntar a Supabase)", async () => {
+    const api = await editores();
+    expect((await pedir(api, { correo: "directora@uabc.edu.mx", contrasena: "secreta-123" })).statusCode).toBe(200);
+    const mala = await pedir(api, { correo: "directora@uabc.edu.mx", contrasena: "no-es-esta" });
     expect(mala.statusCode).toBe(401);
-    expect(noAdmin.statusCode).toBe(401);
-    expect(mala.json().error).toBe(noAdmin.json().error);
-    expect((await llamar(api, { correo: "no-es-correo", contrasena: "secreta-123" })).statusCode).toBe(400);
-    expect((await llamar(api, { correo: "directora@uabc.edu.mx", contrasena: "corta" })).statusCode).toBe(400);
+    expect(mala.json().error).toBe("Correo o contraseña incorrectos.");
+    expect((await pedir(api, { correo: "fuera@uabc.edu.mx", contrasena: "bloqueada-1" })).statusCode).toBe(403);
+    fetch.mockClear();
+    expect((await pedir(api, { correo: "admin@gmail.com", contrasena: "secreta-123" })).statusCode).toBe(400);
+    expect(fetch.mock.calls.some(([url]) => String(url).includes("/auth/v1/"))).toBe(false);
+  });
+
+  it("olvidé mi contraseña: llega el enlace y con él se pone una nueva", async () => {
+    const api = await editores();
+    const r = await pedir(api, { accion: "recuperar", correo: "directora@uabc.edu.mx" });
+    expect(r.statusCode).toBe(200);
+    // a un correo sin cuenta se responde igual, pero no se manda nada
+    expect((await pedir(api, { accion: "recuperar", correo: "nadie@uabc.edu.mx" })).json().mensaje).toMatch(/Si nadie@uabc\.edu\.mx tiene cuenta/);
+    expect(correosAuth).toEqual([{ tipo: "recuperar", email: "directora@uabc.edu.mx", regreso: "/admin" }]);
+
+    const token = "token-de-directora@uabc.edu.mx";
+    expect((await pedir(api, { accion: "contrasenaNueva", token, contrasena: "corta" })).statusCode).toBe(400);
+    expect((await pedir(api, { accion: "contrasenaNueva", token, contrasena: "secreta-123" })).statusCode).toBe(400);   // la misma
+    expect((await pedir(api, { accion: "contrasenaNueva", token: "x".repeat(30), contrasena: "nueva-clave-99" })).statusCode).toBe(401);
+    expect((await pedir(api, { accion: "contrasenaNueva", token, contrasena: "nueva-clave-99" })).statusCode).toBe(200);
+    expect((await pedir(api, { correo: "directora@uabc.edu.mx", contrasena: "nueva-clave-99" })).statusCode).toBe(200);
+  });
+
+  it("los correos tienen tope: 3 por correo cada hora", async () => {
+    const api = await editores();
+    for (let i = 0; i < 3; i++) expect((await pedir(api, { accion: "recuperar", correo: "directora@uabc.edu.mx" })).statusCode).toBe(200);
+    expect((await pedir(api, { accion: "recuperar", correo: "directora@uabc.edu.mx" })).statusCode).toBe(429);
+    expect(correosAuth).toHaveLength(3);
   });
 
   it("20 fallos desde una IP la frenan, aunque luego traiga la contraseña buena", async () => {
@@ -718,19 +799,12 @@ describe("administración con correo y contraseña (Supabase Auth)", () => {
     expect((await llamar(api, { correo: "directora@uabc.edu.mx", contrasena: "secreta-123" }, { ip: "6.6.6.6" })).statusCode).toBe(200);
   });
 
-  it("solo con correo institucional: otro dominio se rechaza sin preguntar a Supabase", async () => {
-    const api = await editores();
-    cuentasAuth.push({ email: "admin@gmail.com", password: "secreta-123", rol: "admin" });
-    fetch.mockClear();
-    const r = await llamar(api, { correo: "admin@gmail.com", contrasena: "secreta-123" });
-    expect(r.statusCode).toBe(400);
-    expect(r.json().error).toMatch(/correo institucional \(@uabc\.edu\.mx\)/);
-    expect(fetch.mock.calls.some(([url]) => String(url).includes("/auth/v1/"))).toBe(false);
-    // también se aceptan subdominios de la institución, pero no dominios que solo se parecen
-    const { esCorreoInstitucional } = await import("../src/data/institucion.js");
-    expect(esCorreoInstitucional("ana@fcitec.uabc.edu.mx")).toBe(true);
-    expect(esCorreoInstitucional("ana@uabc.edu.mx.falso.com")).toBe(false);
-    expect(esCorreoInstitucional("ana@notuabc.edu.mx")).toBe(false);
+  it("el enlace de los correos regresa a la administración de este mismo sitio", async () => {
+    const { direccionDeRegreso } = await import("../api/editores.js");
+    expect(direccionDeRegreso({ headers: { host: "juego.vercel.app" } })).toBe("https://juego.vercel.app/admin");
+    expect(direccionDeRegreso({ headers: { "x-forwarded-host": "juego.vercel.app", host: "x" } })).toBe("https://juego.vercel.app/admin");
+    expect(direccionDeRegreso({ headers: { host: "localhost:5173" } })).toBe("http://localhost:5173/admin");
+    expect(direccionDeRegreso({ headers: { host: "malo.com/<script>" } })).toBe("/admin");
   });
 
   it("la clave de administración sigue sirviendo de respaldo", async () => {

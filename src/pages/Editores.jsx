@@ -8,7 +8,7 @@ import { temaInicial, guardarTema, aplicarTema } from "../lib/tema.js";
 import Icono from "../components/Icono.jsx";
 import BotonTema from "../components/BotonTema.jsx";
 import { useEnVivo, novedades, haceCuanto, CADA, RESALTE } from "../lib/enVivo.js";
-import { esCorreoInstitucional, dominiosEnTexto, DOMINIOS_INSTITUCIONALES } from "../data/institucion.js";
+import EntrarAdmin from "../components/EntrarAdmin.jsx";
 
 /**
  * Administración de encuestas (/admin, /administradores o /editores): resultados de las
@@ -142,10 +142,6 @@ function Segmentos({ etiqueta, opciones, valor, onCambiar }) {
 
 export default function Editores() {
   const [pase, setPase] = useState(() => leerPase());
-  const [clave, setClave] = useState("");
-  const [correo, setCorreo] = useState("");
-  const [contrasena, setContrasena] = useState("");
-  const [conClave, setConClave] = useState(false);   // respaldo: entrar con EDITORES_CLAVE
   const [quien, setQuien] = useState(() => leerCorreo());
   const [error, setError] = useState("");
   const [cargando, setCargando] = useState(false);
@@ -224,32 +220,6 @@ export default function Editores() {
 
   const resumen = useMemo(() => (filas ? resumir(filas, { grado, tipo }) : null), [filas, grado, tipo]);
 
-  async function entrar(e) {
-    e.preventDefault();
-    setError("");
-    if (!conClave && !esCorreoInstitucional(correo)) {
-      setError(`Entra con tu correo institucional (${dominiosEnTexto()}).`);
-      return;
-    }
-    setCargando(true);
-    try {
-      const cuerpo = conClave ? { clave } : { correo, contrasena };
-      const r = await fetch("/api/editores", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(cuerpo) });
-      const d = await r.json().catch(() => ({}));
-      if (!r.ok) throw new Error(d.error || "No se pudo entrar.");
-      guardarPase(d.pase);
-      guardarCorreo(d.correo || null);
-      setQuien(d.correo || null);
-      setPase(d.pase);
-      setClave("");
-      setContrasena("");
-    } catch (err) {
-      setError(err.message === "Failed to fetch" ? "Sin conexión. Revisa el internet." : err.message);
-    } finally {
-      setCargando(false);
-    }
-  }
-
   function mostrarTip(e, texto) {
     if (!e) return setTip(null);
     setTip((t) => ({ x: e.clientX, y: e.clientY, texto: texto ?? t?.texto ?? "" }));
@@ -282,43 +252,14 @@ export default function Editores() {
 
   if (!pase) {
     return (
-      <main className="pantalla editores editores--entrar">
-        <form className="ajustes cuenta ed-entrar" onSubmit={entrar}>
-          <h1><Icono nombre="candado" /> Administración de encuestas</h1>
-          <p className="cuenta__nota">
-            Resultados de las encuestas de los juegos, en vivo.{" "}
-            {conClave ? "Escribe la clave de administración." : "Entra con tu cuenta de administración."}
-          </p>
-          {conClave ? (
-            <label className="cuenta__campo" htmlFor="ed-clave">
-              <span>Clave</span>
-              <input id="ed-clave" type="password" value={clave} onChange={(e) => setClave(e.target.value)} autoComplete="current-password" required autoFocus />
-            </label>
-          ) : (
-            <>
-              <label className="cuenta__campo" htmlFor="ed-correo">
-                <span>Correo institucional</span>
-                <input
-                  id="ed-correo" type="email" value={correo} onChange={(e) => setCorreo(e.target.value)}
-                  autoComplete="username" inputMode="email" maxLength={254} required autoFocus
-                  placeholder={`nombre@${DOMINIOS_INSTITUCIONALES[0]}`} aria-describedby="ed-correo-ayuda"
-                />
-                <small id="ed-correo-ayuda" className="ed-ayuda">Solo correos {dominiosEnTexto()}</small>
-              </label>
-              <label className="cuenta__campo" htmlFor="ed-contrasena">
-                <span>Contraseña</span>
-                <input id="ed-contrasena" type="password" value={contrasena} onChange={(e) => setContrasena(e.target.value)} autoComplete="current-password" minLength={6} maxLength={128} required />
-              </label>
-            </>
-          )}
-          {error && <p className="cuenta__error" role="alert">{error}</p>}
-          <button className="boton-grande" type="submit" disabled={cargando}>{cargando ? "Entrando…" : "Entrar"}</button>
-          <button type="button" className="ed-otra-forma" onClick={() => { setConClave((v) => !v); setError(""); }}>
-            {conClave ? "Entrar con correo y contraseña" : "Entrar con la clave de administración"}
-          </button>
-          <a className="ed-volver" href="/">Volver al juego</a>
-        </form>
-      </main>
+      <EntrarAdmin
+        onEntrar={({ pase: nuevo, correo: c }) => {
+          guardarPase(nuevo);
+          guardarCorreo(c);
+          setQuien(c);
+          setPase(nuevo);
+        }}
+      />
     );
   }
 
@@ -326,7 +267,7 @@ export default function Editores() {
   const carita = g?.total ? caritaDe(g.promedio) : null;
 
   return (
-    <main className="pantalla logros editores">
+    <div className="pantalla logros editores">
       <header className="logros__cabeza ed-cabeza">
         <span className="ed-arriba">
           <a className="volver" href="/"><Icono nombre="volver" /> Al juego</a>
@@ -471,6 +412,6 @@ export default function Editores() {
           {tip.texto}
         </div>
       )}
-    </main>
+    </div>
   );
 }

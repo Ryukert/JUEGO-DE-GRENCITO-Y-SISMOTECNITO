@@ -95,6 +95,18 @@ describe("axe-core: pantallas sin problemas de accesibilidad", () => {
     }
   });
 
+  it("la entrada a la administración, en sus modos", async () => {
+    const { default: Editores } = await import("../src/pages/Editores.jsx");
+    sessionStorage.clear();
+    render(<Editores />, enMain());
+    await sinViolaciones();
+    fireEvent.click(screen.getByRole("button", { name: "Crear mi cuenta" }));
+    await sinViolaciones();
+    fireEvent.click(screen.getByRole("button", { name: "Ya tengo cuenta: entrar" }));
+    fireEvent.click(screen.getByRole("button", { name: "¿Olvidaste tu contraseña?" }));
+    await sinViolaciones();
+  });
+
   it("el panel del maestro, con tarea y avance por tema", async () => {
     sessionStorage.setItem("escuadron-maestro", JSON.stringify({ pase: "x", grupo: { codigo: "ABC234", nombre: "5° B", grado: "primaria" } }));
     const datos = {

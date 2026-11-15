@@ -14,10 +14,23 @@ en **Ajustes**. Cómo sacar una versión nueva: ver «Versiones» en el README.
 
 ## [Sin publicar]
 
+### Agregado
+- **Cada quien crea su cuenta de administración** con su correo institucional (`@uabc.edu.mx`
+  y sus subdominios; la lista está en `src/data/institucion.js`). Entra después de confirmar su
+  correo con el enlace que manda Supabase, así nadie se registra con la dirección de otro.
+- **«¿Olvidaste tu contraseña?»**: llega un enlace por correo que abre la administración para
+  poner una contraseña nueva.
+- Se puede bloquear a alguien sin borrar su cuenta (`app_metadata.rol = "bloqueado"`).
+
 ### Cambiado
-- A la administración solo se entra con **correo institucional** (`@uabc.edu.mx` y sus
-  subdominios; la lista está en `src/data/institucion.js`). Otro dominio se rechaza sin
-  preguntar a Supabase, y la pantalla lo indica desde el principio.
+- Ya no hace falta marcar a cada administrador: basta con el correo institucional confirmado.
+  Otro dominio se rechaza sin preguntar a Supabase. Los correos de crear cuenta y de cambiar
+  contraseña tienen tope (3 por correo y 6 por IP cada hora).
+
+### Corregido
+- La ventana de administración ponía su propio `<main>` dentro del `<main>` de la app
+  (desde 2.2.0); axe-core lo encontró y ahora es un `<div>`. Los textos de ayuda de los campos
+  ya no forman parte del nombre del campo (se leían dos veces).
 
 ## [2.5.0] - 2026-11-15
 
