@@ -14,12 +14,19 @@ en **Ajustes**. Cómo sacar una versión nueva: ver «Versiones» en el README.
 
 ## [Sin publicar]
 
+### Corregido
+- La causa real del «NO_LCP» era la animación de entrada de cada pantalla: arrancaba en
+  opacidad 0 y Chrome no cuenta como LCP lo que se pinta invisible; si el texto de la portada
+  se pintaba en ese cuadro, el navegador ya no reportaba el LCP (pasaba en la mitad de las
+  mediciones, en cualquier versión). Ahora arranca en 0.01: a la vista es igual y el LCP se
+  mide siempre (Lighthouse en local: 4 de 4, rendimiento 94–95).
+
 ## [2.2.2] - 2026-11-15
 
 ### Corregido
-- Se quita la precarga de la fuente de la 2.2.1: con ella el navegador dejaba de reportar el
-  LCP (Lighthouse daba «NO_LCP» y el rendimiento salía en 0), y casi no ayudaba (0.1 s en el
-  primer dibujo). Lo demás de la 2.2.1 se queda.
+- Se quita la precarga de la fuente de la 2.2.1: casi no ayudaba (0.1 s en el primer dibujo).
+  Se pensó que causaba el «NO_LCP» de Lighthouse, pero la causa era otra (ver 2.2.3).
+  Lo demás de la 2.2.1 se queda.
 
 ## [2.2.1] - 2026-11-15
 
