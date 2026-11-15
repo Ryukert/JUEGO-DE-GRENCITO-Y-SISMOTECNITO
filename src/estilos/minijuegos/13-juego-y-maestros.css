@@ -224,3 +224,16 @@
   cursor: pointer;
 }
 .ed-quien { margin: 2px 0 0; font-size: 13.5px; color: var(--texto-suave); overflow-wrap: anywhere; }
+.ed-ayuda { font-size: 12.5px; font-weight: 600; color: var(--texto-suave); }
+.ed-modos { display: flex; flex-wrap: wrap; justify-content: center; gap: 0 14px; }
+.ed-otra-forma--chica { font-size: 13px; font-weight: 600; color: var(--texto-suave); }
+.ed-aviso {
+  margin: 0;
+  padding: 10px 12px;
+  font-weight: 700;
+  color: var(--bien);
+  background: var(--bien-suave);
+  border: 2px solid var(--bien);
+  border-radius: 12px;
+}
+.cuenta__campo > label { display: grid; gap: 3px; }

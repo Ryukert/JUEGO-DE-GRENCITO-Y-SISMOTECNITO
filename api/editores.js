@@ -1,8 +1,11 @@
 /**
  * Ventana de editores: resultados de las encuestas de satisfacción de los juegos.
  *
- *   POST /api/editores { correo, contrasena }         → { pase, correo }   (dura 8 horas)
- *        cuentas de Supabase Auth con app_metadata.rol = "admin" (ver api/_admin.js)
+ *   POST /api/editores { correo, contrasena }                       → { pase, correo }  (8 horas)
+ *   POST /api/editores { accion: "crear", correo, contrasena }      → { mensaje }  manda el correo de confirmación
+ *   POST /api/editores { accion: "recuperar", correo }              → { mensaje }  manda el enlace para cambiarla
+ *   POST /api/editores { accion: "contrasenaNueva", token, contrasena } → { ok }
+ *        cuentas de Supabase Auth con correo institucional confirmado (ver api/_admin.js)
  *   POST /api/editores { clave }                      → { pase }   respaldo: EDITORES_CLAVE
  *   GET  /api/editores?desde=AAAA-MM-DD&hasta=…  (pase de editor)
  *     → { filas: [{ juego, tipo, grado, dia, gusto, dificultad, respuestas }] }
@@ -17,8 +20,12 @@
 import { createHash, timingSafeEqual } from "node:crypto";
 import { db, configuracionDb, configuracionRpc, rpc } from "./_db.js";
 import { responderJson, quienEs, leerCuerpo, crearPase, paseDe, secreto } from "./_comun.js";
-import { revisarIntentos, anotarFallo } from "./_limites.js";
-import { entrarAdministrador, limpiarCorreo, contrasenaValida, configuracionAuth } from "./_admin.js";
+import { revisarIntentos, anotarFallo, contar, resumen as resumenLimite } from "./_limites.js";
+import {
+  entrarAdministrador, crearCuenta, pedirCambioDeContrasena, ponerContrasenaNueva,
+  limpiarCorreo, contrasenaValida, configuracionAuth, esCorreoInstitucional, MINIMO_NUEVA,
+} from "./_admin.js";
+import { dominiosEnTexto } from "../src/data/institucion.js";
 
 const FECHA = /^\d{4}-\d{2}-\d{2}$/;
 const zonaEditores = (env = process.env) => env.EVALUACION_ZONA || "America/Tijuana";
@@ -68,6 +75,14 @@ export function agrupar(crudas, zona = "America/Tijuana") {
   return [...mapa.values()];
 }
 
+/** A dónde regresa el enlace de los correos de Supabase: la administración de este mismo sitio. */
+export function direccionDeRegreso(req) {
+  const host = String(req.headers["x-forwarded-host"] || req.headers.host || "").split(",")[0].trim();
+  if (!/^[a-z0-9.-]+(:\d+)?$/i.test(host)) return "/admin";
+  const local = /^(localhost|127\.0\.0\.1)(:\d+)?$/.test(host);
+  return `${local ? "http" : "https"}://${host}/admin`;
+}
+
 export default async function handler(req, res) {
   if (!secreto() || !(configuracionDb() || configuracionRpc())) {
     return responderJson(res, 503, { error: "La ventana de editores no está configurada en el servidor." });
@@ -79,13 +94,57 @@ export default async function handler(req, res) {
   if (req.method === "POST") {
     const ip = quienEs(req);
     let d;
-    try { d = await leerCuerpo(req, 1_000); }
+    try { d = await leerCuerpo(req, 6_000); }   // el token del enlace del correo es largo
     catch { return responderJson(res, 400, { error: "No entendí el mensaje" }); }
 
-    // con correo y contraseña (cuentas de Supabase Auth marcadas como administrador)
+    // cuentas con correo institucional: crear, entrar, olvidé mi contraseña y contraseña nueva
+    if (d?.accion === "contrasenaNueva") {
+      if (!contrasenaValida(d.contrasena, MINIMO_NUEVA)) return responderJson(res, 400, { error: `La contraseña nueva lleva de ${MINIMO_NUEVA} a 128 caracteres.` });
+      if (await revisarIntentos(ip, null)) return responderJson(res, 429, { error: "Demasiados intentos. Espera un rato." }, { "Retry-After": "600" });
+      const r = await ponerContrasenaNueva(d.token, d.contrasena);
+      if (r.ok) return responderJson(res, 200, { ok: true });
+      if (r.motivo === "sin-servicio") return responderJson(res, 503, { error: "No se pudo cambiar ahorita. Intenta en un momento." });
+      if (r.motivo === "misma") return responderJson(res, 400, { error: "Elige una contraseña distinta a la anterior." });
+      if (r.motivo === "contrasena") return responderJson(res, 400, { error: "Esa contraseña no sirve: usa una más larga o menos común." });
+      return responderJson(res, 401, { error: "El enlace ya no sirve. Pide otro con «¿Olvidaste tu contraseña?»." });
+    }
+
     if (d?.correo !== undefined) {
       const correo = limpiarCorreo(d.correo);
-      if (!correo || !contrasenaValida(d.contrasena)) return responderJson(res, 400, { error: "Escribe tu correo y tu contraseña." });
+      if (!correo) return responderJson(res, 400, { error: "Escribe tu correo." });
+      if (!esCorreoInstitucional(correo)) {
+        return responderJson(res, 400, { error: `Usa tu correo institucional (${dominiosEnTexto()}).` });
+      }
+      const regreso = direccionDeRegreso(req);
+
+      if (d.accion === "crear" || d.accion === "recuperar") {
+        if (d.accion === "crear" && !contrasenaValida(d.contrasena, MINIMO_NUEVA)) {
+          return responderJson(res, 400, { error: `La contraseña lleva de ${MINIMO_NUEVA} a 128 caracteres.` });
+        }
+        // cada uno manda un correo: tope bajo por IP y por correo para que nadie llene buzones
+        const hora = Math.floor(Date.now() / 3_600_000);
+        const tope = await contar([
+          { clave: `correo-envio:${resumenLimite("ip", ip)}:${hora}`, segundos: 4_000, max: 6, motivo: "ip" },
+          { clave: `correo-envio:${resumenLimite("correo", correo)}:${hora}`, segundos: 4_000, max: 3, motivo: "correo" },
+        ]);
+        if (tope) return responderJson(res, 429, { error: "Ya se mandaron varios correos. Espera una hora e intenta otra vez." }, { "Retry-After": "3600" });
+        const r = d.accion === "crear" ? await crearCuenta(correo, d.contrasena, regreso) : await pedirCambioDeContrasena(correo, regreso);
+        if (r.ok) {
+          return responderJson(res, 200, {
+            ok: true,
+            mensaje: d.accion === "crear"
+              ? `Listo. Te mandamos un correo a ${correo}: abre el enlace para confirmar tu cuenta y luego entra aquí.`
+              : `Si ${correo} tiene cuenta, te llegará un correo con un enlace para poner una contraseña nueva.`,
+          });
+        }
+        if (r.motivo === "muchos-correos") return responderJson(res, 429, { error: "Se mandaron muchos correos en poco tiempo. Espera una hora e intenta otra vez." });
+        if (r.motivo === "contrasena") return responderJson(res, 400, { error: "Esa contraseña no sirve: usa una más larga o menos común." });
+        console.error("[editores] Supabase Auth no respondió al", d.accion === "crear" ? "crear la cuenta" : "pedir el cambio de contraseña");
+        return responderJson(res, 503, { error: "No se pudo mandar el correo ahorita. Intenta en un momento." });
+      }
+
+      // entrar
+      if (!contrasenaValida(d.contrasena)) return responderJson(res, 400, { error: "Escribe tu correo y tu contraseña." });
       if (await revisarIntentos(ip, `admin|${correo}`)) {
         return responderJson(res, 429, { error: "Demasiados intentos. Espera un rato." }, { "Retry-After": "600" });
       }
@@ -95,9 +154,12 @@ export default async function handler(req, res) {
         console.error("[editores] Supabase Auth no respondió");
         return responderJson(res, 503, { error: "No se pudo revisar la cuenta ahorita. Intenta en un momento." });
       }
+      if (r.motivo === "sin-confirmar") {
+        return responderJson(res, 403, { error: "Falta confirmar tu correo: abre el enlace que te mandamos (revisa también «No deseado»)." });
+      }
       await anotarFallo(ip);
-      // mismo mensaje si la contraseña está mal o si la cuenta no es de administrador
-      return responderJson(res, 401, { error: "Correo o contraseña incorrectos, o la cuenta no es de administración." });
+      if (r.motivo === "bloqueado") return responderJson(res, 403, { error: "Esta cuenta no tiene acceso a la administración." });
+      return responderJson(res, 401, { error: "Correo o contraseña incorrectos." });
     }
 
     // respaldo: la clave de administración

@@ -127,16 +127,16 @@ describe("entrar a la administración con correo y contraseña", () => {
     sessionStorage.clear();
     const fetchFalso = vi.fn(async (url, op = {}) =>
       op.method === "POST"
-        ? { ok: true, status: 200, json: async () => ({ pase: "p", correo: "directora@escuela.mx" }) }
+        ? { ok: true, status: 200, json: async () => ({ pase: "p", correo: "directora@uabc.edu.mx" }) }
         : { ok: true, status: 200, json: async () => ({ filas: [] }) });
     vi.stubGlobal("fetch", fetchFalso);
     render(<Editores />);
-    fireEvent.change(screen.getByLabelText("Correo electrónico"), { target: { value: "directora@escuela.mx" } });
+    fireEvent.change(screen.getByLabelText(/Correo institucional/), { target: { value: "directora@uabc.edu.mx" } });
     fireEvent.change(screen.getByLabelText("Contraseña"), { target: { value: "secreta-123" } });
     fireEvent.click(screen.getByRole("button", { name: "Entrar" }));
     await screen.findByText("Resultados de las encuestas");
-    expect(JSON.parse(fetchFalso.mock.calls[0][1].body)).toEqual({ correo: "directora@escuela.mx", contrasena: "secreta-123" });
-    expect(screen.getByText("directora@escuela.mx")).toBeTruthy();
+    expect(JSON.parse(fetchFalso.mock.calls[0][1].body)).toEqual({ correo: "directora@uabc.edu.mx", contrasena: "secreta-123" });
+    expect(screen.getByText("directora@uabc.edu.mx")).toBeTruthy();
   });
 
   it("se puede cambiar a la clave de administración como respaldo", () => {
@@ -145,6 +145,88 @@ describe("entrar a la administración con correo y contraseña", () => {
     render(<Editores />);
     fireEvent.click(screen.getByRole("button", { name: "Entrar con la clave de administración" }));
     expect(screen.getByLabelText("Clave")).toBeTruthy();
-    expect(screen.queryByLabelText("Correo electrónico")).toBeNull();
+    expect(screen.queryByLabelText(/Correo institucional/)).toBeNull();
+  });
+});
+
+describe("la pantalla pide el correo institucional", () => {
+  afterEach(() => { cleanup(); vi.unstubAllGlobals(); sessionStorage.clear(); });
+  it("avisa sin mandar nada si el correo no es institucional", () => {
+    window.matchMedia = () => ({ matches: false, addListener() {}, removeListener() {}, addEventListener() {}, removeEventListener() {} });
+    sessionStorage.clear();
+    const fetchFalso = vi.fn(async () => ({ ok: true, status: 200, json: async () => ({ filas: [] }) }));
+    vi.stubGlobal("fetch", fetchFalso);
+    render(<Editores />);
+    expect(screen.getByText("Solo correos @uabc.edu.mx")).toBeTruthy();
+    fireEvent.change(screen.getByLabelText(/Correo institucional/), { target: { value: "alguien@gmail.com" } });
+    fireEvent.change(screen.getByLabelText("Contraseña"), { target: { value: "secreta-123" } });
+    fireEvent.submit(screen.getByRole("button", { name: "Entrar" }).closest("form"));
+    expect(screen.getByRole("alert").textContent).toMatch(/correo institucional/);
+    expect(fetchFalso).not.toHaveBeenCalled();
+  });
+});
+
+describe("crear cuenta, confirmar y cambiar la contraseña desde la pantalla", () => {
+  const preparar = (respuesta = { ok: true, mensaje: "Listo. Te mandamos un correo." }) => {
+    window.matchMedia = () => ({ matches: false, addListener() {}, removeListener() {}, addEventListener() {}, removeEventListener() {} });
+    sessionStorage.clear();
+    const f = vi.fn(async () => ({ ok: true, status: 200, json: async () => respuesta }));
+    vi.stubGlobal("fetch", f);
+    return f;
+  };
+  afterEach(() => { cleanup(); vi.unstubAllGlobals(); sessionStorage.clear(); window.history.replaceState(null, "", "/"); });
+
+  it("crear mi cuenta: pide la contraseña dos veces y avisa que llegará un correo", async () => {
+    const f = preparar();
+    render(<Editores />);
+    fireEvent.click(screen.getByRole("button", { name: "Crear mi cuenta" }));
+    fireEvent.change(screen.getByLabelText(/Correo institucional/), { target: { value: "maestra@uabc.edu.mx" } });
+    fireEvent.change(screen.getByLabelText("Contraseña"), { target: { value: "una-clave-larga" } });
+    fireEvent.change(screen.getByLabelText("Repite la contraseña"), { target: { value: "otra-distinta-1" } });
+    fireEvent.submit(screen.getByRole("button", { name: "Crear mi cuenta" }).closest("form"));
+    expect(screen.getByRole("alert").textContent).toMatch(/no son iguales/);
+    expect(f).not.toHaveBeenCalled();
+    fireEvent.change(screen.getByLabelText("Repite la contraseña"), { target: { value: "una-clave-larga" } });
+    fireEvent.submit(screen.getByRole("button", { name: "Crear mi cuenta" }).closest("form"));
+    expect(await screen.findByText("Listo. Te mandamos un correo.")).toBeTruthy();
+    expect(JSON.parse(f.mock.calls[0][1].body)).toEqual({ accion: "crear", correo: "maestra@uabc.edu.mx", contrasena: "una-clave-larga" });
+  });
+
+  it("¿olvidaste tu contraseña?: solo pide el correo", async () => {
+    const f = preparar({ ok: true, mensaje: "Si tiene cuenta, te llegará un correo." });
+    render(<Editores />);
+    fireEvent.click(screen.getByRole("button", { name: "¿Olvidaste tu contraseña?" }));
+    expect(screen.queryByLabelText("Contraseña")).toBeNull();
+    fireEvent.change(screen.getByLabelText(/Correo institucional/), { target: { value: "maestra@uabc.edu.mx" } });
+    fireEvent.submit(screen.getByRole("button", { name: "Mandarme el enlace" }).closest("form"));
+    expect(await screen.findByText("Si tiene cuenta, te llegará un correo.")).toBeTruthy();
+    expect(JSON.parse(f.mock.calls[0][1].body)).toEqual({ accion: "recuperar", correo: "maestra@uabc.edu.mx" });
+  });
+
+  it("al volver del enlace de confirmación lo dice, y borra el enlace de la barra", () => {
+    preparar();
+    window.history.replaceState(null, "", "/admin#access_token=abc&type=signup");
+    render(<Editores />);
+    expect(screen.getByText(/Tu correo quedó confirmado/)).toBeTruthy();
+    expect(window.location.hash).toBe("");
+  });
+
+  it("con el enlace de «olvidé mi contraseña» pide la nueva y la manda con el token", async () => {
+    const f = preparar({ ok: true });
+    window.history.replaceState(null, "", "/admin#access_token=token-del-correo-123456789&type=recovery");
+    render(<Editores />);
+    fireEvent.change(screen.getByLabelText("Contraseña nueva"), { target: { value: "nueva-clave-99" } });
+    fireEvent.change(screen.getByLabelText("Repite la contraseña"), { target: { value: "nueva-clave-99" } });
+    fireEvent.submit(screen.getByRole("button", { name: "Guardar la contraseña" }).closest("form"));
+    expect(await screen.findByText(/Tu contraseña quedó cambiada/)).toBeTruthy();
+    expect(JSON.parse(f.mock.calls[0][1].body)).toEqual({ accion: "contrasenaNueva", token: "token-del-correo-123456789", contrasena: "nueva-clave-99" });
+    expect(window.location.hash).toBe("");
+  });
+
+  it("un enlace vencido avisa que hay que pedir otro", () => {
+    preparar();
+    window.history.replaceState(null, "", "/admin#error=access_denied&error_description=Email+link+is+invalid+or+has+expired");
+    render(<Editores />);
+    expect(screen.getByRole("alert").textContent).toMatch(/venció o ya se usó/);
   });
 });
