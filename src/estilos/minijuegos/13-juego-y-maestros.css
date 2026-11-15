@@ -149,3 +149,46 @@
    panel ponen letra oscura y aquí no se leería) */
 .maestro__pie .boton-grande { background: var(--acento); color: #fff; }
 .maestro__pie .boton-grande:disabled { opacity: 0.6; }
+
+/* ---- administración de encuestas en vivo ---- */
+.ed-vivo {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 6px 10px;
+  margin: 6px 0 0;
+  font-size: 13.5px;
+  font-weight: 700;
+  color: var(--texto-suave);
+}
+.ed-vivo button {
+  min-height: var(--toque);
+  padding: 4px 14px;
+  font-weight: 700;
+  cursor: pointer;
+  background: var(--superficie);
+  border: 2px solid var(--contorno);
+  border-radius: 999px;
+}
+.ed-vivo__punto { width: 10px; height: 10px; border-radius: 50%; background: var(--apagado-borde); }
+.ed-vivo--on .ed-vivo__punto { background: var(--bien); animation: ed-latido 1.6s ease-in-out infinite; }
+@keyframes ed-latido {
+  0%, 100% { box-shadow: 0 0 0 0 color-mix(in srgb, var(--bien) 55%, transparent); }
+  50% { box-shadow: 0 0 0 6px transparent; }
+}
+/* las barras se deslizan cuando llegan datos nuevos */
+.ed-seg { transition: flex-grow 0.7s ease; }
+.ed-nuevo { animation: ed-resalte 2.4s ease-out 2; border-radius: 10px; }
+@keyframes ed-resalte {
+  0% { background: color-mix(in srgb, var(--bien) 22%, transparent); }
+  100% { background: transparent; }
+}
+.ed-mas { color: var(--bien); font-weight: 800; }
+@media (prefers-reduced-motion: reduce) {
+  .ed-vivo--on .ed-vivo__punto, .ed-nuevo { animation: none; }
+  .ed-seg { transition: none; }
+}
+:root[data-movimiento="reducido"] .ed-vivo--on .ed-vivo__punto,
+:root[data-movimiento="reducido"] .ed-nuevo { animation: none; }
+:root[data-movimiento="reducido"] .ed-seg { transition: none; }

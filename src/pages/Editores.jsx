@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo, useCallback } from "react";
+import { useState, useEffect, useMemo, useCallback, useRef } from "react";
 import {
   resumir, rellenarDias, porcentaje, csvResultados,
   ETIQUETAS_GUSTO, ETIQUETAS_DIFICULTAD,
@@ -7,11 +7,14 @@ import { caritaDe } from "../data/evaluacion.js";
 import { temaInicial, guardarTema, aplicarTema } from "../lib/tema.js";
 import Icono from "../components/Icono.jsx";
 import BotonTema from "../components/BotonTema.jsx";
+import { useEnVivo, novedades, haceCuanto, CADA, RESALTE } from "../lib/enVivo.js";
 
 /**
- * Ventana de editores (/editores): resultados de las encuestas de satisfacción de los juegos
- * en gráficas, con filtros y descarga en PDF. Protegida con la clave de editores
- * (EDITORES_CLAVE en el servidor). Solo ve números resumidos: nunca quién contestó.
+ * Administración de encuestas (/admin, /administradores o /editores): resultados de las
+ * encuestas de satisfacción de los juegos en gráficas, con filtros y descarga en PDF y CSV.
+ * Modo en vivo: las gráficas se actualizan solas cada 30 s (src/lib/enVivo.js) y se marca lo
+ * que llegó de nuevo. Protegida con la clave de editores (EDITORES_CLAVE en el servidor).
+ * Solo ve números resumidos: nunca quién contestó.
  */
 
 const LLAVE_PASE = "escuadron-editor";
@@ -49,14 +52,14 @@ function Leyenda({ etiquetas, prefijo }) {
 }
 
 /** Barras horizontales apiladas al 100 %: una por juego. */
-function Apiladas({ juegos, valores, etiquetas, prefijo, onTip, derecha }) {
+function Apiladas({ juegos, valores, etiquetas, prefijo, onTip, derecha, nuevos = [] }) {
   return (
     <ul className="ed-apiladas">
       {juegos.map((j) => {
         const vs = valores(j);
         const total = vs.reduce((s, n) => s + n, 0) || 1;
         return (
-          <li key={j.juego}>
+          <li key={j.juego} className={nuevos.includes(j.juego) ? "ed-nuevo" : undefined}>
             <span className="ed-apiladas__nombre" title={j.nombre}>{j.nombre}</span>
             <span className="ed-apiladas__barra">
               {vs.map((n, i) =>
@@ -144,10 +147,17 @@ export default function Editores() {
   const [tipo, setTipo] = useState("todos");
   const [tip, setTip] = useState(null);
   const [haciendoPdf, setHaciendoPdf] = useState(false);
+  // modo en vivo
+  const [enVivo, setEnVivo] = useState(true);
+  const [actualizado, setActualizado] = useState(null);
+  const [reloj, setReloj] = useState(() => Date.now());
+  const [nuevas, setNuevas] = useState(null);   // { cantidad, juegos } de la última actualización
+  const anteriores = useRef(null);
+  const borrarNuevas = useRef(null);
 
   const [tema, setTema] = useState(temaInicial);
   useEffect(() => {
-    document.title = "Resultados de las encuestas · Escuadrón";
+    document.title = "Administración de encuestas · Escuadrón";
   }, []);
   useEffect(() => aplicarTema(tema), [tema]);
   const alternarTema = () => {
@@ -156,10 +166,11 @@ export default function Editores() {
     setTema(nuevo);
   };
 
-  const cargar = useCallback(async () => {
+  /** silencioso: la actualización en vivo no muestra «Cargando…» ni borra los errores de antes */
+  const cargar = useCallback(async ({ silencioso = false } = {}) => {
     if (!pase) return;
-    setCargando(true);
-    setError("");
+    if (!silencioso) setCargando(true);
+    if (!silencioso) setError("");
     const dias = PERIODOS.find((p) => p.id === periodo)?.dias;
     const desde = dias ? fechaLocal(new Date(Date.now() - (dias - 1) * 86_400_000)) : null;
     try {
@@ -172,7 +183,18 @@ export default function Editores() {
         return;
       }
       if (!r.ok) throw new Error(d.error || "No pude leer las encuestas.");
-      setFilas(d.filas || []);
+      const nuevasFilas = d.filas || [];
+      // solo se comparan lecturas del mismo periodo
+      const cambio = silencioso ? novedades(anteriores.current, nuevasFilas) : { nuevas: 0, juegos: [] };
+      anteriores.current = nuevasFilas;
+      setFilas(nuevasFilas);
+      setActualizado(Date.now());
+      setError("");
+      if (cambio.nuevas > 0) {
+        setNuevas({ cantidad: cambio.nuevas, juegos: cambio.juegos });
+        clearTimeout(borrarNuevas.current);
+        borrarNuevas.current = setTimeout(() => setNuevas(null), RESALTE);
+      }
     } catch (e) {
       setError(e.message === "Failed to fetch" ? "Sin conexión. Revisa el internet." : e.message);
     } finally {
@@ -181,6 +203,16 @@ export default function Editores() {
   }, [pase, periodo]);
 
   useEffect(() => { cargar(); }, [cargar]);
+  useEffect(() => () => clearTimeout(borrarNuevas.current), []);
+
+  // en vivo: se vuelve a pedir cada 30 s mientras la pestaña está a la vista
+  useEnVivo(() => cargar({ silencioso: true }), { activo: enVivo && !!pase });
+  // el «hace 12 s» se mueve solo
+  useEffect(() => {
+    if (!pase) return undefined;
+    const id = setInterval(() => setReloj(Date.now()), 5_000);
+    return () => clearInterval(id);
+  }, [pase]);
 
   const resumen = useMemo(() => (filas ? resumir(filas, { grado, tipo }) : null), [filas, grado, tipo]);
 
@@ -236,8 +268,8 @@ export default function Editores() {
     return (
       <main className="pantalla editores editores--entrar">
         <form className="ajustes cuenta ed-entrar" onSubmit={entrar}>
-          <h1><Icono nombre="candado" /> Ventana de editores</h1>
-          <p className="cuenta__nota">Resultados de las encuestas de los juegos. Escribe la clave de editores.</p>
+          <h1><Icono nombre="candado" /> Administración de encuestas</h1>
+          <p className="cuenta__nota">Resultados de las encuestas de los juegos, en vivo. Escribe la clave de administración.</p>
           <label className="cuenta__campo" htmlFor="ed-clave">
             <span>Clave</span>
             <input id="ed-clave" type="password" value={clave} onChange={(e) => setClave(e.target.value)} autoComplete="current-password" required autoFocus />
@@ -262,6 +294,21 @@ export default function Editores() {
         </span>
         <h1>Resultados de las encuestas</h1>
         <p className="logros__nota">Lo que contestan los niños al terminar cada juego: «¿Te gustó?» y «¿Cómo estuvo de difícil?».</p>
+        <p className={`ed-vivo ${enVivo ? "ed-vivo--on" : ""}`}>
+          <span className="ed-vivo__punto" aria-hidden="true" />
+          <span>
+            {enVivo ? "En vivo" : "En pausa"}
+            {actualizado ? ` · actualizado ${haceCuanto(actualizado, reloj)}` : ""}
+            {enVivo ? ` · se actualiza cada ${CADA / 1000} s` : ""}
+          </span>
+          <button type="button" onClick={() => setEnVivo((v) => !v)} aria-pressed={!enVivo}>
+            {enVivo ? "Pausar" : "Reanudar"}
+          </button>
+        </p>
+        {/* para lectores de pantalla: avisa cuando llegan respuestas */}
+        <p className="visualmente-oculto" aria-live="polite">
+          {nuevas ? `${nuevas.cantidad} ${nuevas.cantidad === 1 ? "respuesta nueva" : "respuestas nuevas"}` : ""}
+        </p>
       </header>
 
       <section className="logros__seccion ed-filtros">
@@ -269,14 +316,14 @@ export default function Editores() {
         <Segmentos etiqueta="Grado" opciones={GRADOS} valor={grado} onCambiar={setGrado} />
         <Segmentos etiqueta="Tipo" opciones={TIPOS} valor={tipo} onCambiar={setTipo} />
         <span className="ed-acciones">
-          <button type="button" onClick={cargar} disabled={cargando}>{cargando ? "Cargando…" : "Actualizar"}</button>
+          <button type="button" onClick={() => cargar()} disabled={cargando}>{cargando ? "Cargando…" : "Actualizar"}</button>
           <button type="button" className="ed-pdf" onClick={pdf} disabled={!resumen || haciendoPdf}>
             <Icono nombre="descargar" /> {haciendoPdf ? "Creando PDF…" : "Descargar PDF"}
           </button>
           <button type="button" onClick={descargarCsv} disabled={!resumen?.juegos.length}>
             <Icono nombre="descargar" /> Excel (CSV)
           </button>
-          <button type="button" onClick={() => { guardarPase(null); setPase(null); setFilas(null); }}>Salir</button>
+          <button type="button" onClick={() => { guardarPase(null); setPase(null); setFilas(null); anteriores.current = null; }}>Salir</button>
         </span>
       </section>
 
@@ -287,7 +334,13 @@ export default function Editores() {
         <>
           <section className="logros__seccion">
             <dl className="logros__cifras ed-cifras">
-              <div><dt>Respuestas</dt><dd>{g.total}</dd></div>
+              <div className={nuevas ? "ed-nuevo" : undefined}>
+                <dt>Respuestas</dt>
+                <dd>
+                  {g.total}
+                  {nuevas && <small className="ed-mas" aria-hidden="true"> +{nuevas.cantidad}</small>}
+                </dd>
+              </div>
               <div>
                 <dt>¿Les gustó?</dt>
                 <dd>{carita ? <><span aria-hidden="true">{carita.emoji}</span> {g.promedio.toFixed(1)}<small> / 5</small></> : "—"}</dd>
@@ -312,6 +365,7 @@ export default function Editores() {
                   etiquetas={ETIQUETAS_GUSTO}
                   prefijo="g"
                   onTip={mostrarTip}
+                  nuevos={nuevas?.juegos}
                   derecha={(j) => <><b>{j.promedio.toFixed(1)}</b> · {j.total}</>}
                 />
               </section>
@@ -325,6 +379,7 @@ export default function Editores() {
                   etiquetas={ETIQUETAS_DIFICULTAD}
                   prefijo="d"
                   onTip={mostrarTip}
+                  nuevos={nuevas?.juegos}
                   derecha={(j) => <><b>{porcentaje(j.dificultad[1], j.total)}%</b> justo</>}
                 />
               </section>
