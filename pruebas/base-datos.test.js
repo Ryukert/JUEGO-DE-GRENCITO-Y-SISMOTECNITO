@@ -23,6 +23,7 @@ const MALA = RETO.opciones.find((o) => !o.ok).texto;
 
 /* ---------------- Supabase de mentiras ---------------- */
 let tablas;
+let cuentasAuth = [];   // Supabase Auth: { email, password, rol }
 const UNICOS = { grupos: [["codigo"]], alumnos: [["grupo_id", "apodo_normal"]], progreso: [["alumno_id"]], evaluaciones: [["alumno_id", "fecha"]], tareas: [["grupo_id"]] };
 
 function filtrar(filas, params) {
@@ -41,6 +42,14 @@ const choca = (tabla, fila, ignorar) =>
 
 function supabaseFalso(url, op = {}) {
   const u = new URL(url);
+  if (u.pathname === "/auth/v1/token") {
+    const { email, password } = JSON.parse(op.body);
+    const c = cuentasAuth.find((x) => x.email === email && x.password === password);
+    const json = (status, cuerpo) => ({ ok: status < 300, status, json: async () => cuerpo, text: async () => JSON.stringify(cuerpo) });
+    if (op.headers?.apikey !== "sb_secret_prueba") return json(401, { message: "Invalid API key" });
+    if (!c) return json(400, { error: "invalid_grant", error_description: "Invalid login credentials" });
+    return json(200, { access_token: "x", user: { email: c.email, app_metadata: c.rol ? { rol: c.rol } : {} } });
+  }
   const tabla = u.pathname.replace("/rest/v1/", "");
   const metodo = op.method || "GET";
   const cuerpo = op.body ? JSON.parse(op.body) : null;
@@ -106,6 +115,7 @@ const ENV = { SUPABASE_URL: "https://falso.supabase.co", SUPABASE_SECRET_KEY: "s
 
 beforeEach(() => {
   tablas = { grupos: [], alumnos: [], progreso: [], respuestas: [], evaluaciones: [], encuestas: [], tareas: [] };
+  cuentasAuth = [];
   reiniciarMemoria();
   Object.assign(process.env, ENV);
   for (const k of ["UPSTASH_REDIS_REST_URL", "UPSTASH_REDIS_REST_TOKEN", "SUPABASE_SERVICE_ROLE_KEY"]) delete process.env[k];
@@ -666,5 +676,52 @@ describe("tarea del maestro y avance por tema", () => {
     ]);
     // la pregunta de la variante sale con su propio título y escenario
     expect(d.preguntas.find((q) => q.mision === RETO_VAR.id)).toMatchObject({ titulo: RETO_VAR.titulo, pregunta: RETO_VAR.escenario });
+  });
+});
+
+describe("administración con correo y contraseña (Supabase Auth)", () => {
+  const editores = async () => (await import("../api/editores.js")).default;
+  beforeEach(() => {
+    cuentasAuth = [
+      { email: "directora@escuela.mx", password: "secreta-123", rol: "admin" },
+      { email: "alguien@escuela.mx", password: "otra-clave-9" },   // cuenta sin rol de administración
+    ];
+  });
+
+  it("un administrador entra con su correo (sin importar mayúsculas) y su pase abre los resultados", async () => {
+    const api = await editores();
+    const r = await llamar(api, { correo: "  Directora@Escuela.MX ", contrasena: "secreta-123" });
+    expect(r.statusCode).toBe(200);
+    expect(r.json().correo).toBe("directora@escuela.mx");
+    expect(r.json()).not.toHaveProperty("access_token");   // los tokens de Supabase no salen del servidor
+    expect(leerPase(r.json().pase)).toMatchObject({ rol: "editor", correo: "directora@escuela.mx" });
+    expect((await llamar(api, undefined, { metodo: "GET", pase: r.json().pase })).statusCode).toBe(200);
+  });
+
+  it("contraseña mala, o una cuenta que no es de administración: no entra, con el mismo mensaje", async () => {
+    const api = await editores();
+    const mala = await llamar(api, { correo: "directora@escuela.mx", contrasena: "no-es-esta" });
+    const noAdmin = await llamar(api, { correo: "alguien@escuela.mx", contrasena: "otra-clave-9" });
+    expect(mala.statusCode).toBe(401);
+    expect(noAdmin.statusCode).toBe(401);
+    expect(mala.json().error).toBe(noAdmin.json().error);
+    expect((await llamar(api, { correo: "no-es-correo", contrasena: "secreta-123" })).statusCode).toBe(400);
+    expect((await llamar(api, { correo: "directora@escuela.mx", contrasena: "corta" })).statusCode).toBe(400);
+  });
+
+  it("20 fallos desde una IP la frenan, aunque luego traiga la contraseña buena", async () => {
+    const api = await editores();
+    for (let i = 0; i < 20; i++) {
+      expect((await llamar(api, { correo: `prueba${i}@escuela.mx`, contrasena: "adivinando" }, { ip: "5.5.5.5" })).statusCode).toBe(401);
+    }
+    expect((await llamar(api, { correo: "directora@escuela.mx", contrasena: "secreta-123" }, { ip: "5.5.5.5" })).statusCode).toBe(429);
+    expect((await llamar(api, { correo: "directora@escuela.mx", contrasena: "secreta-123" }, { ip: "6.6.6.6" })).statusCode).toBe(200);
+  });
+
+  it("la clave de administración sigue sirviendo de respaldo", async () => {
+    process.env.EDITORES_CLAVE = "clave-de-editores-123";
+    const api = await editores();
+    expect((await llamar(api, { clave: "clave-de-editores-123" })).statusCode).toBe(200);
+    delete process.env.EDITORES_CLAVE;
   });
 });
