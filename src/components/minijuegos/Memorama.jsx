@@ -171,7 +171,7 @@ export default function Memorama({ personaje: p, grado, vidas: vidasIniciales, o
   if (fase === "instrucciones") {
     return (
       <div className="mini mini--intro">
-        <img className="mini__figura flota" src={p.cuerpo} alt="" />
+        <img className="mini__figura flota" src={p.cuerpo} {...p.medidas} alt="" />
         <h2>{p.id === "sismo" ? "Memorama de emergencia" : "Memorama del terreno"}</h2>
         <p className="mini__texto">
           {grado === "secundaria"

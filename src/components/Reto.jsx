@@ -141,7 +141,7 @@ export default function Reto({
       <div className="mision-escena">
         {/* el personaje en grande, detrás de la conversación; reacciona a cada respuesta */}
         <div className={`mision-escena__personaje mision-escena__personaje--${animo}`} aria-hidden="true">
-          <img src={p.cuerpo} alt="" />
+          <img src={p.cuerpo} {...p.medidas} alt="" />
           {animo === "feliz" && <span className="mision-escena__globo">¡Bien!</span>}
           {animo === "triste" && <span className="mision-escena__globo">¡Casi!</span>}
           {animo === "tiempo" && <span className="mision-escena__globo"><Icono nombre="reloj" /></span>}

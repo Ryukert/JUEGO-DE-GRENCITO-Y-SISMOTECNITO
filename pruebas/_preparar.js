@@ -2,5 +2,6 @@
    (src/juegos/diferido.jsx); aquí se descargan todos de una vez para que las pruebas los monten
    sin esperar. Lo diferido en sí se prueba aparte, en pruebas/velocidad.test.jsx. */
 import { precargarMotores } from "../src/juegos/registro.js";
+import { precargarPaginas } from "../src/paginas.js";
 
-await precargarMotores();
+await Promise.all([precargarMotores(), precargarPaginas()]);

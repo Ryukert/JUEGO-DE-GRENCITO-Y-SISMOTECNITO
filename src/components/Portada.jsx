@@ -97,8 +97,8 @@ export default function Portada({ progreso, ultimo, onElegir, onCentro, onLogros
         {nombre}
         {tarea}
         <div className="portada__duo" aria-hidden="true">
-          <img className="portada__mini flota" src={PERSONAJES.sismo.cuerpo} alt="" />
-          <img className="portada__mini flota flota--tarde" src={PERSONAJES.green.cuerpo} alt="" />
+          <img className="portada__mini flota" src={PERSONAJES.sismo.cuerpo} {...PERSONAJES.sismo.medidas} alt="" />
+          <img className="portada__mini flota flota--tarde" src={PERSONAJES.green.cuerpo} {...PERSONAJES.green.medidas} alt="" />
         </div>
         <header className="portada__intro">
           <h1>Escuadrón Tecnito y Greencito</h1>
@@ -175,7 +175,7 @@ export default function Portada({ progreso, ultimo, onElegir, onCentro, onLogros
                 onElegir(p.id, grado);
               }}
             >
-              <img className="carta__figura flota" src={p.cuerpo} alt={p.nombre} />
+              <img className="carta__figura flota" src={p.cuerpo} {...p.medidas} alt={p.nombre} />
               <h2>{p.nombre}</h2>
               <p>{p.resumen}</p>
               <span className="carta__record">

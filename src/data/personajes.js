@@ -608,6 +608,7 @@ export const PERSONAJES = {
     resumen:
       "Sobrevive al simulacro relámpago, arma la mochila de emergencia y aprende qué hacer cuando el temblor ya pasó.",
     cuerpo: "/sismo.webp",
+    medidas: { width: 340, height: 571 },   // las del archivo: el navegador aparta el lugar antes de que llegue
     cara: "/sismo-cara.webp",
     colores: ["#0f6fc4", "#f4691f", "#ffd23f", "#7fc4ff"],
     // acento2 más oscuro que el naranja del dibujo: con letra blanca encima pasa el contraste AA
@@ -642,6 +643,7 @@ export const PERSONAJES = {
     resumen:
       "Separa la basura contra reloj, siembra donde sí y ponle un alto al agua que se escapa de la llave.",
     cuerpo: "/greencito.webp",
+    medidas: { width: 340, height: 436 },
     cara: "/greencito-cara.webp",
     colores: ["#5aa32a", "#d98430", "#ffd23f", "#a97141"],
     // verde y naranja un poco más oscuros que los del dibujo: con letra blanca encima pasan AA

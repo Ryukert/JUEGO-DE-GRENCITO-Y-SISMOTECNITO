@@ -23,22 +23,22 @@ const MARCAS = [
   {
     id: "fcitec",
     src: "/fcitec.webp",
-    ancho: 640,
-    alto: 188,
+    ancho: 374,
+    alto: 110,
     alt: "Universidad Autónoma de Baja California · Facultad de Ciencias de la Ingeniería y Tecnología",
   },
   {
     id: "bcia",
     src: "/bcia.webp",
-    ancho: 400,
-    alto: 378,
+    ancho: 116,
+    alto: 110,
     alt: "Bienestar Comunitario e Infraestructura Ambiental, A. C.",
   },
   {
     id: "copits",
     src: "/copits.webp",
-    ancho: 560,
-    alto: 234,
+    ancho: 263,
+    alto: 110,
     alt: "Colegio de Profesionistas en Infraestructura y Tecnología Sostenible, A. C.",
   },
 ];
@@ -51,8 +51,8 @@ export default function Creditos({ variante = "completo" }) {
           className="creditos__escudo"
           src="/uabc-escudo.webp"
           alt="Universidad Autónoma de Baja California"
-          width="322"
-          height="440"
+          width="110"
+          height="150"
           loading="lazy"
           decoding="async"
         />

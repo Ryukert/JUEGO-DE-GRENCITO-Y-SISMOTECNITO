@@ -42,7 +42,7 @@ export default function Tutorial({ personaje: p, onFin }) {
 
   return (
     <div className="pantalla tutorial" role="dialog" aria-modal="true" aria-labelledby="tutorial-titulo">
-      <img className="tutorial__figura flota" src={p.cuerpo} alt="" />
+      <img className="tutorial__figura flota" src={p.cuerpo} {...p.medidas} alt="" />
       <div className="tutorial__globo" key={paso}>
         <Icono nombre={actual.icono} className={`tutorial__icono tutorial__icono--${actual.icono}`} />
         <h2 id="tutorial-titulo">{actual.titulo}</h2>
