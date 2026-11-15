@@ -14,6 +14,8 @@ en **Ajustes**. Cómo sacar una versión nueva: ver «Versiones» en el README.
 
 ## [Sin publicar]
 
+## [2.4.0] - 2026-11-15
+
 ### Agregado
 - Botón «Administración» (con candado) al pie de la portada: lleva a la administración de
   encuestas, que pide la clave.
@@ -246,6 +248,7 @@ en **Ajustes**. Cómo sacar una versión nueva: ver «Versiones» en el README.
 - Chat con los personajes.
 - Centro de entrenamiento con 46 minijuegos en 13 motores, tres dificultades y jefes finales.
 
+[2.4.0]: https://github.com/Ryukert/JUEGO-DE-GRENCITO-Y-SISMOTECNITO/compare/v2.3.0...v2.4.0
 [2.3.0]: https://github.com/Ryukert/JUEGO-DE-GRENCITO-Y-SISMOTECNITO/compare/v2.2.3...v2.3.0
 [2.2.3]: https://github.com/Ryukert/JUEGO-DE-GRENCITO-Y-SISMOTECNITO/compare/v2.2.2...v2.2.3
 [2.2.2]: https://github.com/Ryukert/JUEGO-DE-GRENCITO-Y-SISMOTECNITO/compare/v2.2.1...v2.2.2
