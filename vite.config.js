@@ -1,7 +1,6 @@
 import { defineConfig, loadEnv } from "vite";
 import react from "@vitejs/plugin-react";
 import { versionServiceWorker } from "./version-sw.js";   // cada versión publicada, un sw.js distinto
-import { precargarFuente } from "./precarga-fuente.js";    // la fuente se pide junto con el CSS
 
 /**
  * En producción, Vercel ejecuta cada archivo de /api como función serverless.
@@ -33,7 +32,7 @@ function apiLocal() {
 }
 
 export default defineConfig({
-  plugins: [react(), apiLocal(), versionServiceWorker(), precargarFuente()],
+  plugins: [react(), apiLocal(), versionServiceWorker()],
   server: { port: 5173, host: true },
   build: { outDir: "dist", target: "es2020" },
   test: {

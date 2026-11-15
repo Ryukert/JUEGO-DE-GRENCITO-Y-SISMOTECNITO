@@ -95,16 +95,10 @@ describe("rendimiento y SEO (Lighthouse)", () => {
     expect(robots).toMatch(/^Disallow: \/api\/$/m);
   });
 
-  it("la fuente se precarga desde el <head> con el nombre que tenga en cada versión", async () => {
-    const { precargarFuente } = await import("../precarga-fuente.js");
-    const p = precargarFuente();
-    const etiquetas = p.transformIndexHtml.handler("", { bundle: { "assets/index-1.js": {}, "assets/nunito-variable-abc.woff2": {} } });
-    expect(etiquetas).toEqual([{
-      tag: "link",
-      attrs: { rel: "preload", href: "/assets/nunito-variable-abc.woff2", as: "font", type: "font/woff2", crossorigin: "" },
-      injectTo: "head-prepend",
-    }]);
-    expect(p.transformIndexHtml.handler("", {})).toEqual([]);   // en desarrollo no hay bundle
+  it("la fuente NO se precarga: con <link rel=preload> el navegador dejaba de reportar el LCP", () => {
+    // medido en 2.2.1: con la precarga, Lighthouse daba NO_LCP; sin ella, LCP 3.2 s (y el primer
+    // dibujo solo mejoraba 0.1 s). Si se vuelve a intentar, hay que medir el LCP antes de publicar.
+    expect(readFileSync(raiz("vite.config.js"), "utf8")).not.toMatch(/precargarFuente|as: "font"/);
   });
 
   it("Mis logros, el panel del maestro y el repaso no viajan con la portada", () => {

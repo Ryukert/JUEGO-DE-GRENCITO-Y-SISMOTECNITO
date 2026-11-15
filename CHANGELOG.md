@@ -14,6 +14,11 @@ en **Ajustes**. Cómo sacar una versión nueva: ver «Versiones» en el README.
 
 ## [Sin publicar]
 
+### Corregido
+- Se quita la precarga de la fuente de la 2.2.1: con ella el navegador dejaba de reportar el
+  LCP (Lighthouse daba «NO_LCP» y el rendimiento salía en 0), y casi no ayudaba (0.1 s en el
+  primer dibujo). Lo demás de la 2.2.1 se queda.
+
 ## [2.2.1] - 2026-11-15
 
 ### Cambiado
