@@ -14,6 +14,10 @@ en **Ajustes**. Cómo sacar una versión nueva: ver «Versiones» en el README.
 
 ## [Sin publicar]
 
+### Agregado
+- Botón «Administración» (con candado) al pie de la portada: lleva a la administración de
+  encuestas, que pide la clave.
+
 ## [2.3.0] - 2026-11-15
 
 ### Agregado

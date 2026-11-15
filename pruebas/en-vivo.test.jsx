@@ -102,3 +102,19 @@ describe("la ventana de administración en vivo", () => {
     expect(robots).toMatch(/^Disallow: \/admin$/m);
   });
 });
+
+describe("botón de la portada para entrar a la administración", () => {
+  it("está en la portada, con o sin grado elegido, y lleva a /admin", async () => {
+    const { default: App } = await import("../src/App.jsx");
+    window.matchMedia = () => ({ matches: false, addListener() {}, removeListener() {}, addEventListener() {}, removeEventListener() {} });
+    window.scrollTo = () => {};
+    vi.stubGlobal("fetch", vi.fn(async () => ({ ok: true, status: 200, json: async () => ({ disponible: false }) })));
+    localStorage.clear();
+    render(<App />);
+    const enlace = screen.getByRole("link", { name: /Administración/ });
+    expect(enlace.getAttribute("href")).toBe("/admin");
+    fireEvent.click(screen.getByRole("button", { name: /Primaria/ }));
+    expect(screen.getByRole("link", { name: /Administración/ }).getAttribute("href")).toBe("/admin");
+    vi.unstubAllGlobals();
+  });
+});

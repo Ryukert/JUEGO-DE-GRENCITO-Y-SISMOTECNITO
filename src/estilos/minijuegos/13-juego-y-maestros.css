@@ -192,3 +192,23 @@
 :root[data-movimiento="reducido"] .ed-vivo--on .ed-vivo__punto,
 :root[data-movimiento="reducido"] .ed-nuevo { animation: none; }
 :root[data-movimiento="reducido"] .ed-seg { transition: none; }
+
+/* ---- botón de la portada para entrar a la administración de encuestas ---- */
+.boton-admin {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  align-self: center;
+  min-height: var(--toque);
+  margin: 4px auto 0;
+  padding: 6px 16px;
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--tinta);
+  text-decoration: none;
+  background: var(--velo);
+  border: 2px solid var(--contorno);
+  border-radius: 999px;
+}
+.boton-admin:hover { background: var(--superficie); }
