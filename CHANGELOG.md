@@ -14,6 +14,13 @@ en **Ajustes**. Cómo sacar una versión nueva: ver «Versiones» en el README.
 
 ## [Sin publicar]
 
+### Agregado
+- **Superusuario:** una cuenta con `app_metadata.rol = "superusuario"` entra a la
+  administración aunque su correo no sea institucional. La marca vive en Supabase (no en el
+  código: el repositorio es público). Cualquier otro correo no institucional recibe siempre el
+  mismo mensaje, sin revelar si tiene cuenta. Crear cuentas y pedir enlaces de contraseña
+  siguen siendo solo para correos institucionales.
+
 ## [2.6.0] - 2026-11-15
 
 ### Agregado

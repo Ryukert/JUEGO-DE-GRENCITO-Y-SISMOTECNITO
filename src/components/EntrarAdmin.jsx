@@ -62,8 +62,10 @@ export default function EntrarAdmin({ onEntrar }) {
     e.preventDefault();
     setError("");
     setAviso("");
-    const conCorreo = modo === "entrar" || modo === "crear" || modo === "recuperar";
-    if (conCorreo && !esCorreoInstitucional(correo)) return setError(`Usa tu correo institucional (${dominiosEnTexto()}).`);
+    // al entrar decide el servidor (la cuenta de superusuario puede no ser institucional)
+    if ((modo === "crear" || modo === "recuperar") && !esCorreoInstitucional(correo)) {
+      return setError(`Usa tu correo institucional (${dominiosEnTexto()}).`);
+    }
     if ((modo === "crear" || modo === "nueva") && contrasena !== repetida) return setError("Las dos contraseñas no son iguales.");
 
     const cuerpo = {

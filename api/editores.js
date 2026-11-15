@@ -112,12 +112,13 @@ export default async function handler(req, res) {
     if (d?.correo !== undefined) {
       const correo = limpiarCorreo(d.correo);
       if (!correo) return responderJson(res, 400, { error: "Escribe tu correo." });
-      if (!esCorreoInstitucional(correo)) {
-        return responderJson(res, 400, { error: `Usa tu correo institucional (${dominiosEnTexto()}).` });
-      }
+      const institucional = esCorreoInstitucional(correo);
+      const pideInstitucional = () => responderJson(res, 400, { error: `Usa tu correo institucional (${dominiosEnTexto()}).` });
       const regreso = direccionDeRegreso(req);
 
       if (d.accion === "crear" || d.accion === "recuperar") {
+        // las cuentas nuevas y los correos de recuperación son solo para correos institucionales
+        if (!institucional) return pideInstitucional();
         if (d.accion === "crear" && !contrasenaValida(d.contrasena, MINIMO_NUEVA)) {
           return responderJson(res, 400, { error: `La contraseña lleva de ${MINIMO_NUEVA} a 128 caracteres.` });
         }
@@ -148,11 +149,20 @@ export default async function handler(req, res) {
       if (await revisarIntentos(ip, `admin|${correo}`)) {
         return responderJson(res, 429, { error: "Demasiados intentos. Espera un rato." }, { "Retry-After": "600" });
       }
+      // entrar: con correo institucional, o la cuenta de superusuario (la marca está en Supabase)
       const r = await entrarAdministrador(correo, d.contrasena);
-      if (r.ok) return responderJson(res, 200, { pase: crearPase({ rol: "editor", correo: r.correo }), correo: r.correo });
+      if (r.ok) {
+        return responderJson(res, 200, { pase: crearPase({ rol: "editor", correo: r.correo }), correo: r.correo, superusuario: !!r.superusuario });
+      }
       if (r.motivo === "sin-servicio") {
         console.error("[editores] Supabase Auth no respondió");
         return responderJson(res, 503, { error: "No se pudo revisar la cuenta ahorita. Intenta en un momento." });
+      }
+      // un correo no institucional que no es superusuario: siempre el mismo mensaje, sea cual sea
+      // la razón (no revela si esa cuenta existe o si le falta confirmar)
+      if (!institucional) {
+        await anotarFallo(ip);
+        return pideInstitucional();
       }
       if (r.motivo === "sin-confirmar") {
         return responderJson(res, 403, { error: "Falta confirmar tu correo: abre el enlace que te mandamos (revisa también «No deseado»)." });

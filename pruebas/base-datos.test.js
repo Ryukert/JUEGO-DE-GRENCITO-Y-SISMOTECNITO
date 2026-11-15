@@ -755,16 +755,41 @@ describe("administración: cuentas propias con correo institucional (Supabase Au
     expect(cuentasAuth.find((c) => c.email === "directora@uabc.edu.mx").password).toBe("secreta-123");
   });
 
-  it("entrar: contraseña mala no; cuenta bloqueada no; otro dominio no (sin preguntar a Supabase)", async () => {
+  it("entrar: contraseña mala no; cuenta bloqueada no", async () => {
     const api = await editores();
     expect((await pedir(api, { correo: "directora@uabc.edu.mx", contrasena: "secreta-123" })).statusCode).toBe(200);
     const mala = await pedir(api, { correo: "directora@uabc.edu.mx", contrasena: "no-es-esta" });
     expect(mala.statusCode).toBe(401);
     expect(mala.json().error).toBe("Correo o contraseña incorrectos.");
     expect((await pedir(api, { correo: "fuera@uabc.edu.mx", contrasena: "bloqueada-1" })).statusCode).toBe(403);
-    fetch.mockClear();
-    expect((await pedir(api, { correo: "admin@gmail.com", contrasena: "secreta-123" })).statusCode).toBe(400);
-    expect(fetch.mock.calls.some(([url]) => String(url).includes("/auth/v1/"))).toBe(false);
+  });
+
+  it("el superusuario entra con un correo no institucional; cualquier otro Gmail no", async () => {
+    cuentasAuth.push(
+      { email: "jefe@gmail.com", password: "super-clave-1", confirmado: true, rol: "superusuario" },
+      { email: "otro@gmail.com", password: "otra-clave-12", confirmado: true },
+      { email: "sinconfirmar@gmail.com", password: "otra-clave-12", confirmado: false },
+    );
+    const api = await editores();
+    const jefe = await pedir(api, { correo: "Jefe@Gmail.com", contrasena: "super-clave-1" });
+    expect(jefe.statusCode).toBe(200);
+    expect(jefe.json()).toMatchObject({ correo: "jefe@gmail.com", superusuario: true });
+    expect(leerPase(jefe.json().pase)).toMatchObject({ rol: "editor", correo: "jefe@gmail.com" });
+    // otro Gmail: con contraseña buena, mala, sin confirmar o sin cuenta, siempre el mismo mensaje
+    const respuestas = await Promise.all([
+      pedir(api, { correo: "otro@gmail.com", contrasena: "otra-clave-12" }),
+      pedir(api, { correo: "otro@gmail.com", contrasena: "mala-clave-12" }),
+      pedir(api, { correo: "sinconfirmar@gmail.com", contrasena: "otra-clave-12" }),
+      pedir(api, { correo: "nadie@gmail.com", contrasena: "otra-clave-12" }),
+    ]);
+    for (const r of respuestas) {
+      expect(r.statusCode).toBe(400);
+      expect(r.json().error).toBe("Usa tu correo institucional (@uabc.edu.mx).");
+    }
+    // ni el superusuario crea cuentas ni pide enlaces con un correo no institucional
+    expect((await pedir(api, { accion: "crear", correo: "nuevo@gmail.com", contrasena: "una-clave-larga" })).statusCode).toBe(400);
+    expect((await pedir(api, { accion: "recuperar", correo: "jefe@gmail.com" })).statusCode).toBe(400);
+    expect(correosAuth).toEqual([]);
   });
 
   it("olvidé mi contraseña: llega el enlace y con él se pone una nueva", async () => {

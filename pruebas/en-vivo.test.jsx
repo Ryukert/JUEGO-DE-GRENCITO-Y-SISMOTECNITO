@@ -151,16 +151,18 @@ describe("entrar a la administración con correo y contraseña", () => {
 
 describe("la pantalla pide el correo institucional", () => {
   afterEach(() => { cleanup(); vi.unstubAllGlobals(); sessionStorage.clear(); });
-  it("avisa sin mandar nada si el correo no es institucional", () => {
+  it("al crear cuenta avisa sin mandar nada si el correo no es institucional (al entrar decide el servidor)", () => {
     window.matchMedia = () => ({ matches: false, addListener() {}, removeListener() {}, addEventListener() {}, removeEventListener() {} });
     sessionStorage.clear();
     const fetchFalso = vi.fn(async () => ({ ok: true, status: 200, json: async () => ({ filas: [] }) }));
     vi.stubGlobal("fetch", fetchFalso);
     render(<Editores />);
     expect(screen.getByText("Solo correos @uabc.edu.mx")).toBeTruthy();
+    fireEvent.click(screen.getByRole("button", { name: "Crear mi cuenta" }));
     fireEvent.change(screen.getByLabelText(/Correo institucional/), { target: { value: "alguien@gmail.com" } });
     fireEvent.change(screen.getByLabelText("Contraseña"), { target: { value: "secreta-123" } });
-    fireEvent.submit(screen.getByRole("button", { name: "Entrar" }).closest("form"));
+    fireEvent.change(screen.getByLabelText("Repite la contraseña"), { target: { value: "secreta-123" } });
+    fireEvent.submit(screen.getByRole("button", { name: "Crear mi cuenta" }).closest("form"));
     expect(screen.getByRole("alert").textContent).toMatch(/correo institucional/);
     expect(fetchFalso).not.toHaveBeenCalled();
   });
