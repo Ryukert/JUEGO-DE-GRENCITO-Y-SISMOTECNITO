@@ -14,6 +14,17 @@ en **Ajustes**. Cómo sacar una versión nueva: ver «Versiones» en el README.
 
 ## [Sin publicar]
 
+### Agregado
+- **Mi cuenta: cambiar mi contraseña** dentro de la administración, pidiendo la actual. Sirve
+  también a quien no tiene correo institucional, que no puede usar «¿Olvidaste tu contraseña?».
+- **Panel de cuentas para el superusuario:** ver todas las cuentas con su último acceso, agregar
+  cuentas ya confirmadas (por ejemplo, de otra universidad), cambiar el rol, bloquear y
+  desbloquear, y ponerle contraseña a alguien. Usa las funciones `public.admin_*` de la base
+  (migración `20261126000000_cuentas_admin.sql`), que revisan con cada llamada que quien las pide
+  siga siendo superusuario. Nadie se cambia el rol ni se bloquea a sí mismo.
+- Rol **`admin`**: entra a la administración aunque su correo no sea institucional, sin poder
+  administrar cuentas.
+
 ## [2.7.0] - 2026-11-15
 
 ### Agregado

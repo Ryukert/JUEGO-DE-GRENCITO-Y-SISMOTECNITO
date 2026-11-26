@@ -237,3 +237,39 @@
   border-radius: 12px;
 }
 .cuenta__campo > label { display: grid; gap: 3px; }
+
+/* ---- mi cuenta y cuentas de administración (superusuario) ---- */
+.ed-quien a { color: var(--acento-texto); font-weight: 700; }
+.editores summary h2 { display: inline; margin: 0; font-size: inherit; }
+.ed-form { display: grid; gap: 10px; max-width: 420px; margin-top: 10px; }
+.ed-form--fila { max-width: none; }
+.ed-form h3 { margin: 0; font-size: 17px; }
+.ed-form__nota { margin: -4px 0 0; }
+.ed-form__botones { display: flex; flex-wrap: wrap; gap: 6px; }
+.ed-form input, .ed-cuentas select {
+  min-height: 44px; padding: 6px 10px; font: inherit; color: var(--tinta);
+  background: var(--superficie); border: 2px solid var(--apagado-borde); border-radius: 10px;
+}
+.ed-boton {
+  justify-self: start; min-height: 44px; padding: 6px 16px; cursor: pointer; font-weight: 800; font-size: 14px;
+  color: var(--superficie); background: var(--tinta); border: 2px solid var(--tinta); border-radius: 12px;
+}
+.ed-boton--suave { color: var(--tinta); background: var(--superficie); border-color: var(--apagado-borde); }
+.ed-boton:disabled { opacity: 0.6; cursor: default; }
+.ed-cuentas { display: grid; gap: 12px; }
+.ed-cuentas > .ed-form--fila {
+  display: grid; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); align-items: end;
+  padding: 10px 12px; border: 2px dashed var(--apagado-borde); border-radius: 12px;
+}
+.ed-cuentas > .ed-form--fila > h3, .ed-cuentas > .ed-form--fila > .ed-form__nota,
+.ed-cuentas > .ed-form--fila > .cuenta__error { grid-column: 1 / -1; }
+.ed-aviso-vivo { margin: 0; }
+.ed-aviso-vivo:empty { display: none; }
+.ed-aviso-vivo .ed-aviso { display: block; }
+.ed-cuentas__tabla th[scope="row"] { overflow-wrap: anywhere; }
+.ed-cuentas__yo { font-weight: 600; color: var(--texto-suave); }
+.ed-cuentas__bloqueada th, .ed-cuentas__bloqueada td:not(:last-child) { color: var(--texto-tenue); text-decoration: line-through; }
+.ed-cuentas__acciones { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
+.ed-roles { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 4px 14px; margin: 0; font-size: 13px; }
+.ed-roles dt { font-weight: 800; }
+.ed-roles dd { margin: 0; color: var(--texto-suave); }

@@ -9,6 +9,7 @@ import Icono from "../components/Icono.jsx";
 import BotonTema from "../components/BotonTema.jsx";
 import { useEnVivo, novedades, haceCuanto, CADA, RESALTE } from "../lib/enVivo.js";
 import EntrarAdmin from "../components/EntrarAdmin.jsx";
+import { MiContrasena, CuentasAdmin } from "../components/CuentasAdmin.jsx";
 
 /**
  * Administración de encuestas (/admin, /administradores o /editores): resultados de las
@@ -20,6 +21,7 @@ import EntrarAdmin from "../components/EntrarAdmin.jsx";
 
 const LLAVE_PASE = "escuadron-editor";
 const LLAVE_CORREO = "escuadron-editor-correo";
+const LLAVE_SUPER = "escuadron-editor-super";
 const PERIODOS = [
   { id: "7", texto: "7 días", dias: 7 },
   { id: "30", texto: "30 días", dias: 30 },
@@ -33,6 +35,9 @@ const leerPase = () => { try { return sessionStorage.getItem(LLAVE_PASE); } catc
 const guardarPase = (p) => { try { p ? sessionStorage.setItem(LLAVE_PASE, p) : sessionStorage.removeItem(LLAVE_PASE); } catch { /* nada */ } };
 const leerCorreo = () => { try { return sessionStorage.getItem(LLAVE_CORREO); } catch { return null; } };
 const guardarCorreo = (c) => { try { c ? sessionStorage.setItem(LLAVE_CORREO, c) : sessionStorage.removeItem(LLAVE_CORREO); } catch { /* nada */ } };
+// solo decide si se muestra el panel de cuentas: quien manda es el servidor (y la base de datos)
+const leerSuper = () => { try { return sessionStorage.getItem(LLAVE_SUPER) === "1"; } catch { return false; } };
+const guardarSuper = (s) => { try { s ? sessionStorage.setItem(LLAVE_SUPER, "1") : sessionStorage.removeItem(LLAVE_SUPER); } catch { /* nada */ } };
 
 function fechaLocal(d) {
   const p = (n) => String(n).padStart(2, "0");
@@ -143,6 +148,7 @@ function Segmentos({ etiqueta, opciones, valor, onCambiar }) {
 export default function Editores() {
   const [pase, setPase] = useState(() => leerPase());
   const [quien, setQuien] = useState(() => leerCorreo());
+  const [esSuper, setEsSuper] = useState(() => leerSuper());
   const [error, setError] = useState("");
   const [cargando, setCargando] = useState(false);
   const [filas, setFilas] = useState(null);
@@ -225,6 +231,13 @@ export default function Editores() {
     setTip((t) => ({ x: e.clientX, y: e.clientY, texto: texto ?? t?.texto ?? "" }));
   }
 
+  const salir = useCallback((mensaje = "") => {
+    guardarPase(null); guardarCorreo(null); guardarSuper(false);
+    setQuien(null); setEsSuper(false); setPase(null); setFilas(null);
+    anteriores.current = null;
+    setError(mensaje);
+  }, []);
+
   function descargarCsv() {
     const url = URL.createObjectURL(new Blob([csvResultados(resumen)], { type: "text/csv;charset=utf-8" }));
     const a = document.createElement("a");
@@ -253,10 +266,12 @@ export default function Editores() {
   if (!pase) {
     return (
       <EntrarAdmin
-        onEntrar={({ pase: nuevo, correo: c }) => {
+        onEntrar={({ pase: nuevo, correo: c, superusuario }) => {
           guardarPase(nuevo);
           guardarCorreo(c);
+          guardarSuper(!!superusuario);
           setQuien(c);
+          setEsSuper(!!superusuario);
           setPase(nuevo);
         }}
       />
@@ -274,7 +289,13 @@ export default function Editores() {
           <BotonTema tema={tema} onTema={alternarTema} />
         </span>
         <h1>Resultados de las encuestas</h1>
-        {quien && <p className="ed-quien">Entraste como <strong>{quien}</strong></p>}
+        {quien && (
+          <p className="ed-quien">
+            Entraste como <strong>{quien}</strong>{esSuper ? " (superusuario)" : ""} ·{" "}
+            <a href="#mi-cuenta">Mi cuenta</a>
+            {esSuper && <> · <a href="#cuentas">Cuentas de administración</a></>}
+          </p>
+        )}
         <p className="logros__nota">Lo que contestan los niños al terminar cada juego: «¿Te gustó?» y «¿Cómo estuvo de difícil?».</p>
         <p className={`ed-vivo ${enVivo ? "ed-vivo--on" : ""}`}>
           <span className="ed-vivo__punto" aria-hidden="true" />
@@ -305,7 +326,7 @@ export default function Editores() {
           <button type="button" onClick={descargarCsv} disabled={!resumen?.juegos.length}>
             <Icono nombre="descargar" /> Excel (CSV)
           </button>
-          <button type="button" onClick={() => { guardarPase(null); guardarCorreo(null); setQuien(null); setPase(null); setFilas(null); anteriores.current = null; }}>Salir</button>
+          <button type="button" onClick={() => salir()}>Salir</button>
         </span>
       </section>
 
@@ -405,6 +426,22 @@ export default function Editores() {
             </p>
           )}
         </>
+      )}
+
+      {esSuper && (
+        <section className="logros__seccion ed-tarjeta" id="cuentas" aria-labelledby="cuentas-titulo">
+          <h2 id="cuentas-titulo">Cuentas de administración</h2>
+          <CuentasAdmin pase={pase} onVencido={salir} />
+        </section>
+      )}
+
+      {quien && (
+        <section className="logros__seccion ed-tarjeta" id="mi-cuenta" aria-labelledby="mi-cuenta-titulo">
+          <details>
+            <summary><h2 id="mi-cuenta-titulo">Mi cuenta: cambiar mi contraseña</h2></summary>
+            <MiContrasena pase={pase} onVencido={salir} />
+          </details>
+        </section>
       )}
 
       {tip && (

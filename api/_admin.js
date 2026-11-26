@@ -6,14 +6,17 @@
  * solo entra después de CONFIRMAR su correo: así nadie se registra con la dirección de otro.
  * Las cuentas viven en Supabase Auth (Authentication → Users).
  *
- * Superusuario: una cuenta con `app_metadata.rol = "superusuario"` entra aunque su correo no
- * sea institucional (p. ej. el de quien mantiene el juego). Esa marca solo se pone desde la base
- * de datos o con la llave secreta; el correo no se escribe en el código (el repositorio es público).
+ * Roles (`app_metadata.rol`, solo se ponen desde la base de datos o desde el panel del
+ * superusuario; ningún correo se escribe en el código porque el repositorio es público):
+ *   sin rol        entra si su correo es institucional
+ *   admin          entra aunque su correo no sea institucional (p. ej. de otra universidad)
+ *   superusuario   lo mismo, y además administra las cuentas desde la página
+ *   bloqueado      no entra
  *
- * Para quitarle el acceso a alguien sin borrar su cuenta:
- *
- *   update auth.users set raw_app_meta_data = raw_app_meta_data || '{"rol":"bloqueado"}'
- *   where email = 'correo@uabc.edu.mx';
+ * El panel del superusuario usa las funciones public.admin_* de la base de datos
+ * (supabase/migrations/20261126000000_cuentas_admin.sql), con la llave de la API derivada de
+ * JUEGO_SECRETO. Cada función vuelve a revisar en auth.users que quien la pide siga siendo
+ * superusuario.
  *
  * El navegador nunca recibe los tokens de Supabase: solo el pase de editor (8 horas). La única
  * excepción es el enlace para cambiar la contraseña, que Supabase manda por correo y la página
@@ -22,6 +25,7 @@
  * Usa la llave publicable (SUPABASE_PUBLISHABLE_KEY) o, si no está, la secreta.
  */
 import { esCorreoInstitucional } from "../src/data/institucion.js";
+import { llaveApi } from "./_db.js";
 
 export { esCorreoInstitucional };
 
@@ -74,9 +78,62 @@ export async function entrarAdministrador(correo, contrasena, { env } = {}) {
   const rol = u.app_metadata?.rol;
   if (rol === "bloqueado") return { ok: false, motivo: "bloqueado" };
   const superusuario = rol === "superusuario";
-  if (!superusuario && !esCorreoInstitucional(u.email || correo)) return { ok: false, motivo: "no-institucional" };
-  return { ok: true, correo: String(u.email || correo).toLowerCase(), superusuario };
+  if (!superusuario && rol !== "admin" && !esCorreoInstitucional(u.email || correo)) return { ok: false, motivo: "no-institucional" };
+  return { ok: true, correo: String(u.email || correo).toLowerCase(), superusuario, id: u.id || null };
 }
+
+/**
+ * Cambiar la propia contraseña ya dentro de la administración: se revisa la actual y, con el
+ * token que da Supabase al revisarla, se pone la nueva. El token no sale del servidor.
+ * → { ok: true } | { ok: false, motivo: "credenciales" | "misma" | "contrasena" | "sin-servicio" }
+ */
+export async function cambiarMiContrasena(correo, actual, nueva, { env } = {}) {
+  const { estado, datos } = await auth("token?grant_type=password", { cuerpo: { email: correo, password: actual }, env });
+  if (estado === 0 || estado === 429 || estado >= 500) return { ok: false, motivo: "sin-servicio" };
+  if (estado >= 400 || !datos?.access_token) return { ok: false, motivo: "credenciales" };
+  const r = await ponerContrasenaNueva(datos.access_token, nueva, { env });
+  if (r.ok) return { ok: true };
+  return { ok: false, motivo: r.motivo === "enlace" ? "sin-servicio" : r.motivo };
+}
+
+/* ---------------- panel del superusuario (funciones public.admin_* de la base) ---------------- */
+
+export const ROLES = ["admin", "superusuario", "bloqueado", "ninguno"];
+
+function configuracionCuentas(env = process.env) {
+  const url = env.SUPABASE_URL ? String(env.SUPABASE_URL).replace(/\/+$/, "") : "";
+  const llave = env.SUPABASE_PUBLISHABLE_KEY || env.SUPABASE_ANON_KEY || env.SUPABASE_SECRET_KEY || env.SUPABASE_SERVICE_ROLE_KEY || "";
+  const s = env.JUEGO_SECRETO;
+  return url && llave && typeof s === "string" && s.length >= 32 ? { url, llave, secreto: s } : null;
+}
+
+/** → { ok: true, datos } | { ok: false, motivo: "sin-permiso" | "ya-existe" | "datos" | "no-existe" | "sin-servicio" } */
+async function funcionCuentas(nombre, args, env = process.env) {
+  const cfg = configuracionCuentas(env);
+  if (!cfg) return { ok: false, motivo: "sin-servicio" };
+  const headers = { apikey: cfg.llave, "Content-Type": "application/json" };
+  if (cfg.llave.startsWith("eyJ")) headers.Authorization = "Bearer " + cfg.llave;
+  try {
+    const r = await fetch(`${cfg.url}/rest/v1/rpc/${nombre}`, {
+      method: "POST", headers, body: JSON.stringify({ p_llave: llaveApi(cfg.secreto), ...args }),
+    });
+    const texto = await r.text();
+    let datos = null;
+    try { datos = texto ? JSON.parse(texto) : null; } catch { /* vacío */ }
+    if (r.ok) return { ok: true, datos };
+    const motivo = { 42501: "sin-permiso", 23505: "ya-existe", 22023: "datos", P0002: "no-existe" }[datos?.code];
+    return { ok: false, motivo: motivo || "sin-servicio", detalle: datos?.message };
+  } catch {
+    return { ok: false, motivo: "sin-servicio" };
+  }
+}
+
+export const listarCuentas = (quien, op) => funcionCuentas("admin_cuentas", { p_quien: quien }, op?.env);
+export const crearCuentaAdmin = (quien, correo, contrasena, rol, op) =>
+  funcionCuentas("admin_crear_cuenta", { p_quien: quien, p_correo: correo, p_contrasena: contrasena, p_rol: rol }, op?.env);
+export const cambiarRol = (quien, id, rol, op) => funcionCuentas("admin_cambiar_rol", { p_quien: quien, p_id: id, p_rol: rol }, op?.env);
+export const ponerContrasenaAdmin = (quien, id, contrasena, op) =>
+  funcionCuentas("admin_poner_contrasena", { p_quien: quien, p_id: id, p_contrasena: contrasena }, op?.env);
 
 /**
  * Crea la cuenta; Supabase manda el correo de confirmación con un enlace a `regreso`.

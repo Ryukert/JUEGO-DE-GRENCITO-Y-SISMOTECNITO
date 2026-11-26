@@ -53,7 +53,7 @@ function supabaseFalso(url, op = {}) {
       const c = cuentasAuth.find((x) => x.email === cuerpo.email && x.password === cuerpo.password);
       if (!c) return json(400, { error_code: "invalid_credentials", msg: "Invalid login credentials" });
       if (!c.confirmado) return json(400, { error_code: "email_not_confirmed", msg: "Email not confirmed" });
-      return json(200, { access_token: "x", user: { email: c.email, email_confirmed_at: "2026-11-15T00:00:00Z", app_metadata: c.rol ? { rol: c.rol } : {} } });
+      return json(200, { access_token: "token-de-" + c.email, user: { id: c.id, email: c.email, email_confirmed_at: "2026-11-15T00:00:00Z", app_metadata: c.rol ? { rol: c.rol } : {} } });
     }
     if (ruta === "signup") {
       if (cuerpo.password.length < 8) return json(422, { error_code: "weak_password" });
@@ -75,6 +75,7 @@ function supabaseFalso(url, op = {}) {
     }
     return json(404, {});
   }
+  if (u.pathname.startsWith("/rest/v1/rpc/admin_")) return funcionesAdminFalsas(u.pathname.replace("/rest/v1/rpc/", ""), op);
   const tabla = u.pathname.replace("/rest/v1/", "");
   const metodo = op.method || "GET";
   const cuerpo = op.body ? JSON.parse(op.body) : null;
@@ -118,6 +119,39 @@ function supabaseFalso(url, op = {}) {
     return ok(prefer.includes("return=representation") ? elegidas : undefined);
   }
   return error(405, "405");
+}
+
+/* Las funciones public.admin_* (supabase/migrations/20261126000000_cuentas_admin.sql), de mentiras */
+async function funcionesAdminFalsas(nombre, op) {
+  const { llaveApi } = await import("../api/_db.js");
+  const res = (status, datos) => ({ ok: status < 300, status, text: async () => (datos === undefined ? "" : JSON.stringify(datos)) });
+  const falla = (code) => res(code === "42501" ? 403 : 400, { code, message: "error " + code });
+  if (op.headers?.apikey !== "sb_secret_prueba") return falla("42501");
+  const a = JSON.parse(op.body);
+  if (a.p_llave !== llaveApi(ENV.JUEGO_SECRETO)) return falla("42501");
+  if (!cuentasAuth.some((c) => c.id === a.p_quien && c.rol === "superusuario" && c.confirmado)) return falla("42501");
+  const cuenta = cuentasAuth.find((c) => c.id === a.p_id);
+  if (nombre === "admin_cuentas") {
+    return res(200, cuentasAuth.map((c) => ({ id: c.id, correo: c.email, confirmado: !!c.confirmado, rol: c.rol || null, creado_en: null, ultimo_acceso: null })));
+  }
+  if (nombre === "admin_crear_cuenta") {
+    if (a.p_contrasena.length < 8 || !["admin", "superusuario"].includes(a.p_rol)) return falla("22023");
+    if (cuentasAuth.some((c) => c.email === a.p_correo)) return falla("23505");
+    const id = randomUUID();
+    cuentasAuth.push({ id, email: a.p_correo, password: a.p_contrasena, confirmado: true, rol: a.p_rol });
+    return res(200, id);
+  }
+  if (a.p_id === a.p_quien) return falla("22023");
+  if (!cuenta) return falla("P0002");
+  if (nombre === "admin_cambiar_rol") {
+    cuenta.rol = a.p_rol === "ninguno" ? undefined : a.p_rol;
+    return res(200, null);
+  }
+  if (nombre === "admin_poner_contrasena") {
+    cuenta.password = a.p_contrasena;
+    return res(200, null);
+  }
+  return res(404, { code: "PGRST202" });
 }
 
 /* ---------------- llamadas ---------------- */
@@ -837,5 +871,94 @@ describe("administración: cuentas propias con correo institucional (Supabase Au
     const api = await editores();
     expect((await llamar(api, { clave: "clave-de-editores-123" })).statusCode).toBe(200);
     delete process.env.EDITORES_CLAVE;
+  });
+});
+
+describe("administración: mi contraseña y cuentas del superusuario", () => {
+  const editores = async () => (await import("../api/editores.js")).default;
+  const JEFE = "11111111-1111-4111-8111-111111111111";
+  const DIRECTORA = "22222222-2222-4222-8222-222222222222";
+  beforeEach(() => {
+    cuentasAuth = [
+      { id: JEFE, email: "jefe@uagro.mx", password: "super-clave-1", confirmado: true, rol: "superusuario" },
+      { id: DIRECTORA, email: "directora@uabc.edu.mx", password: "secreta-123", confirmado: true },
+    ];
+  });
+  const entrar = async (api, correo, contrasena) => (await llamar(api, { correo, contrasena }, { ip: "10.2.2.2" })).json().pase;
+  const pedir = (api, cuerpo, pase) => llamar(api, cuerpo, { ip: "10.2.2.2", pase });
+
+  it("cada quien cambia su contraseña con la actual, también sin correo institucional", async () => {
+    const api = await editores();
+    for (const [correo, actual] of [["jefe@uagro.mx", "super-clave-1"], ["directora@uabc.edu.mx", "secreta-123"]]) {
+      const pase = await entrar(api, correo, actual);
+      const mala = await pedir(api, { accion: "miContrasena", actual: "no-es-esta", nueva: "nueva-clave-77" }, pase);
+      expect(mala.statusCode).toBe(401);
+      expect(mala.json().error).toBe("Tu contraseña actual no es esa.");
+      expect((await pedir(api, { accion: "miContrasena", actual, nueva: "corta" }, pase)).statusCode).toBe(400);
+      expect((await pedir(api, { accion: "miContrasena", actual, nueva: actual }, pase)).statusCode).toBe(400);
+      expect((await pedir(api, { accion: "miContrasena", actual, nueva: "nueva-clave-77" }, pase)).statusCode).toBe(200);
+      expect(await entrar(api, correo, "nueva-clave-77")).toBeTruthy();
+      expect(await entrar(api, correo, actual)).toBeUndefined();
+    }
+    // sin pase, o con el de la clave de respaldo (no hay cuenta), no
+    expect((await pedir(api, { accion: "miContrasena", actual: "x".repeat(8), nueva: "y".repeat(8) })).statusCode).toBe(401);
+    const paseClave = crearPase({ rol: "editor" });
+    expect((await pedir(api, { accion: "miContrasena", actual: "x".repeat(8), nueva: "y".repeat(8) }, paseClave)).statusCode).toBe(400);
+  });
+
+  it("el superusuario lista, agrega, cambia el rol, bloquea y pone contraseñas", async () => {
+    const api = await editores();
+    const pase = await entrar(api, "jefe@uagro.mx", "super-clave-1");
+    expect(leerPase(pase)).toMatchObject({ su: 1, uid: JEFE });
+
+    const lista = (await pedir(api, { accion: "cuentas" }, pase)).json().cuentas;
+    expect(lista.map((c) => [c.correo, c.yo])).toEqual([["jefe@uagro.mx", true], ["directora@uabc.edu.mx", false]]);
+
+    // una cuenta de otra universidad: ya confirmada, entra como administradora
+    expect((await pedir(api, { accion: "nuevaCuenta", correo: "Profe@UAGro.mx", contrasena: "para-empezar-1", rol: "admin" }, pase)).statusCode).toBe(200);
+    expect((await pedir(api, { accion: "nuevaCuenta", correo: "profe@uagro.mx", contrasena: "para-empezar-1", rol: "admin" }, pase)).statusCode).toBe(409);
+    expect((await pedir(api, { accion: "nuevaCuenta", correo: "otra@uagro.mx", contrasena: "para-empezar-1", rol: "bloqueado" }, pase)).statusCode).toBe(400);
+    const profe = await llamar(api, { correo: "profe@uagro.mx", contrasena: "para-empezar-1" }, { ip: "10.2.2.2" });
+    expect(profe.statusCode).toBe(200);
+    expect(profe.json().superusuario).toBe(false);
+    expect(leerPase(profe.json().pase)).not.toHaveProperty("su");
+
+    // bloquear y desbloquear
+    expect((await pedir(api, { accion: "cambiarRol", id: DIRECTORA, rol: "bloqueado" }, pase)).statusCode).toBe(200);
+    expect((await llamar(api, { correo: "directora@uabc.edu.mx", contrasena: "secreta-123" }, { ip: "10.2.2.2" })).statusCode).toBe(403);
+    expect((await pedir(api, { accion: "cambiarRol", id: DIRECTORA, rol: "ninguno" }, pase)).statusCode).toBe(200);
+    expect(await entrar(api, "directora@uabc.edu.mx", "secreta-123")).toBeTruthy();
+    expect((await pedir(api, { accion: "cambiarRol", id: DIRECTORA, rol: "rey" }, pase)).statusCode).toBe(400);
+
+    // ponerle contraseña a otra cuenta
+    expect((await pedir(api, { accion: "contrasenaDe", id: DIRECTORA, contrasena: "la-del-jefe-1" }, pase)).statusCode).toBe(200);
+    expect(await entrar(api, "directora@uabc.edu.mx", "la-del-jefe-1")).toBeTruthy();
+
+    // a sí mismo no se cambia el rol ni la contraseña desde el panel
+    expect((await pedir(api, { accion: "cambiarRol", id: JEFE, rol: "bloqueado" }, pase)).statusCode).toBe(400);
+    expect((await pedir(api, { accion: "contrasenaDe", id: JEFE, contrasena: "otra-cosa-12" }, pase)).statusCode).toBe(400);
+    expect(cuentasAuth.find((c) => c.id === JEFE).rol).toBe("superusuario");
+  });
+
+  it("quien no es superusuario no usa el panel, aunque arme el pedido a mano", async () => {
+    const api = await editores();
+    const pase = await entrar(api, "directora@uabc.edu.mx", "secreta-123");
+    for (const cuerpo of [
+      { accion: "cuentas" },
+      { accion: "nuevaCuenta", correo: "x@gmail.com", contrasena: "una-clave-larga", rol: "superusuario" },
+      { accion: "cambiarRol", id: JEFE, rol: "bloqueado" },
+    ]) {
+      expect((await pedir(api, cuerpo, pase)).statusCode).toBe(403);
+    }
+    // un pase de superusuario cuyo rol ya le quitaron: la base de datos lo rechaza
+    const paseViejo = crearPase({ rol: "editor", correo: "directora@uabc.edu.mx", su: 1, uid: DIRECTORA });
+    expect((await pedir(api, { accion: "cuentas" }, paseViejo)).statusCode).toBe(403);
+    expect(cuentasAuth.find((c) => c.id === JEFE).rol).toBe("superusuario");
+  });
+
+  it("con rol «admin» entra aunque su correo no sea institucional", async () => {
+    cuentasAuth.push({ id: randomUUID(), email: "invitada@uagro.mx", password: "invitada-123", confirmado: true, rol: "admin" });
+    const api = await editores();
+    expect(await entrar(api, "invitada@uagro.mx", "invitada-123")).toBeTruthy();
   });
 });

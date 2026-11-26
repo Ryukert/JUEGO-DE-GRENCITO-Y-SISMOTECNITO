@@ -6,6 +6,8 @@
  *   POST /api/editores { accion: "recuperar", correo }              → { mensaje }  manda el enlace para cambiarla
  *   POST /api/editores { accion: "contrasenaNueva", token, contrasena } → { ok }
  *        cuentas de Supabase Auth con correo institucional confirmado (ver api/_admin.js)
+ *   POST /api/editores { accion: "miContrasena" | "cuentas" | "nuevaCuenta" | "cambiarRol" | "contrasenaDe", … }
+ *        ya dentro, con el pase: cambiar la propia contraseña y el panel del superusuario
  *   POST /api/editores { clave }                      → { pase }   respaldo: EDITORES_CLAVE
  *   GET  /api/editores?desde=AAAA-MM-DD&hasta=…  (pase de editor)
  *     → { filas: [{ juego, tipo, grado, dia, gusto, dificultad, respuestas }] }
@@ -24,6 +26,7 @@ import { revisarIntentos, anotarFallo, contar, resumen as resumenLimite } from "
 import {
   entrarAdministrador, crearCuenta, pedirCambioDeContrasena, ponerContrasenaNueva,
   limpiarCorreo, contrasenaValida, configuracionAuth, esCorreoInstitucional, MINIMO_NUEVA,
+  cambiarMiContrasena, listarCuentas, crearCuentaAdmin, cambiarRol, ponerContrasenaAdmin, ROLES,
 } from "./_admin.js";
 import { dominiosEnTexto } from "../src/data/institucion.js";
 
@@ -75,6 +78,75 @@ export function agrupar(crudas, zona = "America/Tijuana") {
   return [...mapa.values()];
 }
 
+const ACCIONES_CON_PASE = ["miContrasena", "cuentas", "nuevaCuenta", "cambiarRol", "contrasenaDe"];
+const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
+const MENSAJES_CUENTAS = {
+  "sin-permiso": [403, "Solo el superusuario administra las cuentas. Vuelve a entrar si te acaban de dar el rol."],
+  "ya-existe": [409, "Ese correo ya tiene cuenta: búscalo en la lista."],
+  "datos": [400, "Revisa los datos: correo válido, contraseña de 8 a 128 caracteres y que no sea tu propia cuenta."],
+  "no-existe": [404, "Esa cuenta ya no existe."],
+  "sin-servicio": [503, "No se pudo ahorita. Intenta en un momento."],
+};
+
+/**
+ *   POST { accion: "miContrasena", actual, nueva }                (pase de editor con correo)
+ *   POST { accion: "cuentas" }                         → { cuentas }   (pase de superusuario)
+ *   POST { accion: "nuevaCuenta", correo, contrasena, rol: "admin" | "superusuario" }
+ *   POST { accion: "cambiarRol", id, rol: "admin" | "superusuario" | "bloqueado" | "ninguno" }
+ *   POST { accion: "contrasenaDe", id, contrasena }
+ */
+async function accionConPase(req, res, d, ip) {
+  const pase = paseDe(req, "editor");
+  if (!pase) return responderJson(res, 401, { error: "Tu sesión venció. Vuelve a entrar." });
+
+  if (d.accion === "miContrasena") {
+    if (!pase.correo) return responderJson(res, 400, { error: "Entraste con la clave de administración: no hay cuenta a la cual cambiarle la contraseña." });
+    if (!contrasenaValida(d.nueva, MINIMO_NUEVA)) return responderJson(res, 400, { error: `La contraseña nueva lleva de ${MINIMO_NUEVA} a 128 caracteres.` });
+    if (!contrasenaValida(d.actual)) return responderJson(res, 400, { error: "Escribe tu contraseña actual." });
+    if (await revisarIntentos(ip, `admin|${pase.correo}`)) return responderJson(res, 429, { error: "Demasiados intentos. Espera un rato." }, { "Retry-After": "600" });
+    const r = await cambiarMiContrasena(pase.correo, d.actual, d.nueva);
+    if (r.ok) return responderJson(res, 200, { ok: true });
+    if (r.motivo === "credenciales") {
+      await anotarFallo(ip);
+      return responderJson(res, 401, { error: "Tu contraseña actual no es esa." });
+    }
+    if (r.motivo === "misma") return responderJson(res, 400, { error: "Elige una contraseña distinta a la anterior." });
+    if (r.motivo === "contrasena") return responderJson(res, 400, { error: "Esa contraseña no sirve: usa una más larga o menos común." });
+    return responderJson(res, 503, { error: "No se pudo cambiar ahorita. Intenta en un momento." });
+  }
+
+  // panel del superusuario: la base de datos vuelve a revisar el rol con cada llamada
+  if (!pase.su || !UUID.test(String(pase.uid || ""))) return responderJson(res, 403, { error: MENSAJES_CUENTAS["sin-permiso"][1] });
+  const quien = pase.uid;
+  let r;
+  if (d.accion === "cuentas") {
+    r = await listarCuentas(quien);
+    if (r.ok) return responderJson(res, 200, { cuentas: (r.datos || []).map((c) => ({ ...c, yo: c.id === quien })) });
+  } else if (d.accion === "nuevaCuenta") {
+    const correo = limpiarCorreo(d.correo);
+    if (!correo) return responderJson(res, 400, { error: "Escribe un correo válido." });
+    if (!contrasenaValida(d.contrasena, MINIMO_NUEVA)) return responderJson(res, 400, { error: `La contraseña lleva de ${MINIMO_NUEVA} a 128 caracteres.` });
+    if (!["admin", "superusuario"].includes(d.rol)) return responderJson(res, 400, { error: "Elige si será administrador o superusuario." });
+    r = await crearCuentaAdmin(quien, correo, d.contrasena, d.rol);
+    if (r.ok) return responderJson(res, 200, { ok: true, id: r.datos });
+  } else {
+    if (!UUID.test(String(d.id || ""))) return responderJson(res, 400, { error: "Falta la cuenta." });
+    if (d.id === quien) return responderJson(res, 400, { error: "Tu propia cuenta no se cambia desde aquí." });
+    if (d.accion === "cambiarRol") {
+      if (!ROLES.includes(d.rol)) return responderJson(res, 400, { error: "Ese rol no existe." });
+      r = await cambiarRol(quien, d.id, d.rol);
+    } else {
+      if (!contrasenaValida(d.contrasena, MINIMO_NUEVA)) return responderJson(res, 400, { error: `La contraseña lleva de ${MINIMO_NUEVA} a 128 caracteres.` });
+      r = await ponerContrasenaAdmin(quien, d.id, d.contrasena);
+    }
+    if (r.ok) return responderJson(res, 200, { ok: true });
+  }
+  if (r.motivo === "sin-servicio") console.error("[editores] cuentas:", d.accion, r.detalle || "sin respuesta");
+  const [estado, error] = MENSAJES_CUENTAS[r.motivo] || MENSAJES_CUENTAS["sin-servicio"];
+  return responderJson(res, estado, { error });
+}
+
 /** A dónde regresa el enlace de los correos de Supabase: la administración de este mismo sitio. */
 export function direccionDeRegreso(req) {
   const host = String(req.headers["x-forwarded-host"] || req.headers.host || "").split(",")[0].trim();
@@ -108,6 +180,9 @@ export default async function handler(req, res) {
       if (r.motivo === "contrasena") return responderJson(res, 400, { error: "Esa contraseña no sirve: usa una más larga o menos común." });
       return responderJson(res, 401, { error: "El enlace ya no sirve. Pide otro con «¿Olvidaste tu contraseña?»." });
     }
+
+    // ya dentro (con pase): cambiar la propia contraseña y el panel del superusuario
+    if (ACCIONES_CON_PASE.includes(d?.accion)) return accionConPase(req, res, d, ip);
 
     if (d?.correo !== undefined) {
       const correo = limpiarCorreo(d.correo);
@@ -152,7 +227,8 @@ export default async function handler(req, res) {
       // entrar: con correo institucional, o la cuenta de superusuario (la marca está en Supabase)
       const r = await entrarAdministrador(correo, d.contrasena);
       if (r.ok) {
-        return responderJson(res, 200, { pase: crearPase({ rol: "editor", correo: r.correo }), correo: r.correo, superusuario: !!r.superusuario });
+        const pase = crearPase({ rol: "editor", correo: r.correo, ...(r.superusuario && r.id ? { su: 1, uid: r.id } : {}) });
+        return responderJson(res, 200, { pase, correo: r.correo, superusuario: !!r.superusuario });
       }
       if (r.motivo === "sin-servicio") {
         console.error("[editores] Supabase Auth no respondió");
