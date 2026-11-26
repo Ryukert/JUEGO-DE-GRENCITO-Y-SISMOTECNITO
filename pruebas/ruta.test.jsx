@@ -112,7 +112,7 @@ describe("laberintos al azar", () => {
         expect(ruta.length).toBeGreaterThan(columnas);
         expect((texto.match(/[XT]/g) || []).length, mapa.join("\n")).toBe(peligros + elevadores);
       }
-    });
+    }, 30_000);   // 300 laberintos: ~2.7 s aquí, pero en la máquina de Vercel (2 núcleos) pasó de 5 s
   });
 
   it("voltear un mapa conserva su ruta segura", () => {
