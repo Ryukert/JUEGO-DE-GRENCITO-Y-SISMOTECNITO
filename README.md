@@ -190,6 +190,29 @@ números resumidos: nunca quién contestó. En las gráficas la escala va de roj
 azul pasando por gris (😡 → 😄), porque el rojo→verde no se distingue con
 daltonismo; cada color va con su emoji y su nombre.
 
+### Cuentas de administración
+
+Cada quien con correo institucional crea su cuenta y la confirma por correo. Ya dentro:
+
+- **Mi cuenta → cambiar mi contraseña**, con la actual. Es la forma de cambiarla para quien no
+  tiene correo institucional, porque «¿Olvidaste tu contraseña?» solo manda enlaces a esos correos.
+- **Cuentas de administración** (solo el superusuario): lista de cuentas con su último acceso;
+  agregar una cuenta ya confirmada (por ejemplo, de otra universidad), cambiar el rol, bloquear y
+  desbloquear, y ponerle contraseña a alguien. Nadie se cambia el rol ni se bloquea a sí mismo,
+  así que siempre queda un superusuario.
+
+| Rol | Qué puede hacer |
+|---|---|
+| sin rol | entra si su correo es institucional |
+| `admin` | entra aunque su correo no sea institucional |
+| `superusuario` | lo mismo, y administra las cuentas |
+| `bloqueado` | no entra |
+
+El panel usa las funciones `public.admin_*` de la base de datos
+(`supabase/migrations/20261126000000_cuentas_admin.sql`). Piden la llave de la API, igual que
+las encuestas, y cada una vuelve a revisar en `auth.users` que quien la pide siga siendo
+superusuario: si le quitan el rol, su sesión ya no le sirve para esto.
+
 ---
 
 ## Grupos, maestros y evaluación (base de datos)
