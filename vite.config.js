@@ -41,5 +41,8 @@ export default defineConfig({
     setupFiles: ["pruebas/_preparar.js"],   // descarga los motores diferidos antes de cada archivo
     // un jsdom por proceso en vez de uno por archivo (cada archivo sigue aislado): ~30 % más rápido
     pool: "vmThreads",
+    // Vercel corre las pruebas antes de publicar en una máquina de 2 núcleos, unas 3 veces más
+    // lenta que una computadora normal: con el límite de 5 s, una prueba lenta frenó una publicación
+    testTimeout: 15_000,
   },
 });
