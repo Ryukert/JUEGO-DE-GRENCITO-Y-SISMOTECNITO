@@ -215,6 +215,16 @@
 .op-difusion__texto { flex: 1 1 260px; display: grid; gap: 6px; }
 .op-difusion__texto p { margin: 0; }
 .op-difusion__botones { margin-left: 0; }
+.op-evento { display: flex; flex-wrap: wrap; align-items: end; gap: 6px 10px; }
+.op-evento label { display: grid; gap: 2px; font-weight: 700; flex: 1 1 200px; }
+.op-evento input { min-height: 44px; padding: 6px 10px; border-radius: 10px; border: 2px solid var(--apagado-borde); background: var(--superficie); color: var(--tinta); font: inherit; }
+.op-enlace { overflow-wrap: anywhere; }
+
+/* /opinion?evento=…: de qué evento es esta pantalla */
+.opinion__cabeza .opinion__evento {
+  padding: 4px 14px; border-radius: 999px; font-weight: 800; color: var(--superficie); background: var(--tinta);
+  max-width: 100%; overflow-wrap: anywhere;
+}
 
 /* /opinion en una tableta: pantalla completa */
 .opinion__botones { display: flex; flex-wrap: wrap; justify-content: center; gap: 8px; }

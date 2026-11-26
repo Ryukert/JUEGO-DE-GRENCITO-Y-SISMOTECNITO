@@ -1,6 +1,6 @@
 /* Evaluación abierta (/opinion): la ve cualquiera desde la portada y se contesta sin cuenta. */
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
-import { render, screen, fireEvent, cleanup, act } from "@testing-library/react";
+import { render, screen, fireEvent, cleanup, act, within } from "@testing-library/react";
 import axe from "axe-core";
 import Opinion, { SEGUNDOS_GRACIAS } from "../src/pages/Opinion.jsx";
 import ResumenOpiniones from "../src/components/ResumenOpiniones.jsx";
@@ -79,6 +79,30 @@ describe("pantalla de opinión", () => {
     expect(document.querySelectorAll("input:checked")).toHaveLength(0);   // limpia para la siguiente
   });
 
+  it("con ?evento= dice de qué evento es y lo manda con cada opinión (también después de limpiarse)", async () => {
+    window.history.pushState({}, "", "/opinion?evento=Feria de Ciencias");
+    try {
+      render(<Opinion />, enMain());
+      expect(screen.getByText("Feria de ciencias")).toBeTruthy();
+      contestarTodo(5);
+      await act(async () => fireEvent.click(screen.getByRole("button", { name: "Enviar mi opinión" })));
+      await act(async () => fireEvent.click(screen.getByRole("button", { name: "Otra opinión" })));
+      contestarTodo(3);
+      await act(async () => fireEvent.click(screen.getByRole("button", { name: "Enviar mi opinión" })));
+      expect(enviadas.map((o) => o.evento)).toEqual(["feria-de-ciencias", "feria-de-ciencias"]);
+    } finally {
+      window.history.pushState({}, "", "/");
+    }
+  });
+
+  it("sin evento en la dirección no manda evento (la general)", async () => {
+    render(<Opinion />, enMain());
+    expect(document.querySelector(".opinion__evento")).toBeNull();
+    contestarTodo(4);
+    await act(async () => fireEvent.click(screen.getByRole("button", { name: "Enviar mi opinión" })));
+    expect(enviadas[0]).not.toHaveProperty("evento");
+  });
+
   it("sin internet la opinión espera y se manda con la siguiente", async () => {
     render(<Opinion />, enMain());
     enLinea = false;
@@ -121,6 +145,10 @@ describe("difusión: QR, cartel y reportes", () => {
     expect(texto.startsWith("%PDF-")).toBe(true);
     expect(texto).toContain("juego.ejemplo.mx/opinion");
     expect(texto).toContain("no necesitas registrarte");
+    const conEvento = await crearCartel("https://juego.ejemplo.mx/opinion?evento=feria", { imagenes: false, evento: "Feria" });
+    const t2 = new TextDecoder("latin1").decode(new Uint8Array(conEvento.output("arraybuffer")));
+    expect(t2).toContain("(Feria)");
+    expect(t2).toContain("juego.ejemplo.mx/opinion?evento=feria");
   });
 
   it("reporte en PDF y CSV para Excel con promedios, caritas, quién y días", async () => {
@@ -180,5 +208,31 @@ describe("administración", () => {
     expect(screen.getByText("4.0 de 5 · Bien")).toBeTruthy();   // el juego: (5·3 + 1) / 4
     fireEvent.click(screen.getByRole("button", { name: /Maestro o maestra/ }));
     expect(screen.getByText("1.0 de 5 · Muy mal")).toBeTruthy();
+    // sin eventos no estorba un filtro de eventos
+    expect(screen.queryByRole("group", { name: "Evento" })).toBeNull();
+  });
+
+  it("por evento: filtra sus opiniones y arma el enlace de un evento nuevo", () => {
+    render(
+      <ResumenOpiniones filas={[
+        { dia: "2026-11-26", evento: null, quien: null, juego: 5, trato: 5, explicacion: 5, respuestas: 2 },
+        { dia: "2026-11-26", evento: "feria-de-ciencias", quien: "alumno", juego: 2, trato: 2, explicacion: 2, respuestas: 2 },
+      ]} />,
+      enMain(),
+    );
+    expect(screen.getAllByText("3.5 de 5 · Bien")).toHaveLength(3);   // todos: (5·2 + 2·2) / 4
+    const eventos = screen.getByRole("group", { name: "Evento" });
+    fireEvent.click(within(eventos).getByRole("button", { name: /Feria de ciencias/ }));
+    expect(screen.getAllByText("2.0 de 5 · Mal")).toHaveLength(3);
+    // al elegirlo, el enlace y el QR son los de ese evento
+    expect(screen.getByRole("textbox", { name: /Evento/ }).value).toBe("Feria de ciencias");
+    expect(document.querySelector(".op-enlace").getAttribute("href")).toBe("/opinion?evento=feria-de-ciencias");
+    fireEvent.click(within(eventos).getByRole("button", { name: /General/ }));
+    expect(screen.getAllByText("5.0 de 5 · Excelente")).toHaveLength(3);
+    expect(document.querySelector(".op-enlace").getAttribute("href")).toBe("/opinion");
+
+    fireEvent.change(screen.getByRole("textbox", { name: /Evento/ }), { target: { value: "Visita Secundaria Nº 3" } });
+    expect(document.querySelector(".op-enlace").getAttribute("href")).toBe("/opinion?evento=visita-secundaria-n-3");
+    expect(screen.getByText(/quedan en «Visita secundaria n 3»/)).toBeTruthy();
   });
 });

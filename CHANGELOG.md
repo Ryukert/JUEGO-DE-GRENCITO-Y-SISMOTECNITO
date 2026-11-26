@@ -14,6 +14,15 @@ en **Ajustes**. Cómo sacar una versión nueva: ver «Versiones» en el README.
 
 ## [Sin publicar]
 
+### Agregado
+
+- Evaluación abierta por evento. En la administración escribes el nombre de una feria,
+  visita o taller y obtienes su enlace (`/opinion?evento=…`), su QR y su cartel con el
+  nombre del evento. La pantalla de la tableta dice de qué evento es y guarda cada opinión
+  con él. El filtro «Evento» muestra los resultados de cada uno aparte, y el reporte en
+  PDF y el CSV dicen de qué evento son; el de todos trae las opiniones por evento.
+- Botón «Copiar enlace» para la evaluación abierta.
+
 ## [2.10.2] - 2026-11-26
 
 ### Corregido

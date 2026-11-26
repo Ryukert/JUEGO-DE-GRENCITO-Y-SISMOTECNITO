@@ -22,5 +22,6 @@ export function trazoQr(matriz) {
   return d;
 }
 
-/** La dirección pública de la evaluación abierta en este sitio. */
-export const direccionOpinion = (origen = typeof location !== "undefined" ? location.origin : "") => `${origen}/opinion`;
+/** La dirección pública de la evaluación abierta en este sitio (con evento: la de ese evento). */
+export const direccionOpinion = (origen = typeof location !== "undefined" ? location.origin : "", evento = null) =>
+  `${origen}/opinion${evento ? `?evento=${encodeURIComponent(evento)}` : ""}`;

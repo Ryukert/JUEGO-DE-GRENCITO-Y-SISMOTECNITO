@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import { ESCALA_OPINION, QUIENES } from "../data/opinion.js";
+import { ESCALA_OPINION, QUIENES, MAX_EVENTO, normalizarEvento, nombreEvento } from "../data/opinion.js";
 import { resumirOpiniones } from "../lib/opiniones.js";
 import Icono from "./Icono.jsx";
 
@@ -9,6 +9,9 @@ import Icono from "./Icono.jsx";
  *
  * Para que la conteste más gente: QR a la vista, cartel con QR para imprimir (PDF) y la
  * dirección para abrirla en una tableta. Para presentar: reporte en PDF y Excel (CSV).
+ *
+ * Por evento: al escribir el nombre de una feria o visita, el enlace, el QR y el cartel son los
+ * de ese evento (/opinion?evento=…) y sus opiniones se ven y se reportan aparte.
  */
 const caritaDe = (promedio) => ESCALA_OPINION[Math.min(4, Math.max(0, Math.round(promedio) - 1))];
 const hoy = () => new Date().toISOString().slice(0, 10);
@@ -45,20 +48,40 @@ function VistaQr({ direccion }) {
 
 export default function ResumenOpiniones({ filas, periodo = "todo" }) {
   const [quien, setQuien] = useState("todos");
+  const [evento, setEvento] = useState("todos");     // filtro: "todos" | "general" | id del evento
+  const [nombreQr, setNombreQr] = useState("");      // evento del enlace, QR y cartel
+  const [copiado, setCopiado] = useState(false);
   const [haciendo, setHaciendo] = useState(null);   // "cartel" | "reporte"
   const [error, setError] = useState("");
-  const r = useMemo(() => resumirOpiniones(filas || [], { quien }), [filas, quien]);
+  const r = useMemo(() => resumirOpiniones(filas || [], { quien, evento }), [filas, quien, evento]);
+  const delEvento = useMemo(() => resumirOpiniones(filas || [], { evento }), [filas, evento]);
   const todas = useMemo(() => resumirOpiniones(filas || []), [filas]);
-  const direccion = typeof location !== "undefined" ? `${location.origin}/opinion` : "/opinion";
+  const idQr = normalizarEvento(nombreQr);
+  const origen = typeof location !== "undefined" ? location.origin : "";
+  const direccion = `${origen}/opinion${idQr ? `?evento=${idQr}` : ""}`;
   const textoQuien = quien === "todos" ? "todos" : ([...QUIENES, { id: "sin", texto: "No dijo" }].find((q) => q.id === quien)?.texto || quien);
+  const textoEvento = evento === "todos" ? "todos" : (todas.eventos.find((e) => e.id === evento)?.texto || nombreEvento(evento));
+  const sufijo = evento !== "todos" ? `-${evento}` : "";
+  const hayEventos = todas.eventos.some((e) => e.id !== "general");
+
+  function elegirEvento(id) {
+    setEvento(id);
+    setQuien("todos");
+    setNombreQr(id === "todos" || id === "general" ? "" : nombreEvento(id));
+  }
+
+  async function copiar() {
+    try { await navigator.clipboard.writeText(direccion); setCopiado(true); setTimeout(() => setCopiado(false), 2000); }
+    catch { setError("No pude copiar: selecciona el enlace y cópialo a mano."); }
+  }
 
   async function pdf(tipo) {
     setHaciendo(tipo);
     setError("");
     try {
       const { crearCartel, crearReporte } = await import("../lib/pdfOpiniones.js");
-      if (tipo === "cartel") (await crearCartel(direccion)).save("cartel-califica-escuadron.pdf");
-      else (await crearReporte(r, { periodo, quien: textoQuien })).save(`opiniones-escuadron-${hoy()}.pdf`);
+      if (tipo === "cartel") (await crearCartel(direccion, { evento: idQr ? nombreEvento(idQr) : "" })).save(`cartel-califica-escuadron${idQr ? "-" + idQr : ""}.pdf`);
+      else (await crearReporte(r, { periodo, quien: textoQuien, evento: textoEvento })).save(`opiniones-escuadron${sufijo}-${hoy()}.pdf`);
     } catch (e) {
       setError("No pude crear el PDF: " + e.message);
     } finally {
@@ -68,7 +91,7 @@ export default function ResumenOpiniones({ filas, periodo = "todo" }) {
 
   async function csv() {
     const { csvOpiniones } = await import("../lib/pdfOpiniones.js");
-    descargar(csvOpiniones(r, { periodo, quien: textoQuien }), `opiniones-escuadron-${hoy()}.csv`, "text/csv;charset=utf-8");
+    descargar(csvOpiniones(r, { periodo, quien: textoQuien, evento: textoEvento }), `opiniones-escuadron${sufijo}-${hoy()}.csv`, "text/csv;charset=utf-8");
   }
 
   return (
@@ -83,11 +106,23 @@ export default function ResumenOpiniones({ filas, periodo = "todo" }) {
           <p>
             Cualquiera la contesta <strong>sin registrarse</strong>: escaneando este código, desde el botón
             «¿Qué te pareció?» de la portada o en{" "}
-            <a href="/opinion" target="_blank" rel="noopener">{direccion.replace(/^https?:\/\//, "")}</a>.
+            <a className="op-enlace" href={direccion.slice(origen.length)} target="_blank" rel="noopener">{direccion.replace(/^https?:\/\//, "")}</a>.
           </p>
+          <div className="op-evento">
+            <label>
+              Evento <small>(opcional: para ver sus opiniones aparte)</small>
+              <input
+                type="text" value={nombreQr} maxLength={MAX_EVENTO + 20} placeholder="Ej. Feria de ciencias 2026"
+                onChange={(e) => { setNombreQr(e.target.value); setCopiado(false); }}
+              />
+            </label>
+            <button type="button" onClick={copiar}>{copiado ? "¡Copiado!" : "Copiar enlace"}</button>
+          </div>
           <p className="ed-ayuda">
-            Para un evento: imprime el cartel y pégalo a la vista, o abre la dirección en una tableta y toca
-            «Pantalla completa»; se limpia sola para la siguiente persona.
+            {idQr
+              ? <>Las opiniones de este enlace, su QR y su cartel quedan en «{nombreEvento(idQr)}».</>
+              : <>Para un evento: escribe su nombre arriba, imprime el cartel y pégalo a la vista, o abre el enlace en una
+                tableta y toca «Pantalla completa»; se limpia sola para la siguiente persona.</>}
           </p>
           <span className="ed-acciones op-difusion__botones">
             <button type="button" className="ed-pdf" onClick={() => pdf("cartel")} disabled={!!haciendo}>
@@ -104,10 +139,21 @@ export default function ResumenOpiniones({ filas, periodo = "todo" }) {
         </div>
       </div>
 
-      {todas.total > 0 && (
+      {hayEventos && (
+        <div className="ed-filtro" role="group" aria-label="Evento">
+          <span className="ed-filtro__etiqueta">Evento</span>
+          {[{ id: "todos", texto: "Todos", total: todas.total }, ...todas.eventos].map((e) => (
+            <button key={e.id} type="button" aria-pressed={evento === e.id} className={evento === e.id ? "activo" : ""} onClick={() => elegirEvento(e.id)}>
+              {e.texto} <small>({e.total})</small>
+            </button>
+          ))}
+        </div>
+      )}
+
+      {delEvento.total > 0 && (
         <div className="ed-filtro" role="group" aria-label="Quién contestó">
           <span className="ed-filtro__etiqueta">Quién</span>
-          {[{ id: "todos", texto: "Todos", total: todas.total }, ...todas.quienes.filter((q) => q.total)].map((q) => (
+          {[{ id: "todos", texto: "Todos", total: delEvento.total }, ...delEvento.quienes.filter((q) => q.total)].map((q) => (
             <button key={q.id} type="button" aria-pressed={quien === q.id} className={quien === q.id ? "activo" : ""} onClick={() => setQuien(q.id)}>
               {q.texto} <small>({q.total})</small>
             </button>
@@ -116,7 +162,7 @@ export default function ResumenOpiniones({ filas, periodo = "todo" }) {
       )}
 
       {r.total === 0 ? (
-        <p className="logros__nota">Todavía no hay opiniones en este periodo.</p>
+        <p className="logros__nota">Todavía no hay opiniones {evento === "todos" ? "en este periodo" : "de este evento en el periodo"}.</p>
       ) : (
         <ul className="evaluado">
           {r.preguntas.map((p) => {

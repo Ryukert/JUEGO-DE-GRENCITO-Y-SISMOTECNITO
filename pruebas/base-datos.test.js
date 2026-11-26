@@ -922,8 +922,54 @@ describe("evaluación abierta (/opinion): cualquiera, sin cuenta", () => {
     const filas = r.json().filas;
     expect(filas.find((f) => f.quien === null)).toMatchObject({ ...BUENA, respuestas: 2 });
     expect(filas.find((f) => f.quien === "alumno")).toMatchObject({ juego: 2, respuestas: 1 });
-    expect(Object.keys(filas[0]).sort()).toEqual(["dia", "explicacion", "juego", "quien", "respuestas", "trato"]);
+    expect(Object.keys(filas[0]).sort()).toEqual(["dia", "evento", "explicacion", "juego", "quien", "respuestas", "trato"]);
     delete process.env.EDITORES_CLAVE;
+  });
+
+  it("por evento: guarda el evento de la dirección y rechaza uno mal escrito", async () => {
+    const api = await opinionApi();
+    expect((await llamar(api, { ...BUENA, evento: "feria-de-ciencias-2026" })).statusCode).toBe(200);
+    expect((await llamar(api, BUENA)).statusCode).toBe(200);
+    for (const evento of ["Feria de Ciencias", "<script>", "a".repeat(41), "-feria", 5]) {
+      expect((await llamar(api, { ...BUENA, evento })).statusCode).toBe(400);
+    }
+    expect(tablas.opiniones.map((o) => o.evento)).toEqual(["feria-de-ciencias-2026", null]);
+
+    process.env.EDITORES_CLAVE = "clave-de-editores-123";
+    const editoresApi = (await import("../api/editores.js")).default;
+    const pase = (await llamar(editoresApi, { clave: "clave-de-editores-123" })).json().pase;
+    const filas = (await llamar(api, undefined, { metodo: "GET", pase })).json().filas;
+    expect(filas.map((f) => f.evento).sort()).toEqual(["feria-de-ciencias-2026", null].sort());
+    delete process.env.EDITORES_CLAVE;
+  });
+
+  it("nombre del evento: la dirección se limpia (sin acentos, minúsculas, guiones)", async () => {
+    const { normalizarEvento, eventoValido, nombreEvento } = await import("../src/data/opinion.js");
+    expect(normalizarEvento("  Feria de Ciencias — Tijuana 2026! ")).toBe("feria-de-ciencias-tijuana-2026");
+    expect(normalizarEvento("Visita a la Secundaria Nº 3")).toBe("visita-a-la-secundaria-n-3");
+    expect(normalizarEvento("¡¡¡")).toBeNull();
+    expect(normalizarEvento(undefined)).toBeNull();
+    expect(normalizarEvento("a".repeat(30) + " " + "b".repeat(30)).length).toBeLessThanOrEqual(40);
+    expect(eventoValido(normalizarEvento("x ".repeat(30)))).toBe(true);   // al cortar no deja guion al final
+    expect(nombreEvento("feria-de-ciencias")).toBe("Feria de ciencias");
+  });
+
+  it("resumen por evento: cada uno aparte, y la general es la que no tiene evento", async () => {
+    const { resumirOpiniones } = await import("../src/lib/opiniones.js");
+    const filas = [
+      { dia: "2026-11-26", evento: null, quien: null, juego: 5, trato: 5, explicacion: 5, respuestas: 2 },
+      { dia: "2026-11-26", evento: "feria", quien: "alumno", juego: 1, trato: 2, explicacion: 3, respuestas: 3 },
+      { dia: "2026-11-27", evento: "feria", quien: null, juego: 3, trato: 3, explicacion: 3, respuestas: 1 },
+    ];
+    const r = resumirOpiniones(filas);
+    expect(r.total).toBe(6);
+    expect(r.eventos).toEqual([{ id: "feria", texto: "Feria", total: 4 }, { id: "general", texto: "General (sin evento)", total: 2 }]);
+    const feria = resumirOpiniones(filas, { evento: "feria" });
+    expect(feria.total).toBe(4);
+    expect(feria.preguntas[0].promedio).toBe(1.5);
+    expect(feria.quienes.find((q) => q.id === "alumno").total).toBe(3);
+    expect(resumirOpiniones(filas, { evento: "general" }).total).toBe(2);
+    expect(resumirOpiniones(filas, { evento: "feria", quien: "sin" }).total).toBe(1);
   });
 
   it("resumen para la administración: promedio y caritas por pregunta, con filtro por quién", async () => {

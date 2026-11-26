@@ -212,6 +212,13 @@ Como la pantalla de un restaurante que pregunta «¿te gustó la comida?, ¿cóm
   - **Cartel con QR para imprimir** (PDF tamaño carta): «¿Qué te pareció? Escanea y califícanos»,
     con las caritas, el QR grande y la dirección, para pegarlo en el salón o en un evento;
   - **Reporte en PDF** y **Excel (CSV)** con los resultados del periodo y del filtro elegidos.
+- **Por evento** (feria, visita a una escuela, taller): en esa sección escribe el nombre del
+  evento y el enlace, el QR y el cartel pasan a ser los de ese evento
+  (`/opinion?evento=feria-de-ciencias`). La pantalla dice de qué evento es y cada opinión se
+  guarda con él. El filtro **Evento** muestra cada uno aparte («General» son las que no tienen
+  evento), y el reporte y el CSV dicen de qué evento son. El nombre se guarda en minúsculas,
+  sin acentos y con guiones, hasta 40 letras (columna `evento`, migración
+  `20261127000000_opiniones_evento.sql`).
 - **En una tableta**, el botón **Pantalla completa** de `/opinion` quita la barra del navegador,
   evita que la pantalla se apague (donde el navegador lo permite) y esconde «Ir al juego» para
   que nadie se salga. En el iPhone el navegador no permite pantalla completa y el botón no sale.

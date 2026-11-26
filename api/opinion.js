@@ -1,10 +1,11 @@
 /**
  * Evaluación abierta (/opinion): cualquiera califica con caritas, sin cuenta.
  *
- *   POST /api/opinion { juego, trato, explicacion: 1-5, quien?: "alumno" | "maestro" | "familia" | "otro" }
+ *   POST /api/opinion { juego, trato, explicacion: 1-5, quien?: "alumno" | "maestro" | "familia" | "otro",
+ *                       evento?: "feria-de-ciencias" }   (de /opinion?evento=…; sin él, la general)
  *     → { ok }
  *   GET  /api/opinion?desde=AAAA-MM-DD&hasta=…   (pase de editor: la administración)
- *     → { filas: [{ dia, quien, juego, trato, explicacion, respuestas }] }
+ *     → { filas: [{ dia, evento, quien, juego, trato, explicacion, respuestas }] }
  *
  * No se guarda quién contestó (ni IP, ni alumno). Topes para que nadie llene la tabla: 120
  * opiniones por hora por IP (una tableta en un evento, o un salón entero, sale por la misma IP)
@@ -29,7 +30,7 @@ export function agruparOpiniones(crudas, tz = "America/Tijuana") {
   const mapa = new Map();
   for (const o of crudas) {
     const dia = fmt.format(new Date(o.creado_en));
-    const fila = { dia, quien: o.quien ?? null, ...Object.fromEntries(PREGUNTAS_OPINION.map((p) => [p.id, o[p.id]])) };
+    const fila = { dia, evento: o.evento ?? null, quien: o.quien ?? null, ...Object.fromEntries(PREGUNTAS_OPINION.map((p) => [p.id, o[p.id]])) };
     const k = JSON.stringify(fila);
     const v = mapa.get(k) || { ...fila, respuestas: 0 };
     v.respuestas += 1;
@@ -56,10 +57,10 @@ export default async function handler(req, res) {
           desde && `creado_en=gte.${encodeURIComponent(inicioDelDia(desde, zona()))}`,
           hasta && `creado_en=lt.${encodeURIComponent(inicioDelDia(hasta, zona(), { siguiente: true }))}`,
         ].filter(Boolean).join("&");
-        const campos = ["quien", "creado_en", ...PREGUNTAS_OPINION.map((p) => p.id)].join(",");
+        const campos = ["evento", "quien", "creado_en", ...PREGUNTAS_OPINION.map((p) => p.id)].join(",");
         filas = agruparOpiniones(await db(`opiniones?select=${campos}&limit=100000${filtros ? "&" + filtros : ""}`) || [], zona());
       }
-      return responderJson(res, 200, { filas: (filas || []).map((f) => ({ ...f, respuestas: Number(f.respuestas) })) });
+      return responderJson(res, 200, { filas: (filas || []).map((f) => ({ ...f, evento: f.evento ?? null, respuestas: Number(f.respuestas) })) });
     } catch (e) {
       console.error("[opinion]", e.estado || "", e.codigo || "", e.message);
       return responderJson(res, 502, { error: "No pude leer las opiniones ahorita." });
@@ -81,11 +82,12 @@ export default async function handler(req, res) {
 
   const valores = Object.fromEntries(PREGUNTAS_OPINION.map((p) => [p.id, d[p.id]]));
   const quien = d.quien ?? null;
+  const evento = d.evento ?? null;
   try {
     if (configuracionDb()) {
-      await db("opiniones", { metodo: "POST", cuerpo: { ...valores, quien } });
+      await db("opiniones", { metodo: "POST", cuerpo: { ...valores, quien, evento } });
     } else {
-      await rpc("registrar_opinion", { p_juego: valores.juego, p_trato: valores.trato, p_explicacion: valores.explicacion, p_quien: quien });
+      await rpc("registrar_opinion", { p_juego: valores.juego, p_trato: valores.trato, p_explicacion: valores.explicacion, p_quien: quien, p_evento: evento });
     }
     return responderJson(res, 200, { ok: true });
   } catch (e) {

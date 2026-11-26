@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from "react";
-import { PREGUNTAS_OPINION, ESCALA_OPINION, QUIENES } from "../data/opinion.js";
+import { PREGUNTAS_OPINION, ESCALA_OPINION, QUIENES, normalizarEvento, nombreEvento } from "../data/opinion.js";
 import { enviarOpinion } from "../lib/opiniones.js";
 import { Caritas } from "../components/Evaluacion.jsx";
 import { Escuchar } from "../juegos/ui/Marco.jsx";
@@ -13,9 +13,17 @@ import { confeti } from "../lib/confeti.js";
  * pregunta «¿te gustó la comida?, ¿cómo fue el trato?». Cualquier persona contesta tocando
  * caritas: sin correo, sin código, sin PIN. Se puede dejar abierta en una tableta: después de
  * cada respuesta da las gracias y en unos segundos queda lista para la siguiente persona.
+ *
+ * Con ?evento=feria-de-ciencias, cada opinión se guarda con ese evento (la administración da el
+ * enlace y el cartel de cada uno) y la pantalla dice de qué evento es.
  */
 
 export const SEGUNDOS_GRACIAS = 6;
+/** El evento de la dirección (?evento=…), ya limpio; sin él, null. */
+export function eventoDeDireccion(busqueda = typeof location !== "undefined" ? location.search : "") {
+  return normalizarEvento(new URLSearchParams(busqueda).get("evento") || "");
+}
+
 const VACIA = () => ({ juego: null, trato: null, explicacion: null, quien: null });
 const LEER =
   "¿Qué te pareció? Toca una carita en cada pregunta: la roja es muy mal y la verde es excelente. " +
@@ -64,6 +72,7 @@ function BotonCompleta({ completa }) {
 
 export default function Opinion() {
   const completa = usePantallaCompleta();
+  const [evento] = useState(() => eventoDeDireccion());
   const [valores, setValores] = useState(VACIA);
   const [error, setError] = useState("");
   const [enviando, setEnviando] = useState(false);
@@ -99,7 +108,7 @@ export default function Opinion() {
     setError("");
     setEnviando(true);
     const { quien, ...caritas } = valores;
-    await enviarOpinion({ ...caritas, ...(quien ? { quien } : {}) });   // sin internet, espera en la cola
+    await enviarOpinion({ ...caritas, ...(quien ? { quien } : {}), ...(evento ? { evento } : {}) });   // sin internet, espera en la cola
     setEnviando(false);
     sonido.bien?.();
     confeti({ colores: ESCALA_OPINION.map((c) => c.color), cantidad: 50 });
@@ -133,6 +142,7 @@ export default function Opinion() {
             <img src={PERSONAJES.green.cara} alt="" width="64" height="64" />
           </div>
           <h1 ref={titulo} tabIndex={-1}>¿Qué te pareció?</h1>
+          {evento && <p className="opinion__evento">{nombreEvento(evento)}</p>}
           <p>Toca una carita en cada pregunta. <strong>No necesitas registrarte</strong> y nadie sabe quién contestó.</p>
           <span className="opinion__botones">
             <Escuchar etiqueta="Escuchar" texto={LEER} />

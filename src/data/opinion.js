@@ -28,8 +28,29 @@ export const QUIENES = [
   { id: "otro", texto: "Otra persona" },
 ];
 
+/**
+ * Evento (opcional): /opinion?evento=feria-de-ciencias separa las opiniones de cada feria,
+ * visita o taller. Se guarda en minúsculas, sin acentos y con guiones; máximo 40 letras.
+ */
+export const MAX_EVENTO = 40;
+const FORMA_EVENTO = /^[a-z0-9]+(-[a-z0-9]+)*$/;
+
+/** «Feria de Ciencias 2026» → «feria-de-ciencias-2026»; si no queda nada, null. */
+export function normalizarEvento(texto) {
+  if (typeof texto !== "string") return null;
+  const e = texto.normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "").slice(0, MAX_EVENTO).replace(/-+$/, "");
+  return e || null;
+}
+
+export const eventoValido = (e) => typeof e === "string" && e.length <= MAX_EVENTO && FORMA_EVENTO.test(e);
+
+/** «feria-de-ciencias» → «Feria de ciencias» (para mostrarlo). */
+export const nombreEvento = (e) => (e ? e.charAt(0).toUpperCase() + e.slice(1).replace(/-/g, " ") : "");
+
 const valor = (v) => Number.isInteger(v) && v >= 1 && v <= 5;
 
 export const opinionValida = (o) =>
   !!o && PREGUNTAS_OPINION.every((p) => valor(o[p.id])) &&
-  (o.quien == null || QUIENES.some((q) => q.id === o.quien));
+  (o.quien == null || QUIENES.some((q) => q.id === o.quien)) &&
+  (o.evento == null || eventoValido(o.evento));

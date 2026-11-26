@@ -60,8 +60,8 @@ function ayudante(doc) {
   return { color, texto, carita };
 }
 
-/** Cartel para imprimir con el QR de /opinion. */
-export async function crearCartel(direccion, { imagenes = true } = {}) {
+/** Cartel para imprimir con el QR de /opinion (con evento: su nombre arriba y el QR de ese evento). */
+export async function crearCartel(direccion, { imagenes = true, evento = "" } = {}) {
   const [{ jsPDF }, { matrizQr }] = await Promise.all([import("jspdf"), import("./qr.js")]);
   const doc = new jsPDF({ unit: "mm", format: "letter" });
   const W = 215.9, H = 279.4, cx = W / 2;
@@ -75,7 +75,19 @@ export async function crearCartel(direccion, { imagenes = true } = {}) {
   color(VERDE, "draw");
   doc.roundedRect(13, 13, W - 26, H - 26, 4, 4, "S");
 
-  texto("Escuadrón Tecnito y Greencito", cx, 30, { tam: 15, negrita: true, tinta: AZUL, alinear: "center" });
+  if (evento) {
+    texto("Escuadrón Tecnito y Greencito", cx, 25, { tam: 13, negrita: true, tinta: AZUL, alinear: "center" });
+    // un renglón: si el nombre es largo (hasta 40 letras), la letra se achica hasta que quepa
+    doc.setFont("helvetica", "bold");
+    let tam = 14;
+    for (; tam > 8; tam -= 0.5) {
+      doc.setFontSize(tam);
+      if (doc.getTextWidth(evento) <= W - 60) break;
+    }
+    texto(evento, cx, 33, { tam, negrita: true, tinta: VERDE, alinear: "center" });
+  } else {
+    texto("Escuadrón Tecnito y Greencito", cx, 30, { tam: 15, negrita: true, tinta: AZUL, alinear: "center" });
+  }
   texto("¿Qué te pareció?", cx, 50, { tam: 40, negrita: true, alinear: "center" });
   texto("Escanea el código con la cámara de tu celular y califícanos", cx, 61, { tam: 14, alinear: "center" });
 
@@ -115,7 +127,7 @@ export async function crearCartel(direccion, { imagenes = true } = {}) {
 }
 
 /**
- * Reporte de resultados. r: lo que da resumirOpiniones(); datos: { periodo, quien } en palabras.
+ * Reporte de resultados. r: lo que da resumirOpiniones(); datos: { periodo, quien, evento? } en palabras.
  */
 export async function crearReporte(r, datos) {
   const { jsPDF } = await import("jspdf");
@@ -127,7 +139,7 @@ export async function crearReporte(r, datos) {
 
   texto("Escuadrón Tecnito y Greencito", M, y + 5, { tam: 16, negrita: true });
   texto("Evaluación abierta: lo que opina quien usa el juego", M, y + 11, { tam: 11, tinta: SUAVE });
-  texto(`Periodo: ${datos.periodo} · Quién contestó: ${datos.quien}`, M, y + 17, { tam: 9, tinta: SUAVE });
+  texto(`Periodo: ${datos.periodo} · Evento: ${datos.evento || "todos"} · Quién contestó: ${datos.quien}`, M, y + 17, { tam: 9, tinta: SUAVE });
   texto(`Generado el ${new Date().toLocaleString("es-MX", { dateStyle: "long", timeStyle: "short" })}`, M, y + 22, { tam: 9, tinta: SUAVE });
   y += 32;
 
@@ -184,6 +196,24 @@ export async function crearReporte(r, datos) {
   }
   y += 6;
 
+  // opiniones por evento (solo en el reporte de todos, si hubo eventos)
+  const conEventos = (r.eventos || []).filter((e) => e.total);
+  if ((!datos.evento || datos.evento === "todos") && conEventos.some((e) => e.id !== "general")) {
+    espacio(16 + conEventos.length * 6);
+    texto("Opiniones por evento", M, y + 4, { tam: 12, negrita: true });
+    y += 10;
+    for (const e of conEventos) {
+      espacio(6);
+      texto(e.texto, M, y + 3.5, { tam: 9.5 });
+      texto(String(e.total), M + 120, y + 3.5, { tam: 9.5, negrita: true, alinear: "right" });
+      color(LINEA, "draw");
+      doc.setLineWidth(0.2);
+      doc.line(M, y + 5.2, M + 120, y + 5.2);
+      y += 6;
+    }
+    y += 6;
+  }
+
   // opiniones por día
   if (r.dias.length) {
     espacio(56);
@@ -216,7 +246,7 @@ export async function crearReporte(r, datos) {
 export function csvOpiniones(r, datos) {
   const celda = (v) => (/[",\n;]/.test(String(v)) ? `"${String(v).replace(/"/g, '""')}"` : String(v));
   const filas = [
-    ["Evaluación abierta", `Periodo: ${datos.periodo}`, `Quién: ${datos.quien}`],
+    ["Evaluación abierta", `Periodo: ${datos.periodo}`, `Evento: ${datos.evento || "todos"}`, `Quién: ${datos.quien}`],
     [],
     ["Pregunta", "Promedio (1 a 5)", ...ESCALA_OPINION.map((e) => e.etiqueta), "Total"],
     ...r.preguntas.map((p) => [p.texto, p.promedio.toFixed(2), ...p.conteo, r.total]),
@@ -224,6 +254,9 @@ export function csvOpiniones(r, datos) {
     ["Quién contestó", "Opiniones"],
     ...r.quienes.map((q) => [q.texto, q.total]),
     [],
+    ...((!datos.evento || datos.evento === "todos") && (r.eventos || []).some((e) => e.id !== "general")
+      ? [["Evento", "Opiniones"], ...r.eventos.map((e) => [e.texto, e.total]), []]
+      : []),
     ["Día", "Opiniones"],
     ...r.dias.map((d) => [d.dia, d.total]),
   ];
