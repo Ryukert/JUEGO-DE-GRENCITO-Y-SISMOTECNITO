@@ -14,6 +14,16 @@ en **Ajustes**. Cómo sacar una versión nueva: ver «Versiones» en el README.
 
 ## [Sin publicar]
 
+### Agregado
+- **Evaluación abierta, para que la conteste más gente:** en la administración, el código QR de
+  `/opinion` a la vista y un **cartel para imprimir** (PDF tamaño carta) con las caritas, el QR
+  grande y la dirección. Se revisó que el QR se lee y da la dirección exacta.
+- **Reporte de la evaluación abierta en PDF y Excel (CSV)**, con el periodo y el filtro de quién
+  contestó.
+- **Pantalla completa en `/opinion`** para dejarla en una tableta: sin barra del navegador, la
+  pantalla no se apaga (Wake Lock) y se esconde «Ir al juego».
+- Dependencia nueva: `qrcode-generator` (MIT), que solo se descarga en la administración.
+
 ## [2.9.2] - 2026-11-26
 
 ### Cambiado
