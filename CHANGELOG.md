@@ -14,6 +14,17 @@ en **Ajustes**. Cómo sacar una versión nueva: ver «Versiones» en el README.
 
 ## [Sin publicar]
 
+### Seguridad
+- **Content-Security-Policy:** solo corren scripts del propio sitio y el script del tema (por su
+  hash); nada se conecta a otros dominios. Una prueba revisa que el hash coincida con
+  `index.html`. El script de `revisar.html` pasó a `revisar.js`.
+- Supabase: nadie puede llamar a `rls_auto_enable` por la API (sigue activando RLS en tablas
+  nuevas) e índice para `encuestas.alumno_id` (migración `20261126010000_ajustes_asesor.sql`).
+
+### Cambiado
+- Vercel instala con `npm ci` (lo mismo que se probó) y Node queda fijo en 24 (`engines`).
+- Dependabot: pull requests semanales con las dependencias nuevas y mensuales con las acciones.
+
 ## [2.8.0] - 2026-11-26
 
 ### Agregado

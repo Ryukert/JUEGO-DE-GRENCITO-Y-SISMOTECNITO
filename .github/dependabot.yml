@@ -1,0 +1,31 @@
+# Dependabot abre pull requests cuando sale una versión nueva de una dependencia o de una
+# acción de GitHub. Cada pull request pasa por las pruebas (pruebas.yml) antes de unirse.
+# Las actualizaciones de seguridad llegan en cuanto se publican, sin esperar al lunes.
+version: 2
+updates:
+  - package-ecosystem: npm
+    directory: /
+    schedule:
+      interval: weekly
+      day: monday
+      time: "08:00"
+      timezone: America/Tijuana
+    open-pull-requests-limit: 5
+    commit-message:
+      prefix: "Dependencias"
+    groups:
+      # las de desarrollo (pruebas, lint, build) juntas en una sola pull request
+      desarrollo:
+        dependency-type: development
+        update-types: [minor, patch]
+      produccion:
+        dependency-type: production
+        update-types: [minor, patch]
+
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: monthly
+      timezone: America/Tijuana
+    commit-message:
+      prefix: "Acciones"

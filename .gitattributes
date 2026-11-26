@@ -1,0 +1,3 @@
+# Los .html con saltos de línea LF en todas las computadoras: el hash del script del tema
+# (Content-Security-Policy en vercel.json) se calcula sobre su texto exacto.
+*.html text eol=lf

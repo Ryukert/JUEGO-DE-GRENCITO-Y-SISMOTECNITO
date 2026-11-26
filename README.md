@@ -286,6 +286,14 @@ Grupos, alumnos, evaluación y panel del maestro sí necesitan la llave secreta.
   por IP es de 200 cada 10 minutos). Se cambian con `ENTRAR_FALLOS_IP` y `ENTRAR_LIMITE_IP`.
 - Si una respuesta fue correcta lo decide el servidor con el contenido del juego;
   el progreso que llega se limpia antes de guardarse.
+- **Content-Security-Policy** (`vercel.json`): el navegador solo corre scripts del propio sitio y
+  el script del tema de `index.html`, que va autorizado por su hash. **Si cambias ese script,
+  actualiza el hash** en `vercel.json`; `pruebas/seguridad.test.js` falla y te dice cuál poner.
+  Los `.html` van con saltos LF (`.gitattributes`) para que el hash sea el mismo en Windows y en
+  Vercel. Ninguna otra página de `public/` puede llevar scripts escritos dentro del HTML.
+- **Dependencias:** Vercel instala con `npm ci` (exactamente lo de `package-lock.json`, con
+  Node 24 de `engines`) y Dependabot abre pull requests con las versiones nuevas cada lunes;
+  las de seguridad, en cuanto salen.
 
 ---
 
