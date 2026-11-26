@@ -14,6 +14,8 @@ en **Ajustes**. Cómo sacar una versión nueva: ver «Versiones» en el README.
 
 ## [Sin publicar]
 
+## [2.9.0] - 2026-11-26
+
 ### Agregado
 - **Evaluación abierta en `/opinion`**, como la pantalla de un restaurante: cualquier persona
   califica el juego, el trato y la explicación con caritas, sin correo, código ni PIN. Botón
@@ -329,6 +331,7 @@ en **Ajustes**. Cómo sacar una versión nueva: ver «Versiones» en el README.
 - Chat con los personajes.
 - Centro de entrenamiento con 46 minijuegos en 13 motores, tres dificultades y jefes finales.
 
+[2.9.0]: https://github.com/Ryukert/JUEGO-DE-GRENCITO-Y-SISMOTECNITO/compare/v2.8.1...v2.9.0
 [2.8.1]: https://github.com/Ryukert/JUEGO-DE-GRENCITO-Y-SISMOTECNITO/compare/v2.8.0...v2.8.1
 [2.8.0]: https://github.com/Ryukert/JUEGO-DE-GRENCITO-Y-SISMOTECNITO/compare/v2.7.0...v2.8.0
 [2.7.0]: https://github.com/Ryukert/JUEGO-DE-GRENCITO-Y-SISMOTECNITO/compare/v2.6.0...v2.7.0
