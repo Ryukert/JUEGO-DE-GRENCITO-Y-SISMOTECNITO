@@ -94,6 +94,79 @@ describe("pantalla de opinión", () => {
   });
 });
 
+describe("difusión: QR, cartel y reportes", () => {
+  it("el QR tiene las tres esquinas de ubicación y cambia con la dirección", async () => {
+    const { matrizQr, trazoQr } = await import("../src/lib/qr.js");
+    const m = matrizQr("https://juego.ejemplo.mx/opinion");
+    const n = m.length;
+    expect(n).toBeGreaterThanOrEqual(21);
+    expect(m.every((f) => f.length === n)).toBe(true);
+    // cuadro de ubicación de 7×7: borde negro, anillo blanco, centro negro de 3×3
+    for (const [f0, c0] of [[0, 0], [0, n - 7], [n - 7, 0]]) {
+      for (let i = 0; i < 7; i++) {
+        expect(m[f0][c0 + i] && m[f0 + 6][c0 + i] && m[f0 + i][c0] && m[f0 + i][c0 + 6]).toBe(true);
+      }
+      expect(m[f0 + 1][c0 + 1]).toBe(false);
+      expect(m[f0 + 3][c0 + 3]).toBe(true);
+    }
+    expect(JSON.stringify(matrizQr("https://otro.mx/opinion"))).not.toBe(JSON.stringify(m));
+    expect(trazoQr(m)).toMatch(/^M\d+ \d+h1v1h-1z/);
+  });
+
+  it("cartel: una hoja carta con la dirección y el QR dibujado", async () => {
+    const { crearCartel } = await import("../src/lib/pdfOpiniones.js");
+    const doc = await crearCartel("https://juego.ejemplo.mx/opinion", { imagenes: false });
+    expect(doc.getNumberOfPages()).toBe(1);
+    const texto = new TextDecoder("latin1").decode(new Uint8Array(doc.output("arraybuffer")));
+    expect(texto.startsWith("%PDF-")).toBe(true);
+    expect(texto).toContain("juego.ejemplo.mx/opinion");
+    expect(texto).toContain("no necesitas registrarte");
+  });
+
+  it("reporte en PDF y CSV para Excel con promedios, caritas, quién y días", async () => {
+    const { crearReporte, csvOpiniones } = await import("../src/lib/pdfOpiniones.js");
+    const { resumirOpiniones } = await import("../src/lib/opiniones.js");
+    const filas = Array.from({ length: 12 }, (_, d) => ({
+      dia: `2026-11-${String(d + 1).padStart(2, "0")}`, quien: d % 2 ? "alumno" : null,
+      juego: 1 + (d % 5), trato: 5, explicacion: 4, respuestas: d + 1,
+    }));
+    const r = resumirOpiniones(filas);
+    const doc = await crearReporte(r, { periodo: "todo", quien: "todos" });
+    expect(new TextDecoder().decode(new Uint8Array(doc.output("arraybuffer")).slice(0, 5))).toBe("%PDF-");
+    const csv = csvOpiniones(r, { periodo: "todo", quien: "todos" });
+    expect(csv.charCodeAt(0)).toBe(0xfeff);   // BOM: Excel abre bien los acentos
+    expect(csv).toContain("Pregunta,Promedio (1 a 5),Muy mal,Mal,Regular,Bien,Excelente,Total");
+    expect(csv).toContain(`¿Cómo te atendieron?,5.00,0,0,0,0,${r.total},${r.total}`);
+    expect(csv).toContain("2026-11-12,12");
+    // sin opiniones, el reporte sale igual (con el aviso)
+    expect((await crearReporte(resumirOpiniones([]), { periodo: "todo", quien: "todos" })).getNumberOfPages()).toBe(1);
+  });
+});
+
+describe("pantalla completa (tableta)", () => {
+  it("aparece donde el navegador lo permite y al activarla esconde «Ir al juego»", async () => {
+    let completa = null;
+    Object.defineProperty(document, "fullscreenEnabled", { configurable: true, value: true });
+    Object.defineProperty(document, "fullscreenElement", { configurable: true, get: () => completa });
+    document.documentElement.requestFullscreen = vi.fn(async () => { completa = document.documentElement; document.dispatchEvent(new Event("fullscreenchange")); });
+    document.exitFullscreen = vi.fn(async () => { completa = null; document.dispatchEvent(new Event("fullscreenchange")); });
+    render(<Opinion />, enMain());
+    expect(screen.getByRole("link", { name: "Ir al juego" })).toBeTruthy();
+    await act(async () => fireEvent.click(screen.getByRole("button", { name: "Pantalla completa" })));
+    expect(document.documentElement.requestFullscreen).toHaveBeenCalled();
+    expect(screen.queryByRole("link", { name: "Ir al juego" })).toBeNull();
+    await act(async () => fireEvent.click(screen.getByRole("button", { name: "Salir de pantalla completa" })));
+    expect(screen.getByRole("link", { name: "Ir al juego" })).toBeTruthy();
+    delete document.fullscreenEnabled;
+    delete document.fullscreenElement;
+  });
+
+  it("donde no se puede (iPhone), el botón no aparece", () => {
+    render(<Opinion />, enMain());
+    expect(screen.queryByRole("button", { name: "Pantalla completa" })).toBeNull();
+  });
+});
+
 describe("administración", () => {
   it("muestra la carita promedio de cada pregunta y filtra por quién contestó", () => {
     render(

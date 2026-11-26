@@ -208,6 +208,19 @@
 .opinion__siguiente { font-weight: 800; }
 .opinion__volver { justify-self: center; min-height: 44px; display: inline-flex; align-items: center; color: var(--texto-suave); font-weight: 700; }
 
+/* administración: QR, cartel y descargas de la evaluación abierta */
+.op-difusion { display: flex; flex-wrap: wrap; gap: 14px; align-items: flex-start; margin-bottom: 12px; }
+.op-qr { width: 132px; height: 132px; flex-shrink: 0; border-radius: 10px; border: 3px solid var(--contorno); background: #fff; }
+.op-qr--cargando { background: var(--apagado); }
+.op-difusion__texto { flex: 1 1 260px; display: grid; gap: 6px; }
+.op-difusion__texto p { margin: 0; }
+.op-difusion__botones { margin-left: 0; }
+
+/* /opinion en una tableta: pantalla completa */
+.opinion__botones { display: flex; flex-wrap: wrap; justify-content: center; gap: 8px; }
+/* «Pantalla completa» usa el mismo estilo que «Escuchar» (.escuchar) */
+.opinion__completa { min-height: 44px; }
+
 /* ---- ¿quién juega? (computadora compartida, sin cuenta) ---- */
 .quien__id {
   font-family: ui-monospace, "Cascadia Mono", Consolas, monospace; font-weight: 800; letter-spacing: 0.08em;

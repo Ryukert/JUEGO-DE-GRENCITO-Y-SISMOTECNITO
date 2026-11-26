@@ -207,6 +207,16 @@ Como la pantalla de un restaurante que pregunta «¿te gustó la comida?, ¿cóm
 - Los resultados están en la administración (**Evaluación abierta**): carita promedio por
   pregunta, cuántos eligieron cada carita y filtro por quién contestó. Las preguntas se cambian
   en `src/data/opinion.js`.
+- **Para que la conteste más gente**, en esa misma sección:
+  - el **código QR** a la vista, que abre `/opinion`;
+  - **Cartel con QR para imprimir** (PDF tamaño carta): «¿Qué te pareció? Escanea y califícanos»,
+    con las caritas, el QR grande y la dirección, para pegarlo en el salón o en un evento;
+  - **Reporte en PDF** y **Excel (CSV)** con los resultados del periodo y del filtro elegidos.
+- **En una tableta**, el botón **Pantalla completa** de `/opinion` quita la barra del navegador,
+  evita que la pantalla se apague (donde el navegador lo permite) y esconde «Ir al juego» para
+  que nadie se salga. En el iPhone el navegador no permite pantalla completa y el botón no sale.
+- El QR se genera en el navegador con `qrcode-generator` (`src/lib/qr.js`), que solo se
+  descarga al abrir la administración.
 
 La evaluación del alumno a **su maestro** (*Mi grupo → Evaluar a mi maestro*) sigue igual:
 esa sí necesita la cuenta del grupo, porque cada maestro ve solo la de sus alumnos.

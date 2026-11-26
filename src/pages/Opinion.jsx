@@ -21,7 +21,49 @@ const LEER =
   "¿Qué te pareció? Toca una carita en cada pregunta: la roja es muy mal y la verde es excelente. " +
   PREGUNTAS_OPINION.map((p) => p.texto).join(" ") + " Al final toca Enviar.";
 
+/**
+ * Pantalla completa para dejarla en una tableta: sin la barra del navegador, la pantalla no se
+ * apaga (Wake Lock, donde exista) y se esconde «Ir al juego» para que nadie se salga.
+ * En el iPhone el navegador no deja pantalla completa: ahí el botón no aparece.
+ */
+function usePantallaCompleta() {
+  const se = typeof document !== "undefined" && !!document.fullscreenEnabled && !!document.documentElement.requestFullscreen;
+  const [activa, setActiva] = useState(false);
+  const candado = useRef(null);
+  useEffect(() => {
+    if (!se) return undefined;
+    const cambio = async () => {
+      const ahora = !!document.fullscreenElement;
+      setActiva(ahora);
+      try {
+        if (ahora && navigator.wakeLock) candado.current = await navigator.wakeLock.request("screen");
+        else if (!ahora) { await candado.current?.release(); candado.current = null; }
+      } catch { /* sin Wake Lock: la pantalla se apaga sola como siempre */ }
+    };
+    document.addEventListener("fullscreenchange", cambio);
+    return () => {
+      document.removeEventListener("fullscreenchange", cambio);
+      candado.current?.release().catch(() => {});
+    };
+  }, [se]);
+  const alternar = () => {
+    if (document.fullscreenElement) document.exitFullscreen().catch(() => {});
+    else document.documentElement.requestFullscreen().catch(() => {});
+  };
+  return { se, activa, alternar };
+}
+
+function BotonCompleta({ completa }) {
+  if (!completa.se) return null;
+  return (
+    <button type="button" className="escuchar opinion__completa" onClick={completa.alternar} aria-pressed={completa.activa}>
+      {completa.activa ? "Salir de pantalla completa" : "Pantalla completa"}
+    </button>
+  );
+}
+
 export default function Opinion() {
+  const completa = usePantallaCompleta();
   const [valores, setValores] = useState(VACIA);
   const [error, setError] = useState("");
   const [enviando, setEnviando] = useState(false);
@@ -76,7 +118,7 @@ export default function Opinion() {
           <p>Nos ayuda a mejorar el juego.</p>
           <p className="opinion__siguiente">La siguiente persona puede contestar en {gracias} s</p>
           <button type="button" className="boton-grande" onClick={() => setGracias(0)}>Otra opinión</button>
-          <a className="opinion__volver" href="/">Ir al juego</a>
+          {!completa.activa && <a className="opinion__volver" href="/">Ir al juego</a>}
         </div>
       </div>
     );
@@ -92,7 +134,10 @@ export default function Opinion() {
           </div>
           <h1 ref={titulo} tabIndex={-1}>¿Qué te pareció?</h1>
           <p>Toca una carita en cada pregunta. <strong>No necesitas registrarte</strong> y nadie sabe quién contestó.</p>
-          <Escuchar etiqueta="Escuchar" texto={LEER} />
+          <span className="opinion__botones">
+            <Escuchar etiqueta="Escuchar" texto={LEER} />
+            <BotonCompleta completa={completa} />
+          </span>
         </header>
 
         {PREGUNTAS_OPINION.map((p, i) => (
@@ -130,7 +175,7 @@ export default function Opinion() {
         <button className="boton-grande opinion__enviar" type="submit" disabled={enviando}>
           {enviando ? "Enviando…" : "Enviar mi opinión"}
         </button>
-        <a className="opinion__volver" href="/">Ir al juego</a>
+        {!completa.activa && <a className="opinion__volver" href="/">Ir al juego</a>}
       </form>
     </div>
   );

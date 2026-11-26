@@ -339,7 +339,12 @@ export default function Editores() {
 
       {error && <section className="logros__seccion"><p className="cuenta__error" role="alert">{error}</p></section>}
 
-      {opiniones && <ResumenOpiniones filas={opiniones} />}
+      {opiniones && (
+        <ResumenOpiniones
+          filas={opiniones}
+          periodo={periodo === "todo" ? "todo" : `últimos ${PERIODOS.find((p) => p.id === periodo).texto}`}
+        />
+      )}
       {!resumen && cargando && <p className="maestro__cargando" role="status">Cargando resultados…</p>}
 
       {resumen && (
