@@ -14,6 +14,12 @@ en **Ajustes**. Cómo sacar una versión nueva: ver «Versiones» en el README.
 
 ## [Sin publicar]
 
+### Cambiado
+- Herramientas de desarrollo al día (Dependabot): vite 8.3.8, vitest 5.1.1, eslint 10.15.0,
+  axe-core 4.14.1, @vitejs/plugin-react 6.3.0 y jsdom 31.0.1 (pide Node 24.15 o más nuevo).
+- Revisión en GitHub con `actions/checkout` y `actions/setup-node` v7.
+- Nada cambia para quien juega.
+
 ## [2.9.1] - 2026-11-26
 
 ### Cambiado
