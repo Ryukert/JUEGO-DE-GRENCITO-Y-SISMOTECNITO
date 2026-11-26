@@ -14,6 +14,18 @@ en **Ajustes**. Cómo sacar una versión nueva: ver «Versiones» en el README.
 
 ## [Sin publicar]
 
+### Agregado
+- **Evaluación abierta en `/opinion`**, como la pantalla de un restaurante: cualquier persona
+  califica el juego, el trato y la explicación con caritas, sin correo, código ni PIN. Botón
+  «¿Qué te pareció? ¡Califícanos!» a la vista arriba de la portada. Se puede dejar abierta en
+  una tableta (se limpia sola para la siguiente persona) y funciona sin internet. Resultados en
+  la administración, con filtro por quién contestó. Tabla `opiniones` y funciones
+  `registrar_opinion` / `resumen_opiniones` (migración `20261126020000_opiniones.sql`).
+
+### Corregido
+- El rompecabezas a veces arrancaba ya armado: si al revolverlo quedaba resuelto, el
+  movimiento extra nunca se hacía. Ahora siempre arranca revuelto.
+
 ## [2.8.1] - 2026-11-26
 
 ### Seguridad

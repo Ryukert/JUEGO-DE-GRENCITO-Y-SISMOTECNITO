@@ -194,6 +194,15 @@ describe("desafíos generales nuevos", () => {
     expect(nuevoHueco).toBe(vecino);
   });
 
+  it("rompecabezas: si al revolver queda armado por casualidad, se mueve una pieza más", async () => {
+    const { revolverValido } = await import("../src/juegos/motores/Puzzle.jsx");
+    for (const lado of [3, 4]) {
+      const piezas = revolverValido(lado, 0);   // cero pasos: queda armado a propósito
+      expect(piezas.every((p, i) => p === i)).toBe(false);
+      expect([...piezas].sort((a, b) => a - b)).toEqual(Array.from({ length: lado * lado }, (_, i) => i));
+    }
+  });
+
   it("ruleta: gira, cae en categoría y hace una pregunta", () => {
     vi.useFakeTimers();
     montar("ruleta-educativa");

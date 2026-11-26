@@ -53,6 +53,8 @@ describe("cuentas del modo en vivo", () => {
 
 describe("la ventana de administración en vivo", () => {
   let respuesta;
+  // cada actualización pide las encuestas y, aparte, la evaluación abierta: se cuentan las primeras
+  const consultas = () => fetch.mock.calls.filter(([url]) => String(url).startsWith("/api/editores")).length;
   beforeEach(() => {
     sessionStorage.setItem("escuadron-editor", "pase-de-prueba");
     window.matchMedia = () => ({ matches: false, addListener() {}, removeListener() {}, addEventListener() {}, removeEventListener() {} });
@@ -78,7 +80,7 @@ describe("la ventana de administración en vivo", () => {
     expect(document.querySelector(".ed-cifras dd").textContent).toBe("5 +2");
     expect(screen.getByText("2 respuestas nuevas")).toBeTruthy();
     expect(document.querySelectorAll(".ed-apiladas li.ed-nuevo").length).toBeGreaterThan(0);
-    expect(fetch).toHaveBeenCalledTimes(2);
+    expect(consultas()).toBe(2);
   });
 
   it("en pausa ya no consulta", async () => {
@@ -87,10 +89,10 @@ describe("la ventana de administración en vivo", () => {
     fireEvent.click(screen.getByRole("button", { name: "Pausar" }));
     expect(screen.getByText(/En pausa/)).toBeTruthy();
     await act(async () => { await vi.advanceTimersByTimeAsync(CADA * 3); });
-    expect(fetch).toHaveBeenCalledTimes(1);
+    expect(consultas()).toBe(1);
     fireEvent.click(screen.getByRole("button", { name: "Reanudar" }));
     await act(async () => { await vi.advanceTimersByTimeAsync(CADA); });
-    expect(fetch).toHaveBeenCalledTimes(2);
+    expect(consultas()).toBe(2);
   });
 
   it("se abre también en /admin y /administradores", () => {

@@ -17,13 +17,16 @@ if (import.meta.env.PROD && "serviceWorker" in navigator) {
 // administración de encuestas: /admin, /administradores o /editores (se carga aparte)
 const Editores = React.lazy(() => import("./pages/Editores.jsx"));
 const esEditores = /^\/(editores|admin|administradores)\/?$/.test(window.location.pathname);
+// evaluación abierta, para cualquiera y sin cuenta: /opinion, /evaluacion o /califica
+const Opinion = React.lazy(() => import("./pages/Opinion.jsx"));
+const esOpinion = /^\/(opinion|opinión|evaluacion|evaluación|califica)\/?$/i.test(decodeURIComponent(window.location.pathname));
 
 createRoot(document.getElementById("root")).render(
   <React.StrictMode>
     <Tropiezo>
-    {esEditores ? (
+    {esEditores || esOpinion ? (
       <React.Suspense fallback={<p style={{ padding: 24 }}>Cargando…</p>}>
-        <Editores />
+        {esEditores ? <Editores /> : <Opinion />}
       </React.Suspense>
     ) : (
       <App />

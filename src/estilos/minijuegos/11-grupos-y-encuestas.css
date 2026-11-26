@@ -147,6 +147,67 @@
   .encuestas-panel__dif { grid-column: 1 / -1; justify-content: flex-end; }
 }
 
+/* ---- evaluación abierta: botón de la portada y página /opinion ---- */
+.boton-opinion {
+  display: flex; align-items: center; justify-content: center; gap: 12px; flex-wrap: wrap;
+  width: min(100%, 560px); margin: 6px auto 4px; padding: 10px 16px; min-height: 56px;
+  color: var(--tinta); text-decoration: none; text-align: left;
+  background: var(--superficie); border: 3px solid var(--contorno); border-radius: 18px;
+  box-shadow: 0 4px 0 var(--contorno);
+}
+.boton-opinion:hover { transform: translateY(-1px); }
+.boton-opinion:active { transform: translateY(2px); box-shadow: 0 2px 0 var(--contorno); }
+.boton-opinion:focus-visible { outline: 3px solid var(--acento-texto); outline-offset: 3px; }
+.boton-opinion__caras { font-size: 24px; letter-spacing: 2px; white-space: nowrap; }
+.boton-opinion__texto { display: grid; }
+.boton-opinion__texto strong { font-size: 17px; }
+.boton-opinion__texto small { font-size: 13px; font-weight: 700; color: var(--texto-suave); }
+
+.opinion { min-height: 100dvh; display: grid; place-items: start center; padding: 16px; }
+.opinion--gracias { place-items: center; }
+.opinion__tarjeta {
+  display: grid; gap: 16px; width: min(100%, 640px); padding: 18px 16px 20px;
+  background: var(--superficie); color: var(--tinta);
+  border: 3px solid var(--contorno); border-radius: 22px; box-shadow: 0 5px 0 var(--contorno);
+}
+.opinion--gracias .opinion__tarjeta { justify-items: center; text-align: center; }
+.opinion__cabeza { display: grid; justify-items: center; gap: 6px; text-align: center; }
+.opinion__cabeza h1, .opinion--gracias h1 { margin: 0; font-size: clamp(26px, 6vw, 36px); }
+.opinion__cabeza h1:focus { outline: none; }
+.opinion__cabeza p, .opinion--gracias p { margin: 0; color: var(--texto-suave); }
+.opinion__caras { display: flex; gap: 8px; }
+.opinion__caras img { border-radius: 50%; border: 3px solid var(--contorno); background: var(--apagado); }
+.opinion__numero {
+  display: inline-grid; place-items: center; width: 28px; height: 28px; margin-right: 4px;
+  border-radius: 50%; font-size: 15px; color: var(--superficie); background: var(--tinta);
+}
+.caritas--grandes legend { font-size: clamp(18px, 4.6vw, 22px); }
+.caritas--grandes .carita { min-height: 96px; }
+.caritas--grandes .carita__cara { width: clamp(48px, 13vw, 68px); height: clamp(48px, 13vw, 68px); font-size: clamp(28px, 8vw, 40px); }
+.caritas--grandes .carita__texto { font-size: clamp(10px, 3vw, 14px); }
+/* columnas que se pueden encoger: en 320 px «¡Excelente!» no empuja la quinta carita fuera */
+.caritas--grandes .caritas__fila { grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 2px; }
+.caritas--grandes .carita { padding-inline: 0; min-width: 0; }
+.caritas--grandes .carita__texto { max-width: 100%; overflow-wrap: anywhere; }
+@media (max-width: 360px) {
+  .opinion { padding: 8px; }
+  .opinion__tarjeta { padding: 14px 10px 16px; }
+}
+.opinion__quien { margin: 0; padding: 0; border: 0; }
+.opinion__quien legend { padding: 0; margin-bottom: 6px; font-weight: 800; }
+.opinion__quien legend small { font-weight: 600; color: var(--texto-suave); }
+.opinion__quien-fila { display: flex; flex-wrap: wrap; gap: 6px; }
+.opinion__quien label {
+  display: inline-flex; align-items: center; min-height: 44px; padding: 6px 12px; cursor: pointer; font-weight: 700;
+  border-radius: 999px; background: var(--apagado); border: 2px solid var(--apagado-borde);
+}
+.opinion__quien label.elegido { background: var(--tinta); color: var(--superficie); border-color: var(--tinta); }
+.opinion__quien input { position: absolute; opacity: 0; pointer-events: none; }
+.opinion__quien label:has(input:focus-visible) { outline: 3px solid var(--acento-texto); outline-offset: 2px; }
+.opinion__enviar { width: 100%; justify-content: center; }
+.opinion__siguiente { font-weight: 800; }
+.opinion__volver { justify-self: center; min-height: 44px; display: inline-flex; align-items: center; color: var(--texto-suave); font-weight: 700; }
+
 /* ---- ¿quién juega? (computadora compartida, sin cuenta) ---- */
 .quien__id {
   font-family: ui-monospace, "Cascadia Mono", Consolas, monospace; font-weight: 800; letter-spacing: 0.08em;

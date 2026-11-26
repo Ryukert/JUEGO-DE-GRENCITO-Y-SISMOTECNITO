@@ -190,6 +190,27 @@ números resumidos: nunca quién contestó. En las gráficas la escala va de roj
 azul pasando por gris (😡 → 😄), porque el rojo→verde no se distingue con
 daltonismo; cada color va con su emoji y su nombre.
 
+### Evaluación abierta (`/opinion`)
+
+Como la pantalla de un restaurante que pregunta «¿te gustó la comida?, ¿cómo fue el trato?».
+**Cualquier persona** califica tocando caritas, **sin correo, sin código y sin PIN**:
+
+- ¿Qué te pareció el juego? · ¿Cómo te atendieron? · ¿Cómo te explicaron? (de 😡 *Muy mal* a
+  😄 *Excelente*), y si quiere, «Yo soy…» alumno, maestro, familiar u otra persona.
+- Se llega con el botón **«¿Qué te pareció? ¡Califícanos!»**, arriba en la portada, o directo en
+  `/opinion` (también `/evaluacion` y `/califica`).
+- Se puede **dejar abierta en una tableta**: después de cada respuesta da las gracias y en 6
+  segundos queda lista para la siguiente persona. Sin internet, las opiniones esperan en esa
+  tableta y se mandan solas cuando vuelve la conexión.
+- No se guarda quién contestó (ni IP, ni alumno, ni grupo). Tope de 120 por hora por IP y
+  5,000 al día en total, para que nadie llene la tabla.
+- Los resultados están en la administración (**Evaluación abierta**): carita promedio por
+  pregunta, cuántos eligieron cada carita y filtro por quién contestó. Las preguntas se cambian
+  en `src/data/opinion.js`.
+
+La evaluación del alumno a **su maestro** (*Mi grupo → Evaluar a mi maestro*) sigue igual:
+esa sí necesita la cuenta del grupo, porque cada maestro ve solo la de sus alumnos.
+
 ### Cuentas de administración
 
 Cada quien con correo institucional crea su cuenta y la confirma por correo. Ya dentro:

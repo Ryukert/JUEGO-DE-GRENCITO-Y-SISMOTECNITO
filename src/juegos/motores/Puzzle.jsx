@@ -172,7 +172,7 @@ function vecinos(a, b, lado) {
 }
 
 /** Revuelve con movimientos válidos: así el tablero siempre tiene solución. */
-function revolverValido(lado, pasos) {
+export function revolverValido(lado, pasos) {
   const total = lado * lado;
   const piezas = Array.from({ length: total }, (_, i) => i);
   let vacio = total - 1;
@@ -185,12 +185,12 @@ function revolverValido(lado, pasos) {
     vacio = elegido;
   }
 
-  // si de casualidad quedó resuelto, un movimiento más
+  // si de casualidad quedó resuelto (el hueco termina en la última casilla), un movimiento más
+  // con cualquier vecina del hueco: antes se probaba solo la casilla 0, que nunca es vecina de
+  // la última, y el rompecabezas a veces arrancaba ya armado
   if (piezas.every((p, i) => p === i)) {
-    const otro = vacio === 0 ? 1 : 0;
-    if (vecinos(otro, vacio, lado)) {
-      [piezas[otro], piezas[vacio]] = [piezas[vacio], piezas[otro]];
-    }
+    const otro = Array.from({ length: total }, (_, j) => j).find((j) => vecinos(j, vacio, lado));
+    [piezas[otro], piezas[vacio]] = [piezas[vacio], piezas[otro]];
   }
   return piezas;
 }
