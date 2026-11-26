@@ -173,7 +173,7 @@ const llamar = async (api, cuerpo, op) => { const res = respuesta(); await api(p
 const ENV = { SUPABASE_URL: "https://falso.supabase.co", SUPABASE_SECRET_KEY: "sb_secret_prueba", JUEGO_SECRETO: "x".repeat(40) };
 
 beforeEach(() => {
-  tablas = { grupos: [], alumnos: [], progreso: [], respuestas: [], evaluaciones: [], encuestas: [], tareas: [] };
+  tablas = { grupos: [], alumnos: [], progreso: [], respuestas: [], evaluaciones: [], encuestas: [], tareas: [], opiniones: [] };
   cuentasAuth = [];
   correosAuth = [];
   reiniciarMemoria();
@@ -871,6 +871,73 @@ describe("administración: cuentas propias con correo institucional (Supabase Au
     const api = await editores();
     expect((await llamar(api, { clave: "clave-de-editores-123" })).statusCode).toBe(200);
     delete process.env.EDITORES_CLAVE;
+  });
+});
+
+describe("evaluación abierta (/opinion): cualquiera, sin cuenta", () => {
+  const opinionApi = async () => (await import("../api/opinion.js")).default;
+  const BUENA = { juego: 5, trato: 4, explicacion: 5 };
+
+  it("se guarda sin pase, sin correo y sin código; no guarda la IP ni quién fue", async () => {
+    const api = await opinionApi();
+    const r = await llamar(api, { ...BUENA, quien: "familia" });
+    expect(r.statusCode).toBe(200);
+    expect((await llamar(api, { juego: 1, trato: 2, explicacion: 3 })).statusCode).toBe(200);
+    expect(tablas.opiniones.map(({ juego, trato, explicacion, quien }) => ({ juego, trato, explicacion, quien }))).toEqual([
+      { ...BUENA, quien: "familia" },
+      { juego: 1, trato: 2, explicacion: 3, quien: null },
+    ]);
+    expect(JSON.stringify(tablas.opiniones)).not.toMatch(/10\.0\.0\.1|alumno|grupo/);
+  });
+
+  it("rechaza caritas fuera de 1 a 5, preguntas sin contestar y un «soy» inventado", async () => {
+    const api = await opinionApi();
+    for (const cuerpo of [{ ...BUENA, juego: 6 }, { juego: 5, trato: 4 }, { ...BUENA, quien: "director" }, { ...BUENA, trato: "5" }]) {
+      expect((await llamar(api, cuerpo)).statusCode).toBe(400);
+    }
+    expect(tablas.opiniones).toEqual([]);
+  });
+
+  it("tope de 120 por hora por IP, para que nadie llene la tabla", async () => {
+    const api = await opinionApi();
+    for (let i = 0; i < 120; i++) await llamar(api, BUENA, { ip: "7.7.7.7" });
+    expect((await llamar(api, BUENA, { ip: "7.7.7.7" })).statusCode).toBe(429);
+    expect((await llamar(api, BUENA, { ip: "8.8.8.8" })).statusCode).toBe(200);
+  });
+
+  it("solo la administración lee el resumen, agrupado por día y sin decir quién contestó", async () => {
+    process.env.EDITORES_CLAVE = "clave-de-editores-123";
+    const api = await opinionApi();
+    const editoresApi = (await import("../api/editores.js")).default;
+    await llamar(api, BUENA);
+    await llamar(api, BUENA);
+    await llamar(api, { ...BUENA, juego: 2, quien: "alumno" });
+    expect((await llamar(api, undefined, { metodo: "GET" })).statusCode).toBe(401);
+    const { pase: paseAlumnoOMaestro } = await grupoNuevo();
+    expect((await llamar(api, undefined, { metodo: "GET", pase: paseAlumnoOMaestro })).statusCode).toBe(401);
+
+    const pase = (await llamar(editoresApi, { clave: "clave-de-editores-123" })).json().pase;
+    const r = await llamar(api, undefined, { metodo: "GET", pase });
+    expect(r.statusCode).toBe(200);
+    const filas = r.json().filas;
+    expect(filas.find((f) => f.quien === null)).toMatchObject({ ...BUENA, respuestas: 2 });
+    expect(filas.find((f) => f.quien === "alumno")).toMatchObject({ juego: 2, respuestas: 1 });
+    expect(Object.keys(filas[0]).sort()).toEqual(["dia", "explicacion", "juego", "quien", "respuestas", "trato"]);
+    delete process.env.EDITORES_CLAVE;
+  });
+
+  it("resumen para la administración: promedio y caritas por pregunta, con filtro por quién", async () => {
+    const { resumirOpiniones } = await import("../src/lib/opiniones.js");
+    const filas = [
+      { dia: "2026-11-26", quien: null, juego: 5, trato: 4, explicacion: 5, respuestas: 2 },
+      { dia: "2026-11-26", quien: "alumno", juego: 2, trato: 4, explicacion: 3, respuestas: 1 },
+    ];
+    const r = resumirOpiniones(filas);
+    expect(r.total).toBe(3);
+    expect(r.preguntas.find((p) => p.id === "juego")).toMatchObject({ conteo: [0, 1, 0, 0, 2], promedio: 4 });
+    expect(r.quienes.find((q) => q.id === "alumno").total).toBe(1);
+    expect(resumirOpiniones(filas, { quien: "alumno" }).total).toBe(1);
+    expect(resumirOpiniones(filas, { quien: "sin" }).total).toBe(2);
   });
 });
 

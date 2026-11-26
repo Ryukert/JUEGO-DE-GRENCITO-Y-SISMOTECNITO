@@ -10,6 +10,7 @@ import BotonTema from "../components/BotonTema.jsx";
 import { useEnVivo, novedades, haceCuanto, CADA, RESALTE } from "../lib/enVivo.js";
 import EntrarAdmin from "../components/EntrarAdmin.jsx";
 import { MiContrasena, CuentasAdmin } from "../components/CuentasAdmin.jsx";
+import ResumenOpiniones from "../components/ResumenOpiniones.jsx";
 
 /**
  * Administración de encuestas (/admin, /administradores o /editores): resultados de las
@@ -152,6 +153,7 @@ export default function Editores() {
   const [error, setError] = useState("");
   const [cargando, setCargando] = useState(false);
   const [filas, setFilas] = useState(null);
+  const [opiniones, setOpiniones] = useState(null);
   const [periodo, setPeriodo] = useState("30");
   const [grado, setGrado] = useState("todos");
   const [tipo, setTipo] = useState("todos");
@@ -183,6 +185,11 @@ export default function Editores() {
     if (!silencioso) setError("");
     const dias = PERIODOS.find((p) => p.id === periodo)?.dias;
     const desde = dias ? fechaLocal(new Date(Date.now() - (dias - 1) * 86_400_000)) : null;
+    // la evaluación abierta (/opinion) va aparte: si falla, las encuestas se ven igual
+    fetch(`/api/opinion${desde ? `?desde=${desde}` : ""}`, { headers: { Authorization: "Bearer " + pase } })
+      .then((r) => (r.ok ? r.json() : null))
+      .then((d) => { if (d?.filas) setOpiniones(d.filas); })
+      .catch(() => {});
     try {
       const r = await fetch(`/api/editores${desde ? `?desde=${desde}` : ""}`, { headers: { Authorization: "Bearer " + pase } });
       const d = await r.json().catch(() => ({}));
@@ -233,7 +240,7 @@ export default function Editores() {
 
   const salir = useCallback((mensaje = "") => {
     guardarPase(null); guardarCorreo(null); guardarSuper(false);
-    setQuien(null); setEsSuper(false); setPase(null); setFilas(null);
+    setQuien(null); setEsSuper(false); setPase(null); setFilas(null); setOpiniones(null);
     anteriores.current = null;
     setError(mensaje);
   }, []);
@@ -331,6 +338,8 @@ export default function Editores() {
       </section>
 
       {error && <section className="logros__seccion"><p className="cuenta__error" role="alert">{error}</p></section>}
+
+      {opiniones && <ResumenOpiniones filas={opiniones} />}
       {!resumen && cargando && <p className="maestro__cargando" role="status">Cargando resultados…</p>}
 
       {resumen && (

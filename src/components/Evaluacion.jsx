@@ -11,13 +11,13 @@ import { confeti } from "../lib/confeti.js";
  */
 
 /** Una fila de cinco caritas, de 😡 rojo a 😄 verde. */
-export function Caritas({ nombre, titulo, valor, onCambiar }) {
+export function Caritas({ nombre, titulo, valor, onCambiar, escala = ESCALA, className = "" }) {
   const idTitulo = `ev-${nombre}`;
   return (
-    <fieldset className="caritas" aria-labelledby={idTitulo}>
+    <fieldset className={`caritas ${className}`.trim()} aria-labelledby={idTitulo}>
       <legend id={idTitulo}>{titulo}</legend>
       <div className="caritas__fila">
-        {ESCALA.map((c) => (
+        {escala.map((c) => (
           <label
             key={c.valor}
             className={`carita ${valor === c.valor ? "carita--elegida" : ""} ${valor && valor !== c.valor ? "carita--apagada" : ""}`}

@@ -61,6 +61,22 @@ function Barra({ onLogros, onAjustes, onGrupo, cuenta, jugador, onQuien, tema, o
   );
 }
 
+/**
+ * Evaluación abierta (/opinion): arriba, a la vista de todos, como en un restaurante.
+ * Cualquiera la contesta sin registrarse.
+ */
+function BotonOpinion() {
+  return (
+    <a className="boton-opinion" href="/opinion">
+      <span className="boton-opinion__caras" aria-hidden="true">😡🙁😐🙂😄</span>
+      <span className="boton-opinion__texto">
+        <strong>¿Qué te pareció? ¡Califícanos!</strong>
+        <small>Toca una carita · sin registrarte</small>
+      </span>
+    </a>
+  );
+}
+
 /** Entrada a la administración de encuestas (/admin). Pide la clave de administración. */
 function BotonAdmin() {
   return (
@@ -103,6 +119,7 @@ export default function Portada({ progreso, ultimo, onElegir, onCentro, onLogros
     return (
       <div className="pantalla portada">
         {barra}
+        <BotonOpinion />
         {nombre}
         {tarea}
         <div className="portada__duo" aria-hidden="true">
@@ -146,6 +163,7 @@ export default function Portada({ progreso, ultimo, onElegir, onCentro, onLogros
   return (
     <div className="pantalla portada">
       {barra}
+      <BotonOpinion />
       {nombre}
       {tarea}
       {quienSigue && (
