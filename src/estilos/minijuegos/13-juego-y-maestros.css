@@ -213,17 +213,21 @@
 }
 .boton-admin:hover { background: var(--superficie); }
 
-/* ---- contador de visitas (portada, junto a los créditos) ---- */
+/* ---- contador de visitas: en grande, hasta arriba de la portada ---- */
 .contador-visitas {
-  align-self: center;
-  margin: 4px auto 0;
-  padding: 2px 12px;
-  font-size: 13px;
-  font-weight: 700;
-  color: var(--tinta);
-  background: var(--velo);
-  border-radius: 999px;
+  display: flex; align-items: center; justify-content: center; gap: 4px 12px; flex-wrap: wrap;
+  width: min(100%, 560px); margin: 6px auto 2px; padding: 10px 18px;
+  color: var(--tinta); background: var(--superficie);
+  border: 3px solid var(--contorno); border-radius: 18px; box-shadow: 0 4px 0 var(--contorno);
 }
+.contador-visitas__ojos { font-size: clamp(30px, 8vw, 42px); line-height: 1; }
+.contador-visitas__numero {
+  font-size: clamp(38px, 11vw, 60px); font-weight: 900; line-height: 1;
+  font-variant-numeric: tabular-nums; letter-spacing: -0.01em;
+}
+.contador-visitas__texto { display: grid; line-height: 1.15; text-align: left; }
+.contador-visitas__texto strong { font-size: clamp(18px, 4.6vw, 22px); }
+.contador-visitas__texto small { font-size: 15px; font-weight: 700; color: var(--texto-suave); }
 
 /* ---- entrar a la administración con correo y contraseña ---- */
 .ed-otra-forma {

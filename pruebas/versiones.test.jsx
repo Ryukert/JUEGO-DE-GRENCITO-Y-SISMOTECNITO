@@ -82,6 +82,6 @@ describe("la versión se ve en Ajustes", () => {
   it("al pie de la ventana de Ajustes", () => {
     render(<App />);
     fireEvent.click(screen.getByLabelText("Ajustes"));
-    expect(screen.getByText(`Escuadrón Tecnito y Greencito · versión ${paquete.version}`)).toBeTruthy();
+    expect(screen.getByText(`Escuadrón Sismotecnito y Greencito · versión ${paquete.version}`)).toBeTruthy();
   });
 });

@@ -243,10 +243,10 @@ export const SIMULACIONES = {
     },
   },
 
-  /* -------------------- 🏆 Gran desafío Tecnito vs Greencito -------------------- */
+  /* -------------------- 🏆 Gran desafío Sismotecnito vs Greencito -------------------- */
   "tecnito-vs-greencito": {
     titulo: "Ciudad 100% segura y sostenible",
-    escenario: "El reto final: Tecnito cuida seguridad, emergencias e infraestructura; Greencito cuida agua, residuos, energía y naturaleza. La ciudad necesita las dos cosas.",
+    escenario: "El reto final: Sismotecnito cuida seguridad, emergencias e infraestructura; Greencito cuida agua, residuos, energía y naturaleza. La ciudad necesita las dos cosas.",
     turnos: 10,
     recurso: { nombre: "Presupuesto", icono: "💰", inicial: 120 },
     indicadores: [
@@ -279,7 +279,7 @@ export const SIMULACIONES = {
       { icono: "🤝", texto: "Fondo federal de resiliencia urbana.", efectos: {}, recurso: 25 },
     ],
     finales: {
-      excelente: "Ciudad segura y sostenible al mismo tiempo. Ese era el punto: Tecnito y Greencito no compiten por el presupuesto, casi siempre las mismas obras sirven a los dos.",
+      excelente: "Ciudad segura y sostenible al mismo tiempo. Ese era el punto: Sismotecnito y Greencito no compiten por el presupuesto, casi siempre las mismas obras sirven a los dos.",
       regular: "La ciudad quedó fuerte de un lado y floja del otro. Una ciudad muy segura pero sin agua, o muy verde pero que se cae, no está terminada.",
       malo: "No alcanzó. La lección no es que faltó dinero: es que las decisiones que sirven a un solo equipo cuestan lo mismo que las que sirven a los dos.",
     },

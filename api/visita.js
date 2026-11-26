@@ -39,6 +39,7 @@ export default async function handler(req, res) {
   if (!disponible()) return responderJson(res, 503, { error: "El contador no está disponible." });
 
   try {
+    let contada;
     if (req.method === "POST") {
       if (ROBOT.test(String(req.headers["user-agent"] || ""))) return responderJson(res, 200, { contada: false });
       const hora = Math.floor(Date.now() / 3_600_000);
@@ -47,16 +48,18 @@ export default async function handler(req, res) {
         { clave: `visita:${resumen("ip", quienEs(req))}:${hora}`, segundos: 4_000, max: 300, motivo: "ip" },
         { clave: `visita-total:${dia}`, segundos: 90_000, max: 100_000, motivo: "dia" },
       ]);
-      if (!tope) return responderJson(res, 200, { total: Number(await funcion("sumar_visita")), contada: true });
       // pasado el tope no suma, pero la portada sigue mostrando el número
+      if (!tope) { await funcion("sumar_visita"); contada = true; }
     }
 
+    // también después de sumar: la portada muestra el total y las de hoy
     const dias = ((await funcion("visitas_por_dia")) || []).map((d) => ({ dia: d.dia, visitas: Number(d.visitas) }));
     const total = dias.reduce((s, d) => s + d.visitas, 0);
     const hoy = dias.find((d) => d.dia === hoyEn())?.visitas || 0;
     if (req.method === "GET" && paseDe(req, "editor")) return responderJson(res, 200, { total, hoy, dias });
+    if (req.method === "POST") return responderJson(res, 200, contada ? { total, hoy, contada } : { total, hoy });
     // el número de la portada: puede tener un minuto de atraso, así no se pide en cada visita
-    return responderJson(res, 200, { total, hoy }, req.method === "GET" ? { "Cache-Control": "public, max-age=0, s-maxage=60" } : {});
+    return responderJson(res, 200, { total, hoy }, { "Cache-Control": "public, max-age=0, s-maxage=60" });
   } catch (e) {
     console.error("[visita]", e.estado || "", e.codigo || "", e.message);
     return responderJson(res, 502, { error: "No pude leer el contador ahorita." });

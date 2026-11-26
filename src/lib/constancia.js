@@ -68,7 +68,7 @@ export async function crearConstancia(d, { imagenes = true } = {}) {
     if (green) doc.addImage(green.data, "PNG", W - 24 - alto * green.proporcion, H - 24 - alto, alto * green.proporcion, alto, undefined, "FAST");
   }
 
-  t("Escuadrón Tecnito y Greencito", 34, { tam: 15, negrita: true, color: azul });
+  t("Escuadrón Sismotecnito y Greencito", 34, { tam: 15, negrita: true, color: azul });
   t("CONSTANCIA", 52, { tam: 34, negrita: true });
   t("se otorga con orgullo a", 64, { tam: 13 });
 

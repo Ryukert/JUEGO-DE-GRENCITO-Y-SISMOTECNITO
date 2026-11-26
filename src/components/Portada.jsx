@@ -78,15 +78,22 @@ function BotonOpinion() {
   );
 }
 
-/** Contador de visitas del sitio (abajo, junto a los créditos). Sin número, no se muestra. */
+/**
+ * Contador de visitas del sitio, en grande hasta arriba de la portada. Muestra al instante el
+ * último número que vio este navegador y lo actualiza al llegar el nuevo. Sin número, no sale.
+ */
 export function ContadorVisitas() {
   const v = useVisitas();
   if (!v) return null;
   const n = (x) => x.toLocaleString("es-MX");
   return (
     <p className="contador-visitas">
-      <span aria-hidden="true">👀</span> {n(v.total)} {v.total === 1 ? "visita" : "visitas"}
-      {v.hoy ? <> · {n(v.hoy)} hoy</> : null}
+      <span className="contador-visitas__ojos" aria-hidden="true">👀</span>
+      <span className="contador-visitas__numero">{n(v.total)}</span>{" "}
+      <span className="contador-visitas__texto">
+        <strong>{v.total === 1 ? "visita" : "visitas"}</strong>
+        {v.hoy ? <small> · {n(v.hoy)} hoy</small> : null}
+      </span>
     </p>
   );
 }
@@ -133,6 +140,7 @@ export default function Portada({ progreso, ultimo, onElegir, onCentro, onLogros
     return (
       <div className="pantalla portada">
         {barra}
+        <ContadorVisitas />
         <BotonOpinion />
         {nombre}
         {tarea}
@@ -141,7 +149,7 @@ export default function Portada({ progreso, ultimo, onElegir, onCentro, onLogros
           <img className="portada__mini flota flota--tarde" src={PERSONAJES.green.cuerpo} {...PERSONAJES.green.medidas} alt="" />
         </div>
         <header className="portada__intro">
-          <h1>Escuadrón Tecnito y Greencito</h1>
+          <h1>Escuadrón Sismotecnito y Greencito</h1>
           <p>{enLetra(MISIONES).replace(/^./, (c) => c.toUpperCase())} misiones, {enLetra(VIDAS)} vidas y un cronómetro. ¿En qué grado vas?</p>
         </header>
 
@@ -169,7 +177,6 @@ export default function Portada({ progreso, ultimo, onElegir, onCentro, onLogros
         </p>
 
         <Creditos />
-        <ContadorVisitas />
         <BotonAdmin />
       </div>
     );
@@ -178,6 +185,7 @@ export default function Portada({ progreso, ultimo, onElegir, onCentro, onLogros
   return (
     <div className="pantalla portada">
       {barra}
+      <ContadorVisitas />
       <BotonOpinion />
       {nombre}
       {tarea}
@@ -246,7 +254,6 @@ export default function Portada({ progreso, ultimo, onElegir, onCentro, onLogros
       </p>
 
       <Creditos />
-      <ContadorVisitas />
       <BotonAdmin />
     </div>
   );

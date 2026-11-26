@@ -14,6 +14,19 @@ en **Ajustes**. Cómo sacar una versión nueva: ver «Versiones» en el README.
 
 ## [Sin publicar]
 
+### Cambiado
+
+- El contador de visitas sale en grande hasta arriba de la portada, debajo de la barra. Al
+  volver a abrir la página aparece al instante con el último número, sin que la portada salte,
+  y desde la primera visita del día ya dice cuántas van hoy.
+
+### Corregido
+
+- El nombre del juego es «Escuadrón Sismotecnito y Greencito»: en el título de la portada,
+  la pestaña del navegador, la app instalable, Ajustes, las constancias, los carteles y los
+  reportes en PDF. También dicen «Sismotecnito» la categoría del Centro de entrenamiento, el
+  juego «Sismotecnito vs Greencito» y las descripciones.
+
 ## [2.12.0] - 2026-11-26
 
 ### Agregado

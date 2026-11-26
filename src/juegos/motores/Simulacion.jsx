@@ -11,7 +11,7 @@ const acotar = (n) => Math.max(0, Math.min(100, Math.round(n)));
 /**
  * Motor de los retos avanzados: ciudad sostenible, salva el planeta,
  * ecosistema, comandante de emergencias, simulador de emergencia y el
- * gran desafío Tecnito vs Greencito.
+ * gran desafío Sismotecnito vs Greencito.
  *
  * Todos funcionan igual: hay indicadores de 0 a 100 con una meta, y en
  * cada turno el jugador elige una decisión que mueve varios a la vez.

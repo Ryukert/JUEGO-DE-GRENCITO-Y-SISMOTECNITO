@@ -34,7 +34,7 @@ function csv(alumnos) {
     const seguro = /^[=+\-@]/.test(t) ? "'" + t : t;
     return /[",\n;]/.test(seguro) ? `"${seguro.replace(/"/g, '""')}"` : seguro;
   };
-  const filas = [["Apodo", "XP", "Récord Tecnito", "Récord Greencito", "Misiones", "Minijuegos", "Respuestas", "Aciertos %", "Última vez"]];
+  const filas = [["Apodo", "XP", "Récord Sismotecnito", "Récord Greencito", "Misiones", "Minijuegos", "Respuestas", "Aciertos %", "Última vez"]];
   for (const a of alumnos) {
     filas.push([
       a.apodo, a.xp, a.records.sismo, a.records.green, a.misiones, a.minijuegos,

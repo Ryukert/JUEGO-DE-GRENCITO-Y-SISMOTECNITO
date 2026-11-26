@@ -267,8 +267,8 @@ describe("centro de entrenamiento con el catálogo completo", () => {
     expect(screen.getByText(new RegExp(`${libres.length} de ${JUEGOS.length}`))).toBeTruthy();
     expect(siguienteEnDesbloquear(sinXp)).toBeTruthy();
 
-    // el jefe final de Tecnito está en su categoría y bloqueado
-    fireEvent.click(screen.getByText(/Tecnito/));
+    // el jefe final de Sismotecnito está en su categoría y bloqueado
+    fireEvent.click(screen.getByText(/^Sismotecnito/));
     expect(screen.getByText("Jefes finales")).toBeTruthy();
     const jefe = [...document.querySelectorAll(".tarjeta")].find((t) =>
       t.textContent.includes("Comandante de emergencias")

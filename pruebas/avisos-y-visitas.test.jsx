@@ -89,6 +89,22 @@ describe("contador de visitas", () => {
     expect(document.querySelector(".contador-visitas").textContent).toMatch(/1,234 visitas · 5 hoy/);
   });
 
+  it("está hasta arriba de la portada, en grande, y al volver sale al instante el último número", async () => {
+    const { default: App } = await import("../src/App.jsx");
+    await act(async () => { await registrarVisita(); });
+    reiniciarVisitas();   // como al abrir otra vez la página: lee el número guardado
+    window.matchMedia = () => ({ matches: false, addListener() {}, removeListener() {}, addEventListener() {}, removeEventListener() {} });
+    render(<App />);
+    const contador = document.querySelector(".contador-visitas");
+    expect(contador.querySelector(".contador-visitas__numero").textContent).toBe("1,234");
+    // antes que el botón de opinión y que todo lo demás, después de la barra de arriba
+    const portada = document.querySelector(".portada");
+    const hijos = [...portada.children];
+    expect(hijos.indexOf(contador)).toBe(1);
+    expect(hijos[0].matches(".portada__barra")).toBe(true);
+    expect(contador.textContent).not.toMatch(/hoy/);   // «hoy» espera al número nuevo
+  });
+
   it("sin internet o sin base de datos no se muestra (y no truena)", async () => {
     vi.stubGlobal("fetch", vi.fn(async () => { throw new TypeError("Failed to fetch"); }));
     render(<ContadorVisitas />);

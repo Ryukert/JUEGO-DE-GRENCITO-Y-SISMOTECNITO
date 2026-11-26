@@ -49,7 +49,7 @@ export async function crearPdfGrupo(datos, { nombres = {}, hoy = new Date() } = 
 
   const g = datos.grupo || {};
   const alumnos = datos.alumnos || [];
-  texto("Escuadrón Tecnito y Greencito · Panel del maestro", MM.margen, y, { tam: 9, color: SUAVE });
+  texto("Escuadrón Sismotecnito y Greencito · Panel del maestro", MM.margen, y, { tam: 9, color: SUAVE });
   y += 8;
   texto(g.nombre || "Mi grupo", MM.margen, y, { tam: 18, negrita: true });
   y += 7;

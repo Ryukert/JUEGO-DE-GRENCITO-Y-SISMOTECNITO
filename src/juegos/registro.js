@@ -39,7 +39,7 @@ const SimulacroCentro = diferido(() => import("./motores/Clasicos.jsx"), "Simula
 const BasuraCentro = diferido(() => import("./motores/Clasicos.jsx"), "BasuraCentro");
 
 export const FAMILIAS = {
-  tecnito: { id: "tecnito", nombre: "Tecnito", icono: "🛡️", moneda: "escudos", monedaIcono: "🛡️" },
+  tecnito: { id: "tecnito", nombre: "Sismotecnito", icono: "🛡️", moneda: "escudos", monedaIcono: "🛡️" },
   greencito: { id: "greencito", nombre: "Greencito", icono: "🌱", moneda: "semillas", monedaIcono: "🌱" },
   general: { id: "general", nombre: "Desafíos", icono: "🧠", moneda: "puntos", monedaIcono: "⭐" },
 };
@@ -307,7 +307,7 @@ export const JUEGOS = [
     motor: Simulacion,
     simulacion: "simulador-emergencia",
     xp: 260,
-    descripcion: "El jefe final de Tecnito: alerta, protección, evacuación, mochila, punto de reunión y comunicación.",
+    descripcion: "El jefe final de Sismotecnito: alerta, protección, evacuación, mochila, punto de reunión y comunicación.",
     comoSeJuega: "Seis fases en orden. Cada decisión mueve la seguridad, la calma, el tiempo y la comunicación del grupo.",
   },
   {
@@ -579,7 +579,7 @@ export const JUEGOS = [
     rondas: 10,
     segundos: 12,
     xp: 0,
-    descripcion: "Preguntas de todo, contra reloj. Mezcla Tecnito y Greencito.",
+    descripcion: "Preguntas de todo, contra reloj. Mezcla Sismotecnito y Greencito.",
   },
   {
     id: "verdadero-falso",
@@ -663,7 +663,7 @@ export const JUEGOS = [
     rompecabezas: "rompecabezas",
     segundos: 150,
     xp: 80,
-    descripcion: "Arma a Tecnito o a Greencito deslizando las piezas.",
+    descripcion: "Arma a Sismotecnito o a Greencito deslizando las piezas.",
     comoSeJuega: "Fácil es de 3×3; medio y difícil, de 4×4.",
   },
   {
@@ -682,7 +682,7 @@ export const JUEGOS = [
   },
   {
     id: "tecnito-vs-greencito",
-    nombre: "Tecnito vs Greencito",
+    nombre: "Sismotecnito vs Greencito",
     icono: "🏆",
     familia: "general",
     categoria: "Retos especiales",
@@ -691,7 +691,7 @@ export const JUEGOS = [
     simulacion: "tecnito-vs-greencito",
     xp: 420,
     descripcion: "El gran desafío: una ciudad 100% segura y 100% sostenible, con un solo presupuesto.",
-    comoSeJuega: "Siete indicadores, cuatro de Greencito y tres de Tecnito. Hay que llevarlos todos a la meta.",
+    comoSeJuega: "Siete indicadores, cuatro de Greencito y tres de Sismotecnito. Hay que llevarlos todos a la meta.",
   },
 
   {

@@ -76,7 +76,7 @@ export async function crearCartel(direccion, { imagenes = true, evento = "" } = 
   doc.roundedRect(13, 13, W - 26, H - 26, 4, 4, "S");
 
   if (evento) {
-    texto("Escuadrón Tecnito y Greencito", cx, 25, { tam: 13, negrita: true, tinta: AZUL, alinear: "center" });
+    texto("Escuadrón Sismotecnito y Greencito", cx, 25, { tam: 13, negrita: true, tinta: AZUL, alinear: "center" });
     // un renglón: si el nombre es largo (hasta 40 letras), la letra se achica hasta que quepa
     doc.setFont("helvetica", "bold");
     let tam = 14;
@@ -86,7 +86,7 @@ export async function crearCartel(direccion, { imagenes = true, evento = "" } = 
     }
     texto(evento, cx, 33, { tam, negrita: true, tinta: VERDE, alinear: "center" });
   } else {
-    texto("Escuadrón Tecnito y Greencito", cx, 30, { tam: 15, negrita: true, tinta: AZUL, alinear: "center" });
+    texto("Escuadrón Sismotecnito y Greencito", cx, 30, { tam: 15, negrita: true, tinta: AZUL, alinear: "center" });
   }
   texto("¿Qué te pareció?", cx, 50, { tam: 40, negrita: true, alinear: "center" });
   texto("Escanea el código con la cámara de tu celular y califícanos", cx, 61, { tam: 14, alinear: "center" });
@@ -137,7 +137,7 @@ export async function crearReporte(r, datos) {
   let y = M;
   const espacio = (mm) => { if (y + mm > H - M) { doc.addPage(); y = M; } };
 
-  texto("Escuadrón Tecnito y Greencito", M, y + 5, { tam: 16, negrita: true });
+  texto("Escuadrón Sismotecnito y Greencito", M, y + 5, { tam: 16, negrita: true });
   texto("Evaluación abierta: lo que opina quien usa el juego", M, y + 11, { tam: 11, tinta: SUAVE });
   texto(`Periodo: ${datos.periodo} · Evento: ${datos.evento || "todos"} · Quién contestó: ${datos.quien}`, M, y + 17, { tam: 9, tinta: SUAVE });
   texto(`Generado el ${new Date().toLocaleString("es-MX", { dateStyle: "long", timeStyle: "short" })}`, M, y + 22, { tam: 9, tinta: SUAVE });

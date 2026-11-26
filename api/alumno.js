@@ -1,6 +1,6 @@
 /**
  * Alumnos: unirse a un grupo o volver a entrar. Sin correo ni datos personales: código del
- * grupo + apodo + PIN de 4 cifras + avatar (Tecnito o Greencito).
+ * grupo + apodo + PIN de 4 cifras + avatar (Sismotecnito o Greencito).
  *
  *   GET  /api/alumno                         → { disponible }   (¿hay base de datos?)
  *   POST /api/alumno { accion: "registrar", codigo, apodo, pin, avatar }

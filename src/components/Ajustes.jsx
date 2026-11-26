@@ -132,7 +132,7 @@ export default function Ajustes({
           )}
         </div>
 
-        <p className="ajustes__version">Escuadrón Tecnito y Greencito · versión {VERSION}</p>
+        <p className="ajustes__version">Escuadrón Sismotecnito y Greencito · versión {VERSION}</p>
       </div>
     </div>
   );

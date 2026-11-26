@@ -48,7 +48,7 @@ export async function crearPdf(resumen, datos) {
   };
 
   // ---- encabezado ----
-  texto("Escuadrón Tecnito y Greencito", MM.margen, y + 5, { tam: 16, negrita: true });
+  texto("Escuadrón Sismotecnito y Greencito", MM.margen, y + 5, { tam: 16, negrita: true });
   texto("Resultados de las encuestas de satisfacción de los juegos", MM.margen, y + 11, { tam: 11, tinta: SUAVE });
   texto(`Periodo: ${datos.periodo} · Grado: ${datos.grado} · Tipo: ${datos.tipo}`, MM.margen, y + 17, { tam: 9, tinta: SUAVE });
   texto(`Generado el ${new Date().toLocaleString("es-MX", { dateStyle: "long", timeStyle: "short" })}`, MM.margen, y + 22, { tam: 9, tinta: SUAVE });

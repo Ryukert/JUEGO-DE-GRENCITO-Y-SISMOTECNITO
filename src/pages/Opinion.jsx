@@ -80,7 +80,7 @@ export default function Opinion() {
   const titulo = useRef(null);
 
   useEffect(() => {
-    document.title = "¿Qué te pareció? · Escuadrón Tecnito y Greencito";
+    document.title = "¿Qué te pareció? · Escuadrón Sismotecnito y Greencito";
     aplicarTema(temaInicial());
   }, []);
 

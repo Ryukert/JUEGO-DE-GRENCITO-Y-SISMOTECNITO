@@ -1,4 +1,4 @@
-# Escuadrón Tecnito y Greencito
+# Escuadrón Sismotecnito y Greencito
 
 Autor: **Marco Antonio Adame Rodriguez**
 
@@ -45,9 +45,9 @@ minijuegos** sueltos, con dificultad propia (fácil / medio / difícil), récord
 juego y desbloqueo por XP. Se entra desde la portada o desde la pantalla final.
 
 **Jefes finales.** Seis retos de simulación cierran el juego: Simulador de
-emergencia y Comandante de emergencias por el lado de Tecnito, Salva el planeta,
+emergencia y Comandante de emergencias por el lado de Sismotecnito, Salva el planeta,
 Ecosistema y Ciudad sostenible por el de Greencito, y el gran desafío
-**Tecnito vs Greencito**, que pide una ciudad segura y sostenible con un solo
+**Sismotecnito vs Greencito**, que pide una ciudad segura y sostenible con un solo
 presupuesto.
 
 **Recompensas.** Al final hay rango (Aprendiz → Vigilante → Guardián → Capitán →
@@ -147,7 +147,7 @@ pruebas y el build en cada push y pull request, y muestra ✅ o ❌ en GitHub.
 
 En la escuela el juego suele estar en una sola computadora y los niños no tienen
 cuenta. Con el botón **¿Quién juega?** de la portada cada niño escribe su nombre
-y elige a Tecnito o a Greencito; el juego le da un **ID de jugador** de 6 letras y
+y elige a Sismotecnito o a Greencito; el juego le da un **ID de jugador** de 6 letras y
 números (por ejemplo `K7P2QX`, sin 0/O ni 1/I para dictarlo sin confusión).
 
 - Cada jugador guarda **sus propios** récords, XP y medallas en esa computadora.
@@ -236,7 +236,7 @@ esa sí necesita la cuenta del grupo, porque cada maestro ve solo la de sus alum
 
 ### Contador de visitas
 
-- La portada muestra cuántas visitas lleva el sitio y cuántas van hoy («👀 1,234 visitas ·
+- Hasta arriba de la portada, en grande, se ve cuántas visitas lleva el sitio y cuántas van hoy («👀 1,234 visitas ·
   56 hoy»). En la administración, **Visitas al sitio** da las de hoy, los últimos 7 y 30 días,
   el total y una barra por día del último mes.
 - Cuenta **una visita por navegador al día**: la primera vez del día la página suma
@@ -280,7 +280,7 @@ aparece. Con ella:
 
 - **El maestro** crea un grupo desde *Mi grupo → Soy maestro → Crear un grupo*
   (nombre, grado y una clave suya). Recibe un **código de 6 letras** para dictarlo.
-- **El alumno** entra con *código + apodo + PIN de 4 números* y elige a Tecnito o a
+- **El alumno** entra con *código + apodo + PIN de 4 números* y elige a Sismotecnito o a
   Greencito como avatar. **No se pide nombre, correo ni ningún dato personal.**
 - **Progreso en la nube:** récords, XP, medallas y minijuegos se guardan en el grupo.
   Varios alumnos pueden usar la misma computadora: cada uno tiene su copia aparte.
@@ -712,7 +712,7 @@ Ese mismo objeto trae también `puntos`, `vidasRestantes`, `exito` y `resumen`,
 que es lo que ya esperaba el flujo de misiones. Por eso no hubo que tocar
 `App.jsx` ni `Juego.jsx` para que los juegos viejos siguieran funcionando.
 
-Tecnito paga escudos, Greencito paga semillas y los desafíos generales
+Sismotecnito paga escudos, Greencito paga semillas y los desafíos generales
 reparten. La XP acumulada es lo que desbloquea juegos nuevos.
 
 ---

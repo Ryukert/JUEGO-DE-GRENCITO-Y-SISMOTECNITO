@@ -4,13 +4,22 @@
  * - registrarVisita: la primera vez del día en este navegador suma una visita (POST); las
  *   demás solo leen el número (GET). Lo llama src/main.jsx al abrir el sitio (no la
  *   administración). Nunca lanza error: sin internet o sin base de datos, no se muestra nada.
- * - useVisitas: el número para la portada ({ total, hoy } o null mientras no lo hay).
+ * - useVisitas: el número para la portada ({ total, hoy } o null mientras no lo hay). Al abrir,
+ *   da el último número que vio este navegador, para que la portada no salte al llegar el nuevo.
  */
 import { useSyncExternalStore } from "react";
 
 const LLAVE = "escuadron-visita";   // fecha (AAAA-MM-DD) de la última visita contada aquí
+const LLAVE_NUMERO = "escuadron-visitas-numero";   // el último número visto: sale al instante, sin saltos
 
-let estado = null;
+function numeroGuardado() {
+  try {
+    const v = JSON.parse(localStorage.getItem(LLAVE_NUMERO) || "null");
+    return Number.isFinite(v?.total) ? { total: v.total, hoy: null } : null;   // «hoy» pudo cambiar: espera al nuevo
+  } catch { return null; }
+}
+
+let estado = numeroGuardado();
 const oyentes = new Set();
 const avisar = () => oyentes.forEach((f) => f());
 
@@ -31,6 +40,7 @@ export async function registrarVisita({ hoy = fechaLocal() } = {}) {
     if (nueva) guardar(hoy);
     if (Number.isFinite(d?.total)) {
       estado = { total: d.total, hoy: Number.isFinite(d.hoy) ? d.hoy : null };
+      try { localStorage.setItem(LLAVE_NUMERO, JSON.stringify({ total: d.total })); } catch { /* incógnito */ }
       avisar();
     }
     return estado;
@@ -39,9 +49,9 @@ export async function registrarVisita({ hoy = fechaLocal() } = {}) {
   }
 }
 
-/** Para las pruebas: olvida el número. */
+/** Para las pruebas: vuelve a leer el número guardado (o null). */
 export function reiniciarVisitas() {
-  estado = null;
+  estado = numeroGuardado();
   avisar();
 }
 
