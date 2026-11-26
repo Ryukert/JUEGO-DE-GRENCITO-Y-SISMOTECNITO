@@ -55,6 +55,12 @@ export default [
   },
 
   {
+    // herramienta de revisar.html: script clásico del navegador
+    files: ["public/revisar.js"],
+    languageOptions: { globals: globals.browser, sourceType: "script" },
+  },
+
+  {
     files: ["pruebas/**/*.{js,jsx}"],
     languageOptions: { globals: { ...globals.browser, ...globals.node } },
   },
