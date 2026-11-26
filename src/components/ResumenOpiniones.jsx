@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { ESCALA_OPINION, QUIENES, MAX_EVENTO, normalizarEvento, nombreEvento } from "../data/opinion.js";
-import { resumirOpiniones } from "../lib/opiniones.js";
+import { resumirOpiniones, avisosBajas, MIN_BAJAS, PARTE_BAJAS } from "../lib/opiniones.js";
 import Icono from "./Icono.jsx";
 
 /**
@@ -46,6 +46,32 @@ function VistaQr({ direccion }) {
   );
 }
 
+const fechaCorta = (dia) => new Date(dia + "T12:00:00Z").toLocaleDateString("es-MX", { weekday: "long", day: "numeric", month: "long", timeZone: "UTC" });
+const describir = (a) =>
+  `${a.bajas} de ${a.total} ${a.total === 1 ? "opinión" : "opiniones"} con carita roja o naranja`;
+
+/**
+ * Arriba de la administración: si hoy llegan muchas caritas rojas o naranjas, se ve en grande
+ * para corregir durante el evento (la página se actualiza sola cada 30 s).
+ */
+export function AvisoBajasHoy({ filas }) {
+  const hoy = useMemo(() => avisosBajas(filas).filter((a) => a.hoy), [filas]);
+  if (!hoy.length) return null;
+  return (
+    <section className="logros__seccion op-alerta op-alerta--arriba" aria-labelledby="alerta-hoy">
+      <h2 id="alerta-hoy"><span aria-hidden="true">⚠️</span> Hoy hay calificaciones bajas</h2>
+      <ul>
+        {hoy.map((a) => (
+          <li key={a.evento || "general"}>
+            <strong>{a.texto}:</strong> {describir(a)}. Lo más bajo: «{a.pregunta.texto}».
+          </li>
+        ))}
+      </ul>
+      <a href="#opiniones">Ver la evaluación abierta</a>
+    </section>
+  );
+}
+
 export default function ResumenOpiniones({ filas, periodo = "todo" }) {
   const [quien, setQuien] = useState("todos");
   const [evento, setEvento] = useState("todos");     // filtro: "todos" | "general" | id del evento
@@ -63,6 +89,7 @@ export default function ResumenOpiniones({ filas, periodo = "todo" }) {
   const textoEvento = evento === "todos" ? "todos" : (todas.eventos.find((e) => e.id === evento)?.texto || nombreEvento(evento));
   const sufijo = evento !== "todos" ? `-${evento}` : "";
   const hayEventos = todas.eventos.some((e) => e.id !== "general");
+  const avisos = useMemo(() => avisosBajas(filas || []), [filas]);
 
   function elegirEvento(id) {
     setEvento(id);
@@ -99,6 +126,29 @@ export default function ResumenOpiniones({ filas, periodo = "todo" }) {
       <h2 id="opiniones-titulo">
         Evaluación abierta <small>{todas.total} {todas.total === 1 ? "opinión" : "opiniones"} en el periodo · anónimas</small>
       </h2>
+
+      {avisos.length > 0 && (
+        <div className={`op-alerta${avisos.some((a) => a.hoy) ? "" : " op-alerta--antes"}`}>
+          <h3><span aria-hidden="true">⚠️</span> Calificaciones bajas <small>en el periodo</small></h3>
+          <ul>
+            {avisos.slice(0, 6).map((a) => (
+              <li key={a.dia + (a.evento || "")}>
+                <span>
+                  <strong>{a.hoy ? "Hoy" : fechaCorta(a.dia)} · {a.texto}:</strong> {describir(a)}.
+                  {" "}Lo más bajo: «{a.pregunta.texto}» ({a.pregunta.bajas}).
+                </span>
+                {hayEventos && (
+                  <button type="button" onClick={() => elegirEvento(a.evento || "general")}>Ver</button>
+                )}
+              </li>
+            ))}
+          </ul>
+          <p className="ed-ayuda">
+            Se marca un día cuando junta {MIN_BAJAS} o más opiniones con carita roja o naranja y son al menos
+            el {Math.round(PARTE_BAJAS * 100)} % de las de ese día.
+          </p>
+        </div>
+      )}
 
       <div className="op-difusion">
         <VistaQr direccion={direccion} />

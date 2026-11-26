@@ -220,6 +220,30 @@
 .op-evento input { min-height: 44px; padding: 6px 10px; border-radius: 10px; border: 2px solid var(--apagado-borde); background: var(--superficie); color: var(--tinta); font: inherit; }
 .op-enlace { overflow-wrap: anywhere; }
 
+/* aviso de calificaciones bajas (rojo si es de hoy; tenue si es de días anteriores) */
+.op-alerta {
+  margin-bottom: 12px; padding: 12px 14px; border-radius: 14px;
+  border: 3px solid #c0392b; background: color-mix(in srgb, #c0392b 12%, var(--superficie)); color: var(--tinta);
+}
+.op-alerta--antes { border-color: #d68910; background: color-mix(in srgb, #d68910 10%, var(--superficie)); }
+.op-alerta h2, .op-alerta h3 { margin: 0 0 6px; font-size: 18px; }
+.op-alerta h3 small { font-weight: 600; color: var(--texto-suave); }
+.op-alerta ul { margin: 0 0 6px; padding-left: 0; list-style: none; display: grid; gap: 6px; }
+.op-alerta li { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 6px; }
+.op-alerta li strong { text-transform: none; }
+.op-alerta li button { min-height: 44px; padding: 4px 14px; }
+.op-alerta p { margin: 0; }
+.op-alerta--arriba a { font-weight: 800; color: var(--tinta); min-height: 44px; display: inline-flex; align-items: center; }
+
+/* visitas al sitio: una barra por día */
+.vis-grafica {
+  display: grid; grid-template-columns: repeat(30, minmax(0, 1fr)); gap: 2px; align-items: end;
+  height: 120px; margin-top: 10px; padding-bottom: 2px; border-bottom: 2px solid var(--contorno);
+}
+.vis-grafica__dia { height: 100%; display: flex; align-items: flex-end; }
+.vis-grafica__barra { display: block; width: 100%; border-radius: 3px 3px 0 0; background: var(--acento-texto, #0f6fc4); }
+.vis-grafica__eje { display: flex; justify-content: space-between; margin: 4px 0 0; font-size: 12px; color: var(--texto-suave); }
+
 /* /opinion?evento=…: de qué evento es esta pantalla */
 .opinion__cabeza .opinion__evento {
   padding: 4px 14px; border-radius: 999px; font-weight: 800; color: var(--superficie); background: var(--tinta);

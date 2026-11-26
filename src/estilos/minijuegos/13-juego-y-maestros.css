@@ -213,6 +213,18 @@
 }
 .boton-admin:hover { background: var(--superficie); }
 
+/* ---- contador de visitas (portada, junto a los créditos) ---- */
+.contador-visitas {
+  align-self: center;
+  margin: 4px auto 0;
+  padding: 2px 12px;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--tinta);
+  background: var(--velo);
+  border-radius: 999px;
+}
+
 /* ---- entrar a la administración con correo y contraseña ---- */
 .ed-otra-forma {
   min-height: var(--toque);

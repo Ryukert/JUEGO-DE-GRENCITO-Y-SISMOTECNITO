@@ -10,7 +10,8 @@ import BotonTema from "../components/BotonTema.jsx";
 import { useEnVivo, novedades, haceCuanto, CADA, RESALTE } from "../lib/enVivo.js";
 import EntrarAdmin from "../components/EntrarAdmin.jsx";
 import { MiContrasena, CuentasAdmin } from "../components/CuentasAdmin.jsx";
-import ResumenOpiniones from "../components/ResumenOpiniones.jsx";
+import ResumenOpiniones, { AvisoBajasHoy } from "../components/ResumenOpiniones.jsx";
+import ResumenVisitas from "../components/ResumenVisitas.jsx";
 
 /**
  * Administración de encuestas (/admin, /administradores o /editores): resultados de las
@@ -154,6 +155,7 @@ export default function Editores() {
   const [cargando, setCargando] = useState(false);
   const [filas, setFilas] = useState(null);
   const [opiniones, setOpiniones] = useState(null);
+  const [visitas, setVisitas] = useState(null);
   const [periodo, setPeriodo] = useState("30");
   const [grado, setGrado] = useState("todos");
   const [tipo, setTipo] = useState("todos");
@@ -189,6 +191,11 @@ export default function Editores() {
     fetch(`/api/opinion${desde ? `?desde=${desde}` : ""}`, { headers: { Authorization: "Bearer " + pase } })
       .then((r) => (r.ok ? r.json() : null))
       .then((d) => { if (d?.filas) setOpiniones(d.filas); })
+      .catch(() => {});
+    // el contador de visitas, igual: aparte
+    fetch("/api/visita", { headers: { Authorization: "Bearer " + pase } })
+      .then((r) => (r.ok ? r.json() : null))
+      .then((d) => { if (d?.dias) setVisitas(d); })
       .catch(() => {});
     try {
       const r = await fetch(`/api/editores${desde ? `?desde=${desde}` : ""}`, { headers: { Authorization: "Bearer " + pase } });
@@ -240,7 +247,7 @@ export default function Editores() {
 
   const salir = useCallback((mensaje = "") => {
     guardarPase(null); guardarCorreo(null); guardarSuper(false);
-    setQuien(null); setEsSuper(false); setPase(null); setFilas(null); setOpiniones(null);
+    setQuien(null); setEsSuper(false); setPase(null); setFilas(null); setOpiniones(null); setVisitas(null);
     anteriores.current = null;
     setError(mensaje);
   }, []);
@@ -338,6 +345,7 @@ export default function Editores() {
       </section>
 
       {error && <section className="logros__seccion"><p className="cuenta__error" role="alert">{error}</p></section>}
+      {opiniones && <AvisoBajasHoy filas={opiniones} />}
 
       {opiniones && (
         <ResumenOpiniones
@@ -345,6 +353,7 @@ export default function Editores() {
           periodo={periodo === "todo" ? "todo" : `últimos ${PERIODOS.find((p) => p.id === periodo).texto}`}
         />
       )}
+      {visitas && <ResumenVisitas datos={visitas} />}
       {!resumen && cargando && <p className="maestro__cargando" role="status">Cargando resultados…</p>}
 
       {resumen && (

@@ -10,6 +10,7 @@ import Icono, { ICONO_GRADO } from "./Icono.jsx";
 import BotonTema from "./BotonTema.jsx";
 import { IconoRango } from "./IconoJuego.jsx";
 import TarjetaNombre from "./TarjetaNombre.jsx";
+import { useVisitas } from "../lib/visitas.js";
 
 /* Los números de la portada salen del contenido: si se agrega una misión o un juego, se actualizan solos. */
 const EN_LETRA = ["cero", "una", "dos", "tres", "cuatro", "cinco", "seis", "siete", "ocho", "nueve", "diez"];
@@ -74,6 +75,19 @@ function BotonOpinion() {
         <small>Toca una carita · sin registrarte</small>
       </span>
     </a>
+  );
+}
+
+/** Contador de visitas del sitio (abajo, junto a los créditos). Sin número, no se muestra. */
+export function ContadorVisitas() {
+  const v = useVisitas();
+  if (!v) return null;
+  const n = (x) => x.toLocaleString("es-MX");
+  return (
+    <p className="contador-visitas">
+      <span aria-hidden="true">👀</span> {n(v.total)} {v.total === 1 ? "visita" : "visitas"}
+      {v.hoy ? <> · {n(v.hoy)} hoy</> : null}
+    </p>
   );
 }
 
@@ -155,6 +169,7 @@ export default function Portada({ progreso, ultimo, onElegir, onCentro, onLogros
         </p>
 
         <Creditos />
+        <ContadorVisitas />
         <BotonAdmin />
       </div>
     );
@@ -231,6 +246,7 @@ export default function Portada({ progreso, ultimo, onElegir, onCentro, onLogros
       </p>
 
       <Creditos />
+      <ContadorVisitas />
       <BotonAdmin />
     </div>
   );

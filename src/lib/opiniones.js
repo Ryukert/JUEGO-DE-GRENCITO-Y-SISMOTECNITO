@@ -39,6 +39,47 @@ export async function enviarOpinion(opinion) {
 
 export const opinionesPendientes = () => leerCola().length;
 
+/**
+ * Aviso de calificaciones bajas: un día (y evento) se marca si junta al menos MIN_BAJAS
+ * opiniones con carita roja o naranja (1 o 2) en alguna pregunta, y son al menos el
+ * PARTE_BAJAS de las de ese día. Así 1 enojado entre 50 no alarma, y 4 de 10 sí.
+ */
+export const MIN_BAJAS = 3;
+export const PARTE_BAJAS = 0.3;
+const esBaja = (v) => v === 1 || v === 2;
+
+/** AAAA-MM-DD de hoy en Tijuana (como las agrupa el servidor). */
+export const hoyTijuana = (ahora = new Date()) =>
+  new Intl.DateTimeFormat("en-CA", { timeZone: "America/Tijuana", year: "numeric", month: "2-digit", day: "2-digit" }).format(ahora);
+
+/**
+ * Filas del servidor → [{ dia, evento, texto, total, bajas, pregunta: { id, texto, bajas }, hoy }],
+ * de lo más reciente a lo más viejo. «pregunta» es la que más caritas bajas tuvo.
+ */
+export function avisosBajas(filas, { hoy = hoyTijuana() } = {}) {
+  const grupos = new Map();
+  for (const f of filas || []) {
+    const k = `${f.dia}|${f.evento || ""}`;
+    const g = grupos.get(k) || { dia: f.dia, evento: f.evento || null, total: 0, bajas: 0, porPregunta: {} };
+    g.total += f.respuestas;
+    if (PREGUNTAS_OPINION.some((p) => esBaja(f[p.id]))) g.bajas += f.respuestas;
+    for (const p of PREGUNTAS_OPINION) if (esBaja(f[p.id])) g.porPregunta[p.id] = (g.porPregunta[p.id] || 0) + f.respuestas;
+    grupos.set(k, g);
+  }
+  return [...grupos.values()]
+    .filter((g) => g.bajas >= MIN_BAJAS && g.bajas / g.total >= PARTE_BAJAS)
+    .map(({ porPregunta, ...g }) => {
+      const p = PREGUNTAS_OPINION.reduce((a, b) => ((porPregunta[b.id] || 0) > (porPregunta[a.id] || 0) ? b : a));
+      return {
+        ...g,
+        texto: g.evento ? nombreEvento(g.evento) : "General (sin evento)",
+        pregunta: { id: p.id, texto: p.texto, bajas: porPregunta[p.id] || 0 },
+        hoy: g.dia === hoy,
+      };
+    })
+    .sort((a, b) => b.dia.localeCompare(a.dia) || b.bajas - a.bajas);
+}
+
 /** «todos» | «general» (sin evento) | id del evento. */
 const delEvento = (f, evento) => (evento === "todos" ? true : evento === "general" ? !f.evento : f.evento === evento);
 

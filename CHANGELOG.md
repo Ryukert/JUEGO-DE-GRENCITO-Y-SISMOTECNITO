@@ -14,6 +14,16 @@ en **Ajustes**. Cómo sacar una versión nueva: ver «Versiones» en el README.
 
 ## [Sin publicar]
 
+### Agregado
+
+- Aviso de calificaciones bajas en la administración: si en un día (y evento) llegan 3 o más
+  opiniones con carita roja o naranja y son al menos el 30 %, sale en rojo arriba de la
+  página, con la pregunta más baja, para corregir durante el evento. Los días anteriores salen
+  en «Evaluación abierta» con un botón para ver ese evento.
+- Contador de visitas: la portada muestra el total y las de hoy, y la administración tiene
+  «Visitas al sitio» (hoy, 7 días, 30 días, total y una barra por día). Cuenta una visita por
+  navegador al día, no cuenta robots ni la administración, y no guarda quién entró.
+
 ## [2.11.0] - 2026-11-26
 
 ### Agregado

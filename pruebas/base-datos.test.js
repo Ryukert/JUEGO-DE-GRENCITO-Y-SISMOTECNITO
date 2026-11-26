@@ -4,6 +4,7 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
 import { Readable } from "node:stream";
 import { randomUUID } from "node:crypto";
+import { llaveApi } from "../api/_db.js";
 import alumnoApi from "../api/alumno.js";
 import progresoApi, { calificar } from "../api/progreso.js";
 import grupoApi, { resumirRespuestas, resumirEvaluaciones } from "../api/grupo.js";
@@ -76,6 +77,18 @@ function supabaseFalso(url, op = {}) {
     return json(404, {});
   }
   if (u.pathname.startsWith("/rest/v1/rpc/admin_")) return funcionesAdminFalsas(u.pathname.replace("/rest/v1/rpc/", ""), op);
+  if (u.pathname === "/rest/v1/rpc/sumar_visita" || u.pathname === "/rest/v1/rpc/visitas_por_dia") {
+    // como las funciones de supabase/migrations/20261127010000_visitas.sql
+    const res = (status, datos) => ({ ok: status < 300, status, text: async () => JSON.stringify(datos) });
+    if (JSON.parse(op.body || "{}").p_llave !== llaveApi(ENV.JUEGO_SECRETO)) return res(401, { code: "42501" });
+    if (u.pathname.endsWith("sumar_visita")) {
+      const dia = new Intl.DateTimeFormat("en-CA", { timeZone: "America/Tijuana" }).format(new Date());
+      const fila = tablas.visitas.find((v) => v.dia === dia);
+      if (fila) fila.visitas += 1; else tablas.visitas.push({ dia, visitas: 1 });
+      return res(200, tablas.visitas.reduce((t, v) => t + v.visitas, 0));
+    }
+    return res(200, [...tablas.visitas].sort((a, b) => a.dia.localeCompare(b.dia)));
+  }
   const tabla = u.pathname.replace("/rest/v1/", "");
   const metodo = op.method || "GET";
   const cuerpo = op.body ? JSON.parse(op.body) : null;
@@ -155,10 +168,10 @@ async function funcionesAdminFalsas(nombre, op) {
 }
 
 /* ---------------- llamadas ---------------- */
-function peticion(cuerpo, { metodo = "POST", ip = "10.0.0.1", pase } = {}) {
+function peticion(cuerpo, { metodo = "POST", ip = "10.0.0.1", pase, cabeceras = {} } = {}) {
   const req = Readable.from(cuerpo === undefined ? [] : [Buffer.from(JSON.stringify(cuerpo))]);
   req.method = metodo;
-  req.headers = { "x-forwarded-for": ip, ...(pase ? { authorization: "Bearer " + pase } : {}) };
+  req.headers = { "x-forwarded-for": ip, ...(pase ? { authorization: "Bearer " + pase } : {}), ...cabeceras };
   return req;
 }
 function respuesta() {
@@ -173,7 +186,7 @@ const llamar = async (api, cuerpo, op) => { const res = respuesta(); await api(p
 const ENV = { SUPABASE_URL: "https://falso.supabase.co", SUPABASE_SECRET_KEY: "sb_secret_prueba", JUEGO_SECRETO: "x".repeat(40) };
 
 beforeEach(() => {
-  tablas = { grupos: [], alumnos: [], progreso: [], respuestas: [], evaluaciones: [], encuestas: [], tareas: [], opiniones: [] };
+  tablas = { grupos: [], alumnos: [], progreso: [], respuestas: [], evaluaciones: [], encuestas: [], tareas: [], opiniones: [], visitas: [] };
   cuentasAuth = [];
   correosAuth = [];
   reiniciarMemoria();
@@ -984,6 +997,60 @@ describe("evaluación abierta (/opinion): cualquiera, sin cuenta", () => {
     expect(r.quienes.find((q) => q.id === "alumno").total).toBe(1);
     expect(resumirOpiniones(filas, { quien: "alumno" }).total).toBe(1);
     expect(resumirOpiniones(filas, { quien: "sin" }).total).toBe(2);
+  });
+});
+
+describe("contador de visitas (/api/visita): solo cuántas, nunca quién", () => {
+  const visitaApi = async () => (await import("../api/visita.js")).default;
+
+  it("suma una visita a hoy y devuelve el total; no guarda la IP ni el navegador", async () => {
+    const api = await visitaApi();
+    expect((await llamar(api, undefined, { ip: "1.1.1.1" })).json()).toMatchObject({ total: 1, contada: true });
+    expect((await llamar(api, undefined, { ip: "2.2.2.2" })).json()).toMatchObject({ total: 2 });
+    tablas.visitas.push({ dia: "2026-01-05", visitas: 40 });
+    expect((await llamar(api, undefined, { ip: "3.3.3.3" })).json().total).toBe(43);
+    expect(JSON.stringify(tablas.visitas)).not.toMatch(/1\.1\.1\.1|Mozilla/);
+    expect(Object.keys(tablas.visitas[0]).sort()).toEqual(["dia", "visitas"]);
+  });
+
+  it("los robots y buscadores no cuentan", async () => {
+    const api = await visitaApi();
+    for (const ua of ["Googlebot/2.1", "facebookexternalhit/1.1", "WhatsApp/2.23", "Mozilla/5.0 HeadlessChrome/120"]) {
+      expect((await llamar(api, undefined, { cabeceras: { "user-agent": ua } })).json()).toEqual({ contada: false });
+    }
+    expect(tablas.visitas).toEqual([]);
+  });
+
+  it("la portada lee el total y el de hoy, sin la lista de días; la administración ve cada día", async () => {
+    const api = await visitaApi();
+    tablas.visitas.push({ dia: "2026-01-05", visitas: 7 });
+    await llamar(api);
+    const publica = await llamar(api, undefined, { metodo: "GET" });
+    expect(publica.json()).toEqual({ total: 8, hoy: 1 });
+    expect(publica.cabeceras["cache-control"]).toMatch(/s-maxage=60/);
+
+    process.env.EDITORES_CLAVE = "clave-de-editores-123";
+    const editoresApi = (await import("../api/editores.js")).default;
+    const pase = (await llamar(editoresApi, { clave: "clave-de-editores-123" })).json().pase;
+    const admin = (await llamar(api, undefined, { metodo: "GET", pase })).json();
+    expect(admin.total).toBe(8);
+    expect(admin.dias[0]).toEqual({ dia: "2026-01-05", visitas: 7 });
+    delete process.env.EDITORES_CLAVE;
+  });
+
+  it("tope de 300 por hora por IP: pasado el tope no suma, pero sigue dando el número", async () => {
+    const api = await visitaApi();
+    for (let i = 0; i < 300; i++) await llamar(api, undefined, { ip: "9.9.9.9" });
+    const pasado = (await llamar(api, undefined, { ip: "9.9.9.9" })).json();
+    expect(pasado).toMatchObject({ total: 300 });
+    expect(pasado.contada).toBeUndefined();
+    expect((await llamar(api, undefined, { ip: "4.4.4.4" })).json().total).toBe(301);
+  });
+
+  it("sin base de datos responde 503 (la portada no muestra el contador)", async () => {
+    delete process.env.SUPABASE_URL;
+    const api = await visitaApi();
+    expect((await llamar(api)).statusCode).toBe(503);
   });
 });
 

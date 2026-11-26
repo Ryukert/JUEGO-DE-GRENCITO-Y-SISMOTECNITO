@@ -219,6 +219,12 @@ Como la pantalla de un restaurante que pregunta «¿te gustó la comida?, ¿cóm
   evento), y el reporte y el CSV dicen de qué evento son. El nombre se guarda en minúsculas,
   sin acentos y con guiones, hasta 40 letras (columna `evento`, migración
   `20261127000000_opiniones_evento.sql`).
+- **Aviso de calificaciones bajas:** se marca un día (y evento) cuando junta 3 o más opiniones
+  con carita roja o naranja (1 o 2) en alguna pregunta y son al menos el 30 % de las de ese
+  día; así una carita roja entre 50 no alarma. Si es de hoy, sale en rojo arriba de la
+  administración, que se actualiza sola cada 30 s, para corregir durante el evento. Los de días
+  anteriores salen en «Evaluación abierta» con la pregunta más baja y un botón para ver ese
+  evento. Los números se cambian en `MIN_BAJAS` y `PARTE_BAJAS` (`src/lib/opiniones.js`).
 - **En una tableta**, el botón **Pantalla completa** de `/opinion` quita la barra del navegador,
   evita que la pantalla se apague (donde el navegador lo permite) y esconde «Ir al juego» para
   que nadie se salga. En el iPhone el navegador no permite pantalla completa y el botón no sale.
@@ -227,6 +233,20 @@ Como la pantalla de un restaurante que pregunta «¿te gustó la comida?, ¿cóm
 
 La evaluación del alumno a **su maestro** (*Mi grupo → Evaluar a mi maestro*) sigue igual:
 esa sí necesita la cuenta del grupo, porque cada maestro ve solo la de sus alumnos.
+
+### Contador de visitas
+
+- La portada muestra cuántas visitas lleva el sitio y cuántas van hoy («👀 1,234 visitas ·
+  56 hoy»). En la administración, **Visitas al sitio** da las de hoy, los últimos 7 y 30 días,
+  el total y una barra por día del último mes.
+- Cuenta **una visita por navegador al día**: la primera vez del día la página suma
+  (`POST /api/visita`) y las demás solo leen el número (`GET`). La administración no cuenta.
+  Solo se cuenta en la versión publicada, no con `npm run dev`.
+- **No se guarda quién entró:** la tabla `visitas` tiene solo el día y cuántas visitas hubo
+  (migración `20261127010000_visitas.sql`). No cuentan los robots ni los buscadores. Tope de
+  300 por hora por IP (una escuela entera sale por la misma IP) y 100,000 al día; pasado el
+  tope no suma, pero el número se sigue viendo.
+- Sin base de datos o sin internet el contador no aparece; el juego funciona igual.
 
 ### Cuentas de administración
 
