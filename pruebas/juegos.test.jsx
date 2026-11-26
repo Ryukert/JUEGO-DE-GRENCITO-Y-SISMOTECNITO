@@ -47,7 +47,7 @@ describe("flujo original", () => {
   it("la portada, el grado y la primera misión siguen funcionando", () => {
     render(<App />);
     fireEvent.click(screen.getByText("Primaria"));
-    fireEvent.click(screen.getByText("Sismo Tecnito"));
+    fireEvent.click(screen.getByText("Sismotecnito"));
     // la primera vez sale la explicación de 3 pasos; se puede saltar
     fireEvent.click(screen.getByText("Saltar"));
     // el primer reto puede salir como el original o como una de sus variantes

@@ -3,7 +3,7 @@
   "private": true,
   "version": "2.10.1",
   "type": "module",
-  "description": "Juego educativo con Sismo Tecnito (protección civil) y Greencito (medio ambiente)",
+  "description": "Juego educativo con Sismotecnito (protección civil) y Greencito (medio ambiente)",
   "author": "Marco Antonio Adame Rodriguez",
   "engines": {
     "node": "24.x"

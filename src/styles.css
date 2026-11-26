@@ -113,7 +113,7 @@ body {
   overscroll-behavior-y: none;
 }
 
-/* Fondo de la página: la ilustración de Greencito y Sismo Tecnito, quieta aunque la página se
+/* Fondo de la página: la ilustración de Greencito y Sismotecnito, quieta aunque la página se
    desplace (capa fija, no background-attachment: fixed, que iOS ignora). Encima va un velo con
    los colores del personaje para que el texto se lea; su opacidad cambia con el tema. */
 body::before,

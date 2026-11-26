@@ -14,6 +14,11 @@ en **Ajustes**. Cómo sacar una versión nueva: ver «Versiones» en el README.
 
 ## [Sin publicar]
 
+### Corregido
+
+- El nombre del personaje se escribe «Sismotecnito», junto: en el juego, la descripción
+  de la página, la app instalable y el README.
+
 ## [2.10.1] - 2026-11-26
 
 ### Corregido

@@ -63,7 +63,7 @@ describe("axe-core: pantallas sin problemas de accesibilidad", () => {
   it("una misión", async () => {
     render(<App />, enMain());
     fireEvent.click(screen.getByRole("button", { name: /Primaria/ }));
-    fireEvent.click(screen.getByRole("button", { name: /Sismo Tecnito/ }));
+    fireEvent.click(screen.getByRole("button", { name: /Sismotecnito/ }));
     // la primera vez sale el tutorial: se salta para llegar a la misión
     while (screen.queryByRole("button", { name: /Siguiente|Empezar|¡A jugar!|Entendido/ }) && !document.querySelector(".mision-escena")) {
       fireEvent.click(screen.getAllByRole("button", { name: /Siguiente|Empezar|¡A jugar!|Entendido/ })[0]);

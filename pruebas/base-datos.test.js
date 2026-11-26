@@ -653,7 +653,7 @@ describe("resumen para las gráficas", () => {
       { juego: "prueba-fuera", tipo: "minijuego", grado: "primaria", dia: "2026-11-03", gusto: 4, dificultad: 2, respuestas: 1 },
     ];
     const r = resumir(filas);
-    expect(r.juegos.map((j) => j.nombre)).toEqual(["Misiones de Sismo Tecnito", expect.any(String)]);
+    expect(r.juegos.map((j) => j.nombre)).toEqual(["Misiones de Sismotecnito", expect.any(String)]);
     expect(r.general).toMatchObject({ total: 6, gusto: [0, 4, 0, 0, 2], dificultad: [0, 2, 4] });
     expect(r.fueraDeCatalogo).toBe(1);
     expect(resumir(filas, { grado: "primaria" }).juegos).toHaveLength(1);

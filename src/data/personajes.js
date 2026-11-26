@@ -601,7 +601,7 @@ export function armarPartida(p, azar = Math.random) {
 export const PERSONAJES = {
   sismo: {
     id: "sismo",
-    nombre: "Sismo Tecnito",
+    nombre: "Sismotecnito",
     apodo: "el edificio que sí sabe qué hacer",
     moneda: "escudos",
     monedaIcono: "🛡️",

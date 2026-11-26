@@ -85,7 +85,7 @@ export const ROMPECABEZAS = {
       {
         id: "sismo",
         imagen: "/sismo.webp",
-        nombre: "Sismo Tecnito",
+        nombre: "Sismotecnito",
         dato: "Un edificio bien hecho se mueve durante el sismo. Lo que no se mueve nada es lo que se parte.",
       },
       {

@@ -129,7 +129,7 @@ describe("atajos de teclado", () => {
   it("1-4 o A-D eligen la respuesta y el foco pasa a «Siguiente»", () => {
     render(<App />);
     fireEvent.click(screen.getByText("Primaria"));
-    fireEvent.click(screen.getByText("Sismo Tecnito"));
+    fireEvent.click(screen.getByText("Sismotecnito"));
     fireEvent.click(screen.getByText("Saltar"));
     const botones = [...document.querySelectorAll(".opciones button")];
     const segunda = botones[1].textContent.slice(1);
@@ -142,7 +142,7 @@ describe("atajos de teclado", () => {
   it("no roban letras mientras se escribe", () => {
     render(<App />);
     fireEvent.click(screen.getByText("Primaria"));
-    fireEvent.click(screen.getByText("Sismo Tecnito"));
+    fireEvent.click(screen.getByText("Sismotecnito"));
     fireEvent.click(screen.getByText("Saltar"));
     const input = document.createElement("input");
     document.body.appendChild(input);

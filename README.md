@@ -6,7 +6,7 @@ Juego educativo por turnos con dos mascotas. Pensado para
 que un grupo de primaria o secundaria lo juegue en el salón, en el celular o en
 la computadora.
 
-- **Sismo Tecnito** — protección civil ante sismos.
+- **Sismotecnito** — protección civil ante sismos.
 - **Greencito** — cuidado del medio ambiente.
 
 Stack: React 18 + Vite. No usa inteligencia artificial: todas las preguntas, explicaciones
@@ -34,7 +34,7 @@ respuesta mala la rompe.
 - *Memorama* (los dos personajes): doce cartas, seis parejas, contra reloj. Cada
   pareja encontrada suelta un dato debajo del tablero. Un par equivocado cuesta
   tres segundos, y el tiempo que sobra se convierte en puntos.
-- *Simulacro relámpago* (Sismo Tecnito): la pantalla tiembla y tienes que tocar
+- *Simulacro relámpago* (Sismotecnito): la pantalla tiembla y tienes que tocar
   agáchate → cúbrete → agárrate en ese orden, esquivando botones trampa como
   "usar el elevador". Tres rondas, cada una más rápida.
 - *Separa o pierde* (Greencito): caen diez residuos y hay que mandarlos al bote
@@ -339,7 +339,7 @@ Grupos, alumnos, evaluación y panel del maestro sí necesitan la llave secreta.
 - **Escritorio:** desde 900 px el juego se centra como una consola de 760 px con
   marco, en vez de estirarse.
 
-**Fondo de la página:** la ilustración de Greencito y Sismo Tecnito (`public/fondo.webp`,
+**Fondo de la página:** la ilustración de Greencito y Sismotecnito (`public/fondo.webp`,
 y `fondo-movil.webp` más ligera para teléfonos) va en una capa fija detrás de todo, con un
 velo de los colores del personaje encima para que el texto se lea. Qué tanto tapa el velo
 se ajusta con `--velo-fondo` en `styles.css` (0.7 en tema claro, 0.84 en oscuro).
