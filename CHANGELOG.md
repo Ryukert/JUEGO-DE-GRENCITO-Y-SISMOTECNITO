@@ -14,6 +14,8 @@ en **Ajustes**. Cómo sacar una versión nueva: ver «Versiones» en el README.
 
 ## [Sin publicar]
 
+## [2.9.2] - 2026-11-26
+
 ### Cambiado
 - Herramientas de desarrollo al día (Dependabot): vite 8.3.8, vitest 5.1.1, eslint 10.15.0,
   axe-core 4.14.1, @vitejs/plugin-react 6.3.0 y jsdom 31.0.1 (pide Node 24.15 o más nuevo).
@@ -344,6 +346,7 @@ en **Ajustes**. Cómo sacar una versión nueva: ver «Versiones» en el README.
 - Chat con los personajes.
 - Centro de entrenamiento con 46 minijuegos en 13 motores, tres dificultades y jefes finales.
 
+[2.9.2]: https://github.com/Ryukert/JUEGO-DE-GRENCITO-Y-SISMOTECNITO/compare/v2.9.1...v2.9.2
 [2.9.1]: https://github.com/Ryukert/JUEGO-DE-GRENCITO-Y-SISMOTECNITO/compare/v2.9.0...v2.9.1
 [2.9.0]: https://github.com/Ryukert/JUEGO-DE-GRENCITO-Y-SISMOTECNITO/compare/v2.8.1...v2.9.0
 [2.8.1]: https://github.com/Ryukert/JUEGO-DE-GRENCITO-Y-SISMOTECNITO/compare/v2.8.0...v2.8.1
