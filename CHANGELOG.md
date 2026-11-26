@@ -14,6 +14,8 @@ en **Ajustes**. Cómo sacar una versión nueva: ver «Versiones» en el README.
 
 ## [Sin publicar]
 
+## [2.10.1] - 2026-11-26
+
 ### Corregido
 - Una publicación se frenaba a veces porque la prueba de 300 laberintos al azar pasaba del
   límite de 5 s en la máquina de Vercel (2 núcleos, unas 3 veces más lenta). Ahora tiene 30 s y
@@ -363,6 +365,7 @@ en **Ajustes**. Cómo sacar una versión nueva: ver «Versiones» en el README.
 - Chat con los personajes.
 - Centro de entrenamiento con 46 minijuegos en 13 motores, tres dificultades y jefes finales.
 
+[2.10.1]: https://github.com/Ryukert/JUEGO-DE-GRENCITO-Y-SISMOTECNITO/compare/v2.10.0...v2.10.1
 [2.10.0]: https://github.com/Ryukert/JUEGO-DE-GRENCITO-Y-SISMOTECNITO/compare/v2.9.2...v2.10.0
 [2.9.2]: https://github.com/Ryukert/JUEGO-DE-GRENCITO-Y-SISMOTECNITO/compare/v2.9.1...v2.9.2
 [2.9.1]: https://github.com/Ryukert/JUEGO-DE-GRENCITO-Y-SISMOTECNITO/compare/v2.9.0...v2.9.1
