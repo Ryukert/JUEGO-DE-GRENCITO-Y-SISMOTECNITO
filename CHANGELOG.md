@@ -14,6 +14,11 @@ en **Ajustes**. Cómo sacar una versión nueva: ver «Versiones» en el README.
 
 ## [Sin publicar]
 
+### Cambiado
+- **React 19** (react y react-dom 19.3.1, antes 18.3.1). El código no usaba nada de lo que React
+  19 quitó; pasan todas las pruebas. El archivo principal pesa ~23 KB más comprimido.
+- Dependabot sube react y react-dom juntos: por separado, `npm ci` fallaba.
+
 ## [2.9.0] - 2026-11-26
 
 ### Agregado
