@@ -14,6 +14,11 @@ en **Ajustes**. Cómo sacar una versión nueva: ver «Versiones» en el README.
 
 ## [Sin publicar]
 
+### Corregido
+- Una publicación se frenaba a veces porque la prueba de 300 laberintos al azar pasaba del
+  límite de 5 s en la máquina de Vercel (2 núcleos, unas 3 veces más lenta). Ahora tiene 30 s y
+  el límite general de las pruebas es 15 s. Nada cambia para quien juega.
+
 ## [2.10.0] - 2026-11-26
 
 ### Agregado
