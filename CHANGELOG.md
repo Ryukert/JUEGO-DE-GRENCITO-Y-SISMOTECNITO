@@ -14,6 +14,8 @@ en **Ajustes**. Cómo sacar una versión nueva: ver «Versiones» en el README.
 
 ## [Sin publicar]
 
+## [2.8.0] - 2026-11-26
+
 ### Agregado
 - **Mi cuenta: cambiar mi contraseña** dentro de la administración, pidiendo la actual. Sirve
   también a quien no tiene correo institucional, que no puede usar «¿Olvidaste tu contraseña?».
@@ -302,6 +304,7 @@ en **Ajustes**. Cómo sacar una versión nueva: ver «Versiones» en el README.
 - Chat con los personajes.
 - Centro de entrenamiento con 46 minijuegos en 13 motores, tres dificultades y jefes finales.
 
+[2.8.0]: https://github.com/Ryukert/JUEGO-DE-GRENCITO-Y-SISMOTECNITO/compare/v2.7.0...v2.8.0
 [2.7.0]: https://github.com/Ryukert/JUEGO-DE-GRENCITO-Y-SISMOTECNITO/compare/v2.6.0...v2.7.0
 [2.6.0]: https://github.com/Ryukert/JUEGO-DE-GRENCITO-Y-SISMOTECNITO/compare/v2.5.0...v2.6.0
 [2.5.0]: https://github.com/Ryukert/JUEGO-DE-GRENCITO-Y-SISMOTECNITO/compare/v2.4.0...v2.5.0
