@@ -38,6 +38,15 @@ describe("Content-Security-Policy", () => {
     for (const p of paginas) expect(scriptsEnLinea(leer("public/" + p)), p).toEqual([]);
   });
 
+  it("Dependabot sube react y react-dom juntos (por separado, npm ci falla)", () => {
+    const yml = leer(".github/dependabot.yml");
+    expect(yml).toMatch(/react:\s*\n\s*patterns: \["react", "react-dom"\]/);
+    // el grupo de react va antes que los demás: cada dependencia entra al primero que le queda
+    expect(yml.indexOf("react:")).toBeLessThan(yml.indexOf("desarrollo:"));
+    const pkg = JSON.parse(leer("package.json"));
+    expect(pkg.dependencies["react-dom"]).toBe(pkg.dependencies.react);
+  });
+
   it("Vercel instala exactamente lo del package-lock.json", () => {
     expect(vercel.installCommand).toMatch(/\bnpm ci\b/);
     expect(JSON.parse(leer("package.json")).engines.node).toBe("24.x");
