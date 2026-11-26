@@ -14,6 +14,8 @@ en **Ajustes**. Cómo sacar una versión nueva: ver «Versiones» en el README.
 
 ## [Sin publicar]
 
+## [2.9.1] - 2026-11-26
+
 ### Cambiado
 - **React 19** (react y react-dom 19.3.1, antes 18.3.1). El código no usaba nada de lo que React
   19 quitó; pasan todas las pruebas. El archivo principal pesa ~23 KB más comprimido.
@@ -336,6 +338,7 @@ en **Ajustes**. Cómo sacar una versión nueva: ver «Versiones» en el README.
 - Chat con los personajes.
 - Centro de entrenamiento con 46 minijuegos en 13 motores, tres dificultades y jefes finales.
 
+[2.9.1]: https://github.com/Ryukert/JUEGO-DE-GRENCITO-Y-SISMOTECNITO/compare/v2.9.0...v2.9.1
 [2.9.0]: https://github.com/Ryukert/JUEGO-DE-GRENCITO-Y-SISMOTECNITO/compare/v2.8.1...v2.9.0
 [2.8.1]: https://github.com/Ryukert/JUEGO-DE-GRENCITO-Y-SISMOTECNITO/compare/v2.8.0...v2.8.1
 [2.8.0]: https://github.com/Ryukert/JUEGO-DE-GRENCITO-Y-SISMOTECNITO/compare/v2.7.0...v2.8.0
